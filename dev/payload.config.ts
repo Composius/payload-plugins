@@ -2,7 +2,7 @@ import { sqliteAdapter } from '@payloadcms/db-sqlite'
 import { lexicalEditor } from '@payloadcms/richtext-lexical'
 import path from 'path'
 import { buildConfig } from 'payload'
-import { VWPayloadPluginArticles } from 'payload-vw-articles'
+import { VWPayloadPluginArticles } from '@vitrailweb/payload-plugin-articles'
 import sharp from 'sharp'
 import { fileURLToPath } from 'url'
 

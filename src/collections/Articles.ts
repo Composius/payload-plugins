@@ -7,6 +7,7 @@ import {
   OverviewField,
   PreviewField,
 } from '@payloadcms/plugin-seo/fields'
+import { FixedToolbarFeature, lexicalEditor } from '@payloadcms/richtext-lexical'
 import { label } from '../translations/index.js'
 
 export type ArticlesAccess = {
@@ -105,6 +106,9 @@ export const Articles = ({ access, articleUrl, seo }: ArticlesOptions): Collecti
       name: 'content',
       type: 'richText',
       label: label((t) => t.fields.content),
+      editor: lexicalEditor({
+        features: ({ defaultFeatures }) => [...defaultFeatures, FixedToolbarFeature()],
+      }),
     },
     {
       name: 'publishedAt',

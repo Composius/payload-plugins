@@ -64,7 +64,7 @@ pnpm build          # build to dist/
 
 ```bash
 # commit everything
-npm version patch  # or minor/major
+pnpm version patch  # or minor/major
 pnpm clean && pnpm build
 pnpm pack
 ```

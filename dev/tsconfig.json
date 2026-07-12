@@ -19,7 +19,7 @@
       "@payload-config": [
         "./payload.config.ts"
       ],
-      "payload-vw-articles": [
+      "@vitrailweb/payload-plugin-articles": [
         "../src/index.ts"
       ]
     },
