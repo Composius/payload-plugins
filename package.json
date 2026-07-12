@@ -82,6 +82,8 @@
     "pnpm": "^9 || ^10 || ^11"
   },
   "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/",
     "exports": {
       ".": {
         "import": "./dist/index.js",
@@ -92,6 +94,5 @@
     "main": "./dist/index.js",
     "types": "./dist/index.d.ts"
   },
-  "registry": "https://registry.npmjs.org/",
   "dependencies": {}
 }
