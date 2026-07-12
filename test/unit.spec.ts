@@ -1,0 +1,158 @@
+import type { Access, CollectionConfig, Config, Field } from 'payload'
+
+import { afterEach, describe, expect, test, vi } from 'vitest'
+
+import {
+  authenticated,
+  authenticatedOrPublished,
+  defaultArticleUrl,
+  defaultGenerateDescription,
+  defaultGenerateImage,
+  defaultGenerateTitle,
+  defaultGenerateURL,
+  SEO_DESCRIPTION_MAX_LENGTH,
+} from '../src/defaults.js'
+import { VWPayloadPluginArticles } from '../src/index.js'
+
+const accessArgs = (user: unknown) => ({ req: { user } }) as Parameters<Access>[0]
+
+const generateArgs = (doc: unknown) =>
+  ({ doc }) as Parameters<ReturnType<typeof defaultGenerateURL>>[0]
+
+const richText = (...paragraphs: string[]) => ({
+  root: {
+    children: paragraphs.map((text) => ({
+      children: [{ text }],
+    })),
+  },
+})
+
+const baseConfig = (): Config => ({ collections: [] }) as unknown as Config
+
+const findArticles = (config: Config): CollectionConfig => {
+  const articles = config.collections?.find((collection) => collection.slug === 'articles')
+  expect(articles).toBeDefined()
+  return articles!
+}
+
+afterEach(() => {
+  vi.unstubAllEnvs()
+})
+
+describe('access defaults', () => {
+  test('authenticated allows only requests with a user', () => {
+    expect(authenticated(accessArgs({ id: 1 }))).toBe(true)
+    expect(authenticated(accessArgs(null))).toBe(false)
+  })
+
+  test('authenticatedOrPublished allows users, otherwise constrains to published docs', () => {
+    expect(authenticatedOrPublished(accessArgs({ id: 1 }))).toBe(true)
+    expect(authenticatedOrPublished(accessArgs(null))).toEqual({
+      _status: { equals: 'published' },
+    })
+  })
+})
+
+describe('defaultArticleUrl', () => {
+  test('uses NEXT_PUBLIC_SERVER_URL when set', () => {
+    vi.stubEnv('NEXT_PUBLIC_SERVER_URL', 'https://example.com')
+    expect(defaultArticleUrl('my-article')).toBe('https://example.com/articles/my-article')
+  })
+
+  test('falls back to localhost and tolerates a missing slug', () => {
+    vi.stubEnv('NEXT_PUBLIC_SERVER_URL', '')
+    expect(defaultArticleUrl(null)).toBe('http://localhost:3000/articles/')
+  })
+})
+
+describe('SEO generate defaults', () => {
+  test('generateTitle returns the article title or an empty string', () => {
+    expect(defaultGenerateTitle(generateArgs({ title: 'Hello' }))).toBe('Hello')
+    expect(defaultGenerateTitle(generateArgs({}))).toBe('')
+  })
+
+  test('generateDescription flattens rich text into plain text', () => {
+    const doc = { content: richText('First paragraph.', 'Second paragraph.') }
+    expect(defaultGenerateDescription(generateArgs(doc))).toBe(
+      'First paragraph. Second paragraph.',
+    )
+  })
+
+  test('generateDescription truncates to the SEO limit', () => {
+    const doc = { content: richText('a'.repeat(500)) }
+    expect(defaultGenerateDescription(generateArgs(doc))).toHaveLength(SEO_DESCRIPTION_MAX_LENGTH)
+  })
+
+  test('generateDescription returns an empty string for missing content', () => {
+    expect(defaultGenerateDescription(generateArgs({}))).toBe('')
+  })
+
+  test('generateImage resolves populated uploads, ids, and missing values', () => {
+    expect(defaultGenerateImage(generateArgs({ coverImage: { id: 'img-1' } }))).toBe('img-1')
+    expect(defaultGenerateImage(generateArgs({ coverImage: 'img-2' }))).toBe('img-2')
+    expect(defaultGenerateImage(generateArgs({}))).toBe('')
+  })
+
+  test('generateURL builds the URL from the article slug', () => {
+    const generateURL = defaultGenerateURL((slug) => `https://example.com/a/${slug}`)
+    expect(generateURL(generateArgs({ slug: 'my-article' }))).toBe(
+      'https://example.com/a/my-article',
+    )
+  })
+})
+
+describe('VWPayloadPluginArticles', () => {
+  test('adds the articles collection', () => {
+    const config = VWPayloadPluginArticles()(baseConfig())
+    const articles = findArticles(config)
+
+    expect(articles.versions).toMatchObject({ drafts: { autosave: true } })
+    const fieldNames = articles.fields.map((field) => (field as { name?: string }).name)
+    expect(fieldNames).toContain('title')
+    expect(fieldNames).toContain('content')
+  })
+
+  test('adds the SEO meta group and endpoints by default', () => {
+    const config = VWPayloadPluginArticles()(baseConfig())
+    const articles = findArticles(config)
+
+    const meta = articles.fields.find((field) => (field as { name?: string }).name === 'meta')
+    expect(meta).toBeDefined()
+    expect((meta as Field).type).toBe('group')
+    expect(config.endpoints?.some((endpoint) => endpoint.path.includes('generate'))).toBe(true)
+  })
+
+  test('seo: false removes the meta group and skips the SEO plugin', () => {
+    const config = VWPayloadPluginArticles({ seo: false })(baseConfig())
+    const articles = findArticles(config)
+
+    const meta = articles.fields.find((field) => (field as { name?: string }).name === 'meta')
+    expect(meta).toBeUndefined()
+    expect(config.endpoints ?? []).toHaveLength(0)
+  })
+
+  test('disabled still registers the collection for schema consistency', () => {
+    const config = VWPayloadPluginArticles({ disabled: true })(baseConfig())
+    findArticles(config)
+    expect(config.endpoints ?? []).toHaveLength(0)
+  })
+
+  test('custom access overrides replace only the provided operations', () => {
+    const create: Access = () => false
+    const config = VWPayloadPluginArticles({ access: { create } })(baseConfig())
+    const articles = findArticles(config)
+
+    expect(articles.access?.create).toBe(create)
+    expect(articles.access?.read).toBe(authenticatedOrPublished)
+  })
+
+  test('custom articleUrl is used for admin previews', () => {
+    const config = VWPayloadPluginArticles({
+      articleUrl: (slug) => `https://custom.dev/${slug}`,
+    })(baseConfig())
+    const articles = findArticles(config)
+
+    const preview = articles.admin?.preview as (data: Record<string, unknown>) => string
+    expect(preview({ slug: 'my-article' })).toBe('https://custom.dev/my-article')
+  })
+})
