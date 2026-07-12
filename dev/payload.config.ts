@@ -1,6 +1,5 @@
-import { mongooseAdapter } from '@payloadcms/db-mongodb'
+import { sqliteAdapter } from '@payloadcms/db-sqlite'
 import { lexicalEditor } from '@payloadcms/richtext-lexical'
-import { MongoMemoryReplSet } from 'mongodb-memory-server'
 import path from 'path'
 import { buildConfig } from 'payload'
 import { payloadVwArticles } from 'payload-vw-articles'
@@ -17,59 +16,50 @@ if (!process.env.ROOT_DIR) {
   process.env.ROOT_DIR = dirname
 }
 
-const buildConfigWithMemoryDB = async () => {
-  if (process.env.NODE_ENV === 'test') {
-    const memoryDB = await MongoMemoryReplSet.create({
-      replSet: {
-        count: 3,
-        dbName: 'payloadmemory',
-      },
-    })
+const databaseUrl =
+  process.env.NODE_ENV === 'test'
+    ? ':memory:'
+    : process.env.DATABASE_URL || `file:${path.resolve(dirname, 'payload.db')}`
 
-    process.env.DATABASE_URL = `${memoryDB.getUri()}&retryWrites=true`
-  }
-
-  return buildConfig({
-    admin: {
-      importMap: {
-        baseDir: path.resolve(dirname),
+export default buildConfig({
+  admin: {
+    importMap: {
+      baseDir: path.resolve(dirname),
+    },
+  },
+  collections: [
+    {
+      slug: 'posts',
+      fields: [],
+    },
+    {
+      slug: 'media',
+      fields: [],
+      upload: {
+        staticDir: path.resolve(dirname, 'media'),
       },
     },
-    collections: [
-      {
-        slug: 'posts',
-        fields: [],
+  ],
+  db: sqliteAdapter({
+    client: {
+      url: databaseUrl,
+    },
+  }),
+  editor: lexicalEditor(),
+  email: testEmailAdapter,
+  onInit: async (payload) => {
+    await seed(payload)
+  },
+  plugins: [
+    payloadVwArticles({
+      collections: {
+        posts: true,
       },
-      {
-        slug: 'media',
-        fields: [],
-        upload: {
-          staticDir: path.resolve(dirname, 'media'),
-        },
-      },
-    ],
-    db: mongooseAdapter({
-      ensureIndexes: true,
-      url: process.env.DATABASE_URL || '',
     }),
-    editor: lexicalEditor(),
-    email: testEmailAdapter,
-    onInit: async (payload) => {
-      await seed(payload)
-    },
-    plugins: [
-      payloadVwArticles({
-        collections: {
-          posts: true,
-        },
-      }),
-    ],
-    secret: process.env.PAYLOAD_SECRET || 'test-secret_key',
-    sharp,
-    typescript: {
-      outputFile: path.resolve(dirname, 'payload-types.ts'),
-    },
-  })
-}
-
-export default buildConfigWithMemoryDB()
+  ],
+  secret: process.env.PAYLOAD_SECRET || 'test-secret_key',
+  sharp,
+  typescript: {
+    outputFile: path.resolve(dirname, 'payload-types.ts'),
+  },
+})
