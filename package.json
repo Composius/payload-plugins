@@ -88,5 +88,7 @@
     "types": "./dist/index.d.ts"
   },
   "registry": "https://registry.npmjs.org/",
-  "dependencies": {}
+  "dependencies": {
+    "@payloadcms/plugin-seo": "3.84.1"
+  }
 }
