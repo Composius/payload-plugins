@@ -6,6 +6,10 @@
   "author": {
     "name": "Vitrail Web"
   },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Vitrail-Web/payload-plugin-articles"
+  },
   "type": "module",
   "exports": {
     ".": {
