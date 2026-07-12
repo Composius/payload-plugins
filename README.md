@@ -45,3 +45,11 @@ pnpm test:int       # integration tests (vitest)
 pnpm test:e2e       # e2e tests (playwright)
 pnpm build          # build to dist/
 ```
+
+
+### Test locally
+
+```bash
+pnpm clean && pnpm build
+pnpm pack
+```
