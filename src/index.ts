@@ -1,112 +1,57 @@
-import type { CollectionSlug, Config } from 'payload'
-
-import { customEndpointHandler } from './endpoints/customEndpointHandler.js'
+import type { CollectionConfig, Config } from 'payload'
 
 export type PayloadVwArticlesConfig = {
-  /**
-   * List of collections to add a custom field
-   */
-  collections?: Partial<Record<CollectionSlug, true>>
   disabled?: boolean
 }
 
 export const payloadVwArticles =
-  (pluginOptions: PayloadVwArticlesConfig) =>
+  (pluginOptions: PayloadVwArticlesConfig = {}) =>
   (config: Config): Config => {
     if (!config.collections) {
       config.collections = []
     }
 
-    config.collections.push({
-      slug: 'plugin-collection',
+    const articles: CollectionConfig = {
+      slug: 'articles',
+      admin: {
+        defaultColumns: ['title', 'slug', 'publishedAt'],
+        useAsTitle: 'title',
+      },
       fields: [
         {
-          name: 'id',
+          name: 'title',
           type: 'text',
+          required: true,
+        },
+        {
+          name: 'slug',
+          type: 'text',
+          index: true,
+          unique: true,
+        },
+        {
+          name: 'coverImage',
+          type: 'upload',
+          relationTo: 'media',
+        },
+        {
+          name: 'content',
+          type: 'richText',
+        },
+        {
+          name: 'publishedAt',
+          type: 'date',
         },
       ],
-    })
-
-    if (pluginOptions.collections) {
-      for (const collectionSlug in pluginOptions.collections) {
-        const collection = config.collections.find(
-          (collection) => collection.slug === collectionSlug,
-        )
-
-        if (collection) {
-          collection.fields.push({
-            name: 'addedByPlugin',
-            type: 'text',
-            admin: {
-              position: 'sidebar',
-            },
-          })
-        }
-      }
     }
+
+    config.collections.push(articles)
 
     /**
      * If the plugin is disabled, we still want to keep added collections/fields so the database schema is consistent which is important for migrations.
-     * If your plugin heavily modifies the database schema, you may want to remove this property.
      */
     if (pluginOptions.disabled) {
       return config
-    }
-
-    if (!config.endpoints) {
-      config.endpoints = []
-    }
-
-    if (!config.admin) {
-      config.admin = {}
-    }
-
-    if (!config.admin.components) {
-      config.admin.components = {}
-    }
-
-    if (!config.admin.components.beforeDashboard) {
-      config.admin.components.beforeDashboard = []
-    }
-
-    config.admin.components.beforeDashboard.push(
-      `payload-vw-articles/client#BeforeDashboardClient`,
-    )
-    config.admin.components.beforeDashboard.push(
-      `payload-vw-articles/rsc#BeforeDashboardServer`,
-    )
-
-    config.endpoints.push({
-      handler: customEndpointHandler,
-      method: 'get',
-      path: '/my-plugin-endpoint',
-    })
-
-    const incomingOnInit = config.onInit
-
-    config.onInit = async (payload) => {
-      // Ensure we are executing any existing onInit functions before running our own.
-      if (incomingOnInit) {
-        await incomingOnInit(payload)
-      }
-
-      const { totalDocs } = await payload.count({
-        collection: 'plugin-collection',
-        where: {
-          id: {
-            equals: 'seeded-by-plugin',
-          },
-        },
-      })
-
-      if (totalDocs === 0) {
-        await payload.create({
-          collection: 'plugin-collection',
-          data: {
-            id: 'seeded-by-plugin',
-          },
-        })
-      }
     }
 
     return config

@@ -29,10 +29,6 @@ export default buildConfig({
   },
   collections: [
     {
-      slug: 'posts',
-      fields: [],
-    },
-    {
       slug: 'media',
       fields: [],
       upload: {
@@ -50,13 +46,7 @@ export default buildConfig({
   onInit: async (payload) => {
     await seed(payload)
   },
-  plugins: [
-    payloadVwArticles({
-      collections: {
-        posts: true,
-      },
-    }),
-  ],
+  plugins: [payloadVwArticles()],
   secret: process.env.PAYLOAD_SECRET || 'test-secret_key',
   sharp,
   typescript: {

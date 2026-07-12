@@ -21,12 +21,6 @@
       ],
       "payload-vw-articles": [
         "../src/index.ts"
-      ],
-      "payload-vw-articles/client": [
-        "../src/exports/client.ts"
-      ],
-      "payload-vw-articles/rsc": [
-        "../src/exports/rsc.ts"
       ]
     },
     "noEmit": true,
