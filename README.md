@@ -68,3 +68,13 @@ pnpm version patch  # or minor/major
 pnpm clean && pnpm build
 pnpm pack
 ```
+
+
+## Publish
+
+```bash
+# commit everything
+pnpm version patch  # or minor/major
+git push --follow-tags
+# create a release on Github
+```
