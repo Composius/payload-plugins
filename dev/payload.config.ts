@@ -2,7 +2,7 @@ import { sqliteAdapter } from '@payloadcms/db-sqlite'
 import { lexicalEditor } from '@payloadcms/richtext-lexical'
 import path from 'path'
 import { buildConfig } from 'payload'
-import { payloadVwArticles } from 'payload-vw-articles'
+import { VWPayloadPluginArticles } from 'payload-vw-articles'
 import sharp from 'sharp'
 import { fileURLToPath } from 'url'
 
@@ -46,7 +46,7 @@ export default buildConfig({
   onInit: async (payload) => {
     await seed(payload)
   },
-  plugins: [payloadVwArticles()],
+  plugins: [VWPayloadPluginArticles()],
   secret: process.env.PAYLOAD_SECRET || 'test-secret_key',
   sharp,
   typescript: {

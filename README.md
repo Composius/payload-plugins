@@ -11,6 +11,7 @@ A [Payload CMS](https://payloadcms.com) plugin that adds an `articles` collectio
 | `coverImage`  | `upload`   | relates to `media`           |
 | `content`     | `richText` |                              |
 | `publishedAt` | `date`     |                              |
+| `seo`         | `plugin-seo` | needs `@payloadcms/plugin-seo` |
 
 > The plugin expects a `media` upload collection to exist in your config for the `coverImage` field.
 
@@ -18,10 +19,10 @@ A [Payload CMS](https://payloadcms.com) plugin that adds an `articles` collectio
 
 ```ts
 import { buildConfig } from 'payload'
-import { payloadVwArticles } from 'payload-vw-articles'
+import { VWPayloadPluginArticles } from 'payload-vw-articles'
 
 export default buildConfig({
-  plugins: [payloadVwArticles()],
+  plugins: [VWPayloadPluginArticles()],
   // ...
 })
 ```
@@ -29,7 +30,7 @@ export default buildConfig({
 ### Options
 
 ```ts
-payloadVwArticles({
+VWPayloadPluginArticles({
   // Keeps the collection in the config (for schema/migration consistency)
   // but you can use this flag to disable runtime behavior.
   disabled: false,
@@ -50,6 +51,8 @@ pnpm build          # build to dist/
 ### Test locally
 
 ```bash
+# commit everything
+npm version patch  # or minor/major
 pnpm clean && pnpm build
 pnpm pack
 ```

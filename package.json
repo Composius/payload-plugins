@@ -1,8 +1,11 @@
 {
-  "name": "payload-vw-articles",
+  "name": "@vitrailweb/payload-plugin-articles",
   "version": "1.0.1",
   "description": "Payload plugin that adds an Articles collection",
   "license": "MIT",
+  "author": {
+    "name": "Vitrail Web"
+  },
   "type": "module",
   "exports": {
     ".": {

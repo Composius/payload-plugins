@@ -18,7 +18,7 @@ import {
   defaultGenerateURL,
 } from './defaults.js'
 
-export type PayloadVwArticlesConfig = {
+export type VWPayloadPluginArticlesConfig = {
   /**
    * Access control for the articles collection, per operation.
    * Defaults: `read` allows authenticated users or published documents,
@@ -50,8 +50,8 @@ export type PayloadVwArticlesConfig = {
       }
 }
 
-export const payloadVwArticles =
-  (pluginOptions: PayloadVwArticlesConfig = {}) =>
+export const VWPayloadPluginArticles =
+  (pluginOptions: VWPayloadPluginArticlesConfig = {}) =>
   (config: Config): Config => {
     if (!config.collections) {
       config.collections = []
