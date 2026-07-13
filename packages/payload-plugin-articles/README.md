@@ -1,19 +1,40 @@
 # @vitrailweb/payload-plugin-articles
 
-A [Payload CMS](https://payloadcms.com) plugin that adds an `articles` collection with drafts (autosave), live preview, and SEO fields from `@payloadcms/plugin-seo`.
+A [Payload CMS](https://payloadcms.com) plugin that adds an `articles` collection with drafts (autosave), live preview, and SEO fields from `@payloadcms/plugin-seo`, plus a nestable `categories` collection (breadcrumbs from `@payloadcms/plugin-nested-docs`) for organizing articles.
 
-## Fields
+## Collections
 
-| Field         | Type       | Notes                                     |
-| ------------- | ---------- | ----------------------------------------- |
-| `title`       | `text`     | required, used as admin title             |
-| `slug`        | `text`     | auto-generated from title, unique         |
-| `coverImage`  | `upload`   | relates to `media`                        |
-| `content`     | `richText` |                                           |
-| `publishedAt` | `date`     | auto-set on first publish                 |
-| `meta`        | `group`    | SEO title/description/image/preview       |
+### `articles`
+
+| Field         | Type           | Notes                                     |
+| ------------- | -------------- | ----------------------------------------- |
+| `title`       | `text`         | required, used as admin title             |
+| `slug`        | `text`         | auto-generated from title, unique         |
+| `categories`  | `relationship` | relates to `categories`, `hasMany`, rendered as a checkbox tree |
+| `coverImage`  | `upload`       | relates to `media`                        |
+| `content`     | `richText`     |                                           |
+| `publishedAt` | `date`         | auto-set on first publish                 |
+| `meta`        | `group`        | SEO title/description/image/preview       |
 
 > Requires a `media` upload collection in the host config.
+
+### `categories`
+
+| Field         | Type           | Notes                                              |
+| ------------- | -------------- | -------------------------------------------------- |
+| `name`        | `text`         | required, used as admin title                      |
+| `slug`        | `text`         | auto-generated from name, unique                   |
+| `parent`      | `relationship` | relates to `categories` (nested categories)        |
+| `description` | `textarea`     |                                                    |
+| `breadcrumbs` | `array`        | read-only, populated by `plugin-nested-docs` hooks |
+
+On articles, `categories` is rendered by a custom sidebar component
+(`CategoriesFieldClient` from the `/client` export): a checkbox per category,
+with children indented under their parent.
+
+Categories are nestable: pick a `parent` and `@payloadcms/plugin-nested-docs` keeps
+`breadcrumbs` (doc, label, url) up to date on save, including on all descendants.
+The parent picker excludes the category itself and its descendants.
 
 ## Usage
 
@@ -33,9 +54,13 @@ All optional — defaults shown as comments:
 
 ```ts
 VWPayloadPluginArticles({
-  // Access per operation. Defaults: read = published or authenticated,
+  // Articles access per operation. Defaults: read = published or authenticated,
   // create/update/delete = authenticated.
   access: { read, create, update, delete },
+
+  // Categories access per operation. Defaults: read = anyone,
+  // create/update/delete = authenticated.
+  categoriesAccess: { read, create, update, delete },
 
   // Front-end URL of an article, used for (live) preview and SEO.
   // Default: `${NEXT_PUBLIC_SERVER_URL}/articles/${slug}`

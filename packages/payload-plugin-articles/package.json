@@ -34,9 +34,12 @@
     "clean": "rimraf {dist,*.tsbuildinfo}"
   },
   "devDependencies": {
+    "@payloadcms/plugin-nested-docs": "3.84.1",
     "@payloadcms/plugin-seo": "3.84.1",
     "@payloadcms/richtext-lexical": "3.84.1",
+    "@payloadcms/ui": "3.84.1",
     "@types/react": "19.2.14",
+    "react": "19.2.6",
     "@vitrailweb/payload-plugin-shared-components": "workspace:*",
     "payload": "3.84.1",
     "rimraf": "3.0.2",
@@ -44,9 +47,12 @@
     "typescript": "5.7.3"
   },
   "peerDependencies": {
+    "@payloadcms/plugin-nested-docs": "^3.84.1",
     "@payloadcms/plugin-seo": "^3.84.1",
     "@payloadcms/richtext-lexical": "^3.84.1",
-    "payload": "^3.84.1"
+    "@payloadcms/ui": "^3.84.1",
+    "payload": "^3.84.1",
+    "react": "^19.0.0"
   },
   "engines": {
     "node": "^18.20.2 || >=20.9.0",

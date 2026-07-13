@@ -1,4 +1,5 @@
 export {
+  anyone,
   authenticated,
   authenticatedOrPublished,
   defaultGenerateDescription,

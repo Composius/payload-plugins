@@ -1,4 +1,4 @@
-export { authenticated, authenticatedOrPublished } from './access.js'
+export { anyone, authenticated, authenticatedOrPublished } from './access.js'
 export {
   BlockquoteButtonFeature,
   ChecklistButtonFeature,

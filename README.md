@@ -4,7 +4,7 @@ pnpm monorepo of [Payload CMS](https://payloadcms.com) plugins.
 
 | Package                                                              | Description                        |
 | -------------------------------------------------------------------- | ---------------------------------- |
-| [@vitrailweb/payload-plugin-articles](packages/payload-plugin-articles) | Articles collection with drafts, live preview, and SEO |
+| [@vitrailweb/payload-plugin-articles](packages/payload-plugin-articles) | Articles and categories collections with drafts, live preview, and SEO |
 | [@vitrailweb/payload-plugin-menus](packages/payload-plugin-menus)       | Menus collection                   |
 | [@vitrailweb/payload-plugin-pages](packages/payload-plugin-pages)       | Pages collection with drafts, live preview, and SEO |
 | [@vitrailweb/payload-plugin-shared-components](packages/payload-plugin-shared-components) | Private — editor features, SEO field, and access defaults inlined into the plugins at build time |
@@ -48,7 +48,7 @@ pnpm generate:importmap:pages
 4. Add `dev:<name>` and `generate:types:<name>` scripts to the root `package.json`, plus `workspace:*` devDependency on the new package.
 5. Add the short name to the `package` choices in `.github/workflows/publish.yml`.
 6. Add the code
-7. For publishing for the first time, login to npm `npm login` and run `pnpm --filter @vitrailweb/payload-plugin-<name> publish --access public --no-git-checks`
+7. For publishing for the first time, login to npm `npm login` and run `pnpm --filter @vitrailweb/payload-plugin-<name> publish --access public --no-git-checks`. Then continue with the next section, as local publish is not trusted.
 
 
 ## Publish

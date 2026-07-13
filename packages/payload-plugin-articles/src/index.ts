@@ -6,9 +6,13 @@ import type {
   GenerateURL,
 } from '@payloadcms/plugin-seo/types'
 import { seoPlugin } from '@payloadcms/plugin-seo'
+import { nestedDocsPlugin } from '@payloadcms/plugin-nested-docs'
 import type { ArticlesAccess } from './collections/Articles.js'
 import { Articles } from './collections/Articles.js'
+import type { CategoriesAccess } from './collections/Categories.js'
+import { Categories } from './collections/Categories.js'
 import {
+  anyone,
   authenticated,
   authenticatedOrPublished,
   defaultArticleUrl,
@@ -25,6 +29,12 @@ export type VWPayloadPluginArticlesConfig = {
    * `create`/`update`/`delete` require an authenticated user.
    */
   access?: ArticlesAccess
+  /**
+   * Access control for the categories collection, per operation.
+   * Defaults: `read` allows anyone, `create`/`update`/`delete` require an
+   * authenticated user.
+   */
+  categoriesAccess?: CategoriesAccess
   /**
    * Builds the front-end URL of an article, used for admin preview and live preview.
    * Defaults to `${NEXT_PUBLIC_SERVER_URL || 'http://localhost:3000'}/articles/${slug}`.
@@ -75,6 +85,15 @@ export const VWPayloadPluginArticles =
     const generateTitle: GenerateTitle = seoOverrides.generateTitle ?? defaultGenerateTitle
     const generateURL: GenerateURL = seoOverrides.generateURL ?? defaultGenerateURL(articleUrl)
 
+    const categoriesAccess = {
+      create: pluginOptions.categoriesAccess?.create ?? authenticated,
+      delete: pluginOptions.categoriesAccess?.delete ?? authenticated,
+      read: pluginOptions.categoriesAccess?.read ?? anyone,
+      update: pluginOptions.categoriesAccess?.update ?? authenticated,
+    }
+
+    config.collections.push(Categories({ access: categoriesAccess }))
+
     config.collections.push(
       Articles({
         access,
@@ -95,6 +114,14 @@ export const VWPayloadPluginArticles =
     if (pluginOptions.disabled) {
       return config
     }
+
+    // Adds the breadcrumbs hooks and parent filterOptions to categories.
+    // The parent/breadcrumbs fields are declared by Categories itself.
+    // nestedDocsPlugin is typed as Plugin (Config | Promise<Config>) but is synchronous.
+    config = nestedDocsPlugin({
+      collections: ['categories'],
+      generateURL: (docs) => docs.reduce((url, doc) => `${url}/${doc.slug as string}`, ''),
+    })(config) as Config
 
     if (seoEnabled) {
       // Registers the /plugin-seo/generate-* endpoints the field buttons call.

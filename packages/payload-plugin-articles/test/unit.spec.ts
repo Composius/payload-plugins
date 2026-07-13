@@ -3,6 +3,7 @@ import type { Access, CollectionConfig, Config, Field } from 'payload'
 import { afterEach, describe, expect, test, vi } from 'vitest'
 
 import {
+  anyone,
   authenticated,
   authenticatedOrPublished,
   defaultArticleUrl,
@@ -29,11 +30,15 @@ const richText = (...paragraphs: string[]) => ({
 
 const baseConfig = (): Config => ({ collections: [] }) as unknown as Config
 
-const findArticles = (config: Config): CollectionConfig => {
-  const articles = config.collections?.find((collection) => collection.slug === 'articles')
-  expect(articles).toBeDefined()
-  return articles!
+const findCollection = (config: Config, slug: string): CollectionConfig => {
+  const collection = config.collections?.find((candidate) => candidate.slug === slug)
+  expect(collection).toBeDefined()
+  return collection!
 }
+
+const findArticles = (config: Config): CollectionConfig => findCollection(config, 'articles')
+
+const findCategories = (config: Config): CollectionConfig => findCollection(config, 'categories')
 
 afterEach(() => {
   vi.unstubAllEnvs()
@@ -112,6 +117,59 @@ describe('VWPayloadPluginArticles', () => {
     expect(fieldNames).toContain('content')
   })
 
+  test('adds the categories collection', () => {
+    const config = VWPayloadPluginArticles()(baseConfig())
+    const categories = findCategories(config)
+
+    const fieldNames = categories.fields.flatMap((field) =>
+      field.type === 'row'
+        ? field.fields.map((rowField) => (rowField as { name?: string }).name)
+        : [(field as { name?: string }).name],
+    )
+    expect(fieldNames).toContain('name')
+    expect(fieldNames).toContain('slug')
+    expect(fieldNames).toContain('parent')
+    expect(fieldNames).toContain('description')
+    expect(fieldNames).toContain('breadcrumbs')
+  })
+
+  test('articles get a categories relationship to categories', () => {
+    const config = VWPayloadPluginArticles()(baseConfig())
+    const articles = findArticles(config)
+
+    const categories = articles.fields.find(
+      (field) => (field as { name?: string }).name === 'categories',
+    )
+    expect(categories).toMatchObject({
+      type: 'relationship',
+      relationTo: 'categories',
+      hasMany: true,
+    })
+    expect((categories as { admin?: { components?: { Field?: unknown } } }).admin?.components?.Field).toBe(
+      '@vitrailweb/payload-plugin-articles/client#CategoriesFieldClient',
+    )
+  })
+
+  test('nested docs plugin wires breadcrumbs hooks and parent filterOptions', () => {
+    const config = VWPayloadPluginArticles()(baseConfig())
+    const categories = findCategories(config)
+
+    expect(categories.hooks?.beforeChange?.length).toBeGreaterThan(0)
+    expect(categories.hooks?.afterChange?.length).toBeGreaterThan(0)
+    const parent = categories.fields.find((field) => (field as { name?: string }).name === 'parent')
+    expect((parent as { filterOptions?: unknown }).filterOptions).toBeDefined()
+  })
+
+  test('disabled keeps the nested docs fields but skips its hooks', () => {
+    const config = VWPayloadPluginArticles({ disabled: true })(baseConfig())
+    const categories = findCategories(config)
+
+    const fieldNames = categories.fields.map((field) => (field as { name?: string }).name)
+    expect(fieldNames).toContain('parent')
+    expect(fieldNames).toContain('breadcrumbs')
+    expect(categories.hooks?.beforeChange ?? []).toHaveLength(0)
+  })
+
   test('adds the SEO meta group and endpoints by default', () => {
     const config = VWPayloadPluginArticles()(baseConfig())
     const articles = findArticles(config)
@@ -144,6 +202,25 @@ describe('VWPayloadPluginArticles', () => {
 
     expect(articles.access?.create).toBe(create)
     expect(articles.access?.read).toBe(authenticatedOrPublished)
+  })
+
+  test('categories default to public read and authenticated writes', () => {
+    const config = VWPayloadPluginArticles()(baseConfig())
+    const categories = findCategories(config)
+
+    expect(categories.access?.read).toBe(anyone)
+    expect(categories.access?.create).toBe(authenticated)
+    expect(categories.access?.update).toBe(authenticated)
+    expect(categories.access?.delete).toBe(authenticated)
+  })
+
+  test('custom categoriesAccess overrides replace only the provided operations', () => {
+    const read: Access = () => false
+    const config = VWPayloadPluginArticles({ categoriesAccess: { read } })(baseConfig())
+    const categories = findCategories(config)
+
+    expect(categories.access?.read).toBe(read)
+    expect(categories.access?.create).toBe(authenticated)
   })
 
   test('custom articleUrl is used for admin previews', () => {

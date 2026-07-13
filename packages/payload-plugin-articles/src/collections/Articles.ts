@@ -49,14 +49,27 @@ export const Articles = ({ access, articleUrl, seo }: ArticlesOptions): Collecti
     {
       name: 'title',
       type: 'text',
-      label: label((t) => t.fields.title),
+      label: label((t) => t.articles.fields.title),
       required: true,
     },
     slugField(),
     {
+      name: 'categories',
+      type: 'relationship',
+      label: label((t) => t.articles.fields.categories),
+      relationTo: 'categories',
+      hasMany: true,
+      admin: {
+        position: 'sidebar',
+        components: {
+          Field: '@vitrailweb/payload-plugin-articles/client#CategoriesFieldClient',
+        },
+      },
+    },
+    {
       name: 'coverImage',
       type: 'upload',
-      label: label((t) => t.fields.coverImage),
+      label: label((t) => t.articles.fields.coverImage),
       relationTo: 'media',
       admin: {
         position: 'sidebar',
@@ -65,7 +78,7 @@ export const Articles = ({ access, articleUrl, seo }: ArticlesOptions): Collecti
     {
       name: 'content',
       type: 'richText',
-      label: label((t) => t.fields.content),
+      label: label((t) => t.articles.fields.content),
       editor: lexicalEditor({
         features: contentEditorFeatures('@vitrailweb/payload-plugin-articles/client'),
       }),
@@ -73,7 +86,7 @@ export const Articles = ({ access, articleUrl, seo }: ArticlesOptions): Collecti
     {
       name: 'publishedAt',
       type: 'date',
-      label: label((t) => t.fields.publishedAt),
+      label: label((t) => t.articles.fields.publishedAt),
       admin: {
         position: 'sidebar',
         date: {
@@ -96,8 +109,8 @@ export const Articles = ({ access, articleUrl, seo }: ArticlesOptions): Collecti
           seoField({
             generators: seo,
             labels: {
-              group: label((t) => t.fields.seo),
-              title: label((t) => t.fields.seoTitle),
+              group: label((t) => t.articles.fields.seo),
+              title: label((t) => t.articles.fields.seoTitle),
             },
           }),
         ]

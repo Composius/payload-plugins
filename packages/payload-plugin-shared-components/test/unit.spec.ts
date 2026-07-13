@@ -3,6 +3,7 @@ import type { Access } from 'payload'
 import { describe, expect, test } from 'vitest'
 
 import {
+  anyone,
   authenticated,
   authenticatedOrPublished,
   BlockquoteButtonFeature,
@@ -28,6 +29,11 @@ const richText = (...paragraphs: string[]) => ({
 })
 
 describe('access defaults', () => {
+  test('anyone allows every request', () => {
+    expect(anyone(accessArgs({ id: 1 }))).toBe(true)
+    expect(anyone(accessArgs(null))).toBe(true)
+  })
+
   test('authenticated allows only requests with a user', () => {
     expect(authenticated(accessArgs({ id: 1 }))).toBe(true)
     expect(authenticated(accessArgs(null))).toBe(false)
