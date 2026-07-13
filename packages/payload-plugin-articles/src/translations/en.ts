@@ -11,6 +11,9 @@ export const en = {
       seoTitle: 'Title',
       title: 'Title',
     },
+    messages: {
+      noCategories: 'No categories yet. Create one in the Categories collection first.',
+    },
   },
   categories: {
     plural: 'Categories',

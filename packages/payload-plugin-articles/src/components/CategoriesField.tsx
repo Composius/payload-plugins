@@ -1,8 +1,10 @@
 'use client'
 
 import type { RelationshipFieldClientComponent } from 'payload'
-import { CheckboxInput, FieldLabel, useConfig, useField } from '@payloadcms/ui'
+import { CheckboxInput, FieldLabel, useConfig, useField, useTranslation } from '@payloadcms/ui'
 import React, { useEffect, useMemo, useState } from 'react'
+import { en } from '../translations/en.js'
+import { fr } from '../translations/fr.js'
 
 type CategoryId = number | string
 
@@ -76,8 +78,11 @@ const CategoryBranch = ({
  */
 export const CategoriesFieldClient: RelationshipFieldClientComponent = ({ field, path, readOnly }) => {
   const { config } = useConfig()
+  const { i18n } = useTranslation()
   const { setValue, value } = useField<CategoryId[]>({ path })
   const [categories, setCategories] = useState<CategoryDoc[]>()
+
+  const noCategoriesMessage = (i18n.language === 'fr' ? fr : en).articles.messages.noCategories
 
   useEffect(() => {
     const controller = new AbortController()
@@ -130,7 +135,11 @@ export const CategoriesFieldClient: RelationshipFieldClientComponent = ({ field,
   return (
     <div className="field-type">
       <FieldLabel label={field.label} path={path} required={field.required} />
-      {categories === undefined ? null : (
+      {categories === undefined ? null : categories.length === 0 ? (
+        <p className="field-description" style={{ margin: 0 }}>
+          {noCategoriesMessage}
+        </p>
+      ) : (
         <CategoryBranch
           childrenByParent={childrenByParent}
           depth={0}

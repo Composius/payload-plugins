@@ -13,6 +13,9 @@ export const fr: Translation = {
       seoTitle: 'Titre',
       title: 'Titre',
     },
+    messages: {
+      noCategories: "Aucune catégorie pour l'instant. Créez-en une dans la collection Catégories.",
+    },
   },
   categories: {
     plural: 'Catégories',
