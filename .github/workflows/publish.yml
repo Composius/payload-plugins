@@ -1,11 +1,12 @@
 name: Publish to npm
 
 # Publishes one package per run. Trigger with either:
-#  - a GitHub release whose tag is `<short-name>@<version>` (e.g. `articles@1.0.5`, `menus@0.1.0`)
+#  - a git tag `<short-name>@<version>` (e.g. `articles@1.0.5`, `menus@0.1.0`)
 #  - manual dispatch, choosing the package (publishes its current package.json version)
 on:
-  release:
-    types: [published]
+  push:
+    tags:
+      - "*@*"
   workflow_dispatch:
     inputs:
       package:
@@ -38,16 +39,16 @@ jobs:
       - name: Resolve package
         id: resolve
         env:
-          RELEASE_TAG: ${{ github.event.release.tag_name }}
+          PUSH_TAG: ${{ github.ref_type == 'tag' && github.ref_name || '' }}
           DISPATCH_PACKAGE: ${{ inputs.package }}
         run: |
           if [ -n "$DISPATCH_PACKAGE" ]; then
             SHORT="$DISPATCH_PACKAGE"
           else
-            case "$RELEASE_TAG" in
-              *@*) SHORT="${RELEASE_TAG%%@*}" ;;
+            case "$PUSH_TAG" in
+              *@*) SHORT="${PUSH_TAG%%@*}" ;;
               *)
-                echo "Release tag '$RELEASE_TAG' must be '<package>@<version>' (e.g. articles@1.0.5)"
+                echo "Tag '$PUSH_TAG' must be '<package>@<version>' (e.g. articles@1.0.5)"
                 exit 1
                 ;;
             esac
@@ -57,8 +58,8 @@ jobs:
             echo "Unknown package '$SHORT' ($DIR/package.json not found)"
             exit 1
           fi
-          if [ -n "$RELEASE_TAG" ]; then
-            TAG_VERSION="${RELEASE_TAG#*@}"
+          if [ -n "$PUSH_TAG" ]; then
+            TAG_VERSION="${PUSH_TAG#*@}"
             PKG_VERSION="$(jq -r .version "$DIR/package.json")"
             if [ "$TAG_VERSION" != "$PKG_VERSION" ]; then
               echo "Tag version '$TAG_VERSION' does not match $DIR/package.json version '$PKG_VERSION'"

@@ -55,10 +55,15 @@ Each package is released independently:
 cd packages/payload-plugin-<name>
 pnpm version patch --no-git-tag-version           # or minor/major
 # or modify directly in the package.json of the plugin
-# commit and push
+# commit
 ```
 
-Then create a GitHub release with tag `<name>@<version>` (e.g. `articles@1.0.5`, `menus@0.1.0`) — the publish workflow builds and publishes that package to npm. The workflow can also be dispatched manually with a package choice.
+Then push a git tag `<name>@<version>` (e.g. `articles@1.0.5`, `menus@0.1.0`) — the publish workflow builds and publishes that package to npm. The workflow can also be dispatched manually with a package choice.
+
+```bash
+git tag <name>@<version>
+git push origin <name>@<version>
+```
 
 ### Test a package locally
 
