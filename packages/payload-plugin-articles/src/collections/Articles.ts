@@ -8,6 +8,12 @@ import {
   PreviewField,
 } from '@payloadcms/plugin-seo/fields'
 import { FixedToolbarFeature, lexicalEditor } from '@payloadcms/richtext-lexical'
+import {
+  BlockquoteButtonFeature,
+  ChecklistButtonFeature,
+  OrderedListButtonFeature,
+  UnorderedListButtonFeature,
+} from '../features/blockButtons/server.js'
 import { label } from '../translations/index.js'
 
 export type ArticlesAccess = {
@@ -107,7 +113,18 @@ export const Articles = ({ access, articleUrl, seo }: ArticlesOptions): Collecti
       type: 'richText',
       label: label((t) => t.fields.content),
       editor: lexicalEditor({
-        features: ({ defaultFeatures }) => [...defaultFeatures, FixedToolbarFeature()],
+        // Swap the default blockquote/list features for wrappers that show
+        // their toolbar items as buttons instead of inside the "text" dropdown.
+        features: ({ defaultFeatures }) => [
+          ...defaultFeatures.filter(
+            ({ key }) => !['blockquote', 'checklist', 'orderedList', 'unorderedList'].includes(key),
+          ),
+          UnorderedListButtonFeature(),
+          OrderedListButtonFeature(),
+          ChecklistButtonFeature(),
+          BlockquoteButtonFeature(),
+          FixedToolbarFeature(),
+        ],
       }),
     },
     {

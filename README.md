@@ -48,6 +48,7 @@ pnpm generate:importmap:articles
 Each package is released independently:
 
 ```bash
+# commit everything
 cd packages/payload-plugin-<name>
 pnpm version patch --no-git-tag-version           # or minor/major
 git add -A && git commit -m "<name> vX.Y.Z" && git push
