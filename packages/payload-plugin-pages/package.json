@@ -1,6 +1,6 @@
 {
   "name": "@vitrailweb/payload-plugin-pages",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Payload plugin that adds a Pages collection",
   "license": "MIT",
   "author": {
