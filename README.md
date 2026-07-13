@@ -43,7 +43,7 @@ pnpm generate:importmap:articles
 4. Add `dev:<name>` and `generate:types:<name>` scripts to the root `package.json`, plus `workspace:*` devDependency on the new package.
 5. Add the short name to the `package` choices in `.github/workflows/publish.yml`.
 6. Add the code
-7. For publishing for the first time, run `pnpm --filter @vitrailweb/payload-plugin-<name> publish --access public --no-git-checks`
+7. For publishing for the first time, login to npm `npm login` and run `pnpm --filter @vitrailweb/payload-plugin-<name> publish --access public --no-git-checks`
 
 
 ## Publish

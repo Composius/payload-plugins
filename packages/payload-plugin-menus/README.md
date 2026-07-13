@@ -4,11 +4,26 @@ A [Payload CMS](https://payloadcms.com) plugin that adds a `menus` collection.
 
 ## Fields
 
-| Field   | Type   | Notes                         |
-| ------- | ------ | ----------------------------- |
-| `title` | `text` | required, used as admin title |
+| Field   | Type     | Notes                         |
+| ------- | -------- | ----------------------------- |
+| `name`  | `text`   | required, used as admin title |
+| `links` | `blocks` | menu items, see below         |
 
-Menu items are not implemented yet — the collection is a starter.
+### Links
+
+Each item in `links` is one of two block types:
+
+- **`external`** — a `title` and a `url`, both required.
+- **`internal`** — a `doc` relationship to one of the collections configured via the
+  `collections` option (pick the collection, then the document), plus an optional
+  `title`. Only available when `collections` is non-empty.
+
+For internal links, the title resolves at read time: when `title` is empty, an
+`afterRead` hook fills it with the linked document's title (its `admin.useAsTitle`
+field), so renaming the document updates menus automatically. Editors can type a
+custom title to override it. A `beforeChange` hook discards a submitted title that
+merely matches the linked document's current title, so saving the untouched
+auto-filled value in the admin panel does not freeze it into an override.
 
 ## Usage
 
@@ -17,7 +32,7 @@ import { buildConfig } from 'payload'
 import { VWPayloadPluginMenus } from '@vitrailweb/payload-plugin-menus'
 
 export default buildConfig({
-  plugins: [VWPayloadPluginMenus()],
+  plugins: [VWPayloadPluginMenus({ collections: ['pages'] })],
   // ...
 })
 ```
@@ -31,6 +46,10 @@ VWPayloadPluginMenus({
   // Access per operation. Defaults: read = anyone,
   // create/update/delete = authenticated.
   access: { read, create, update, delete },
+
+  // Collections that internal links can target (default: []).
+  // When empty, only external links are available.
+  collections: ['pages'],
 
   // Keeps the collection schema but disables runtime behavior (default: false).
   disabled: false,
