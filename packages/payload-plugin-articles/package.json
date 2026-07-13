@@ -1,6 +1,6 @@
 {
   "name": "@vitrailweb/payload-plugin-articles",
-  "version": "1.0.5",
+  "version": "1.0.6",
   "description": "Payload plugin that adds an Articles collection",
   "license": "MIT",
   "author": {
@@ -8,7 +8,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/Vitrail-Web/payload-plugin-articles",
+    "url": "https://github.com/Vitrail-Web/payload-plugins",
     "directory": "packages/payload-plugin-articles"
   },
   "type": "module",

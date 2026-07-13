@@ -51,6 +51,7 @@ Each package is released independently:
 # commit everything
 cd packages/payload-plugin-<name>
 pnpm version patch --no-git-tag-version           # or minor/major
+# or modify directly in the package.json of the plugin
 # commit and push
 ```
 
