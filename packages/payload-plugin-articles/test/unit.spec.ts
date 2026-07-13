@@ -133,20 +133,20 @@ describe('VWPayloadPluginArticles', () => {
     expect(fieldNames).toContain('breadcrumbs')
   })
 
-  test('articles get a categories relationship to categories', () => {
+  test('articles get a single category relationship to categories', () => {
     const config = VWPayloadPluginArticles()(baseConfig())
     const articles = findArticles(config)
 
-    const categories = articles.fields.find(
-      (field) => (field as { name?: string }).name === 'categories',
+    const category = articles.fields.find(
+      (field) => (field as { name?: string }).name === 'category',
     )
-    expect(categories).toMatchObject({
+    expect(category).toMatchObject({
       type: 'relationship',
       relationTo: 'categories',
-      hasMany: true,
     })
-    expect((categories as { admin?: { components?: { Field?: unknown } } }).admin?.components?.Field).toBe(
-      '@vitrailweb/payload-plugin-articles/client#CategoriesFieldClient',
+    expect((category as { hasMany?: boolean }).hasMany).toBeUndefined()
+    expect((category as { admin?: { components?: { Field?: unknown } } }).admin?.components?.Field).toBe(
+      '@vitrailweb/payload-plugin-articles/client#CategoryFieldClient',
     )
   })
 

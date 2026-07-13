@@ -28,7 +28,7 @@ export const Articles = ({ access, articleUrl, seo }: ArticlesOptions): Collecti
   },
   admin: {
     useAsTitle: 'title',
-    defaultColumns: ['title', 'slug', '_status', 'publishedAt', 'updatedAt'],
+    defaultColumns: ['title', 'category', '_status', 'publishedAt', 'updatedAt'],
     livePreview: {
       url: ({ data }) => articleUrl(data?.slug as string | undefined),
     },
@@ -54,15 +54,14 @@ export const Articles = ({ access, articleUrl, seo }: ArticlesOptions): Collecti
     },
     slugField(),
     {
-      name: 'categories',
+      name: 'category',
       type: 'relationship',
-      label: label((t) => t.articles.fields.categories),
+      label: label((t) => t.articles.fields.category),
       relationTo: 'categories',
-      hasMany: true,
       admin: {
         position: 'sidebar',
         components: {
-          Field: '@vitrailweb/payload-plugin-articles/client#CategoriesFieldClient',
+          Field: '@vitrailweb/payload-plugin-articles/client#CategoryFieldClient',
         },
       },
     },

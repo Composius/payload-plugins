@@ -1,6 +1,6 @@
 import { SlugField as SlugField_2b8867833a34864a02ddf429b0728a40 } from '@payloadcms/next/client'
 import { CategoryBreadcrumbsCell as CategoryBreadcrumbsCell_76308153921ff7d5b999f9ab5f5c955f } from '@vitrailweb/payload-plugin-articles/client'
-import { CategoriesFieldClient as CategoriesFieldClient_76308153921ff7d5b999f9ab5f5c955f } from '@vitrailweb/payload-plugin-articles/client'
+import { CategoryFieldClient as CategoryFieldClient_76308153921ff7d5b999f9ab5f5c955f } from '@vitrailweb/payload-plugin-articles/client'
 import { RscEntryLexicalCell as RscEntryLexicalCell_44fe37237e0ebf4470c9990d8cb7b07e } from '@payloadcms/richtext-lexical/rsc'
 import { RscEntryLexicalField as RscEntryLexicalField_44fe37237e0ebf4470c9990d8cb7b07e } from '@payloadcms/richtext-lexical/rsc'
 import { LexicalDiffComponent as LexicalDiffComponent_44fe37237e0ebf4470c9990d8cb7b07e } from '@payloadcms/richtext-lexical/rsc'
@@ -36,7 +36,7 @@ import { CollectionCards as CollectionCards_f9c02e79a4aed9a3924487c0cd4cafb1 } f
 export const importMap = {
   "@payloadcms/next/client#SlugField": SlugField_2b8867833a34864a02ddf429b0728a40,
   "@vitrailweb/payload-plugin-articles/client#CategoryBreadcrumbsCell": CategoryBreadcrumbsCell_76308153921ff7d5b999f9ab5f5c955f,
-  "@vitrailweb/payload-plugin-articles/client#CategoriesFieldClient": CategoriesFieldClient_76308153921ff7d5b999f9ab5f5c955f,
+  "@vitrailweb/payload-plugin-articles/client#CategoryFieldClient": CategoryFieldClient_76308153921ff7d5b999f9ab5f5c955f,
   "@payloadcms/richtext-lexical/rsc#RscEntryLexicalCell": RscEntryLexicalCell_44fe37237e0ebf4470c9990d8cb7b07e,
   "@payloadcms/richtext-lexical/rsc#RscEntryLexicalField": RscEntryLexicalField_44fe37237e0ebf4470c9990d8cb7b07e,
   "@payloadcms/richtext-lexical/rsc#LexicalDiffComponent": LexicalDiffComponent_44fe37237e0ebf4470c9990d8cb7b07e,

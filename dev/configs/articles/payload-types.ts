@@ -176,7 +176,7 @@ export interface Article {
    */
   generateSlug?: boolean | null;
   slug: string;
-  categories?: (number | Category)[] | null;
+  category?: (number | null) | Category;
   coverImage?: (number | null) | Media;
   content?: {
     root: {
@@ -359,7 +359,7 @@ export interface ArticlesSelect<T extends boolean = true> {
   title?: T;
   generateSlug?: T;
   slug?: T;
-  categories?: T;
+  category?: T;
   coverImage?: T;
   content?: T;
   publishedAt?: T;

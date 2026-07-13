@@ -10,7 +10,7 @@ A [Payload CMS](https://payloadcms.com) plugin that adds an `articles` collectio
 | ------------- | -------------- | ----------------------------------------- |
 | `title`       | `text`         | required, used as admin title             |
 | `slug`        | `text`         | auto-generated from title, unique         |
-| `categories`  | `relationship` | relates to `categories`, `hasMany`, rendered as a checkbox tree |
+| `category`    | `relationship` | relates to `categories`, rendered as a checkbox tree |
 | `coverImage`  | `upload`       | relates to `media`                        |
 | `content`     | `richText`     |                                           |
 | `publishedAt` | `date`         | auto-set on first publish                 |
@@ -28,9 +28,10 @@ A [Payload CMS](https://payloadcms.com) plugin that adds an `articles` collectio
 | `description` | `textarea`     |                                                    |
 | `breadcrumbs` | `array`        | read-only, populated by `plugin-nested-docs` hooks |
 
-On articles, `categories` is rendered by a custom sidebar component
-(`CategoriesFieldClient` from the `/client` export): a checkbox per category,
-with children indented under their parent.
+On articles, `category` is rendered by a custom sidebar component
+(`CategoryFieldClient` from the `/client` export): a checkbox per category,
+with children indented under their parent. Selection is exclusive — checking
+a category unchecks the previous one, and checking it again clears it.
 
 Categories are nestable: pick a `parent` and `@payloadcms/plugin-nested-docs` keeps
 `breadcrumbs` (doc, label, url) up to date on save, including on all descendants.

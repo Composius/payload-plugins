@@ -3,7 +3,7 @@ export const en = {
     plural: 'Articles',
     singular: 'Article',
     fields: {
-      categories: 'Categories',
+      category: 'Category',
       content: 'Content',
       coverImage: 'Cover Image',
       publishedAt: 'Published At',

@@ -28,7 +28,7 @@ type CategoryBranchProps = {
   parent: CategoryId | null
   path: string
   readOnly?: boolean
-  value: CategoryId[]
+  value: CategoryId | null
 }
 
 const CategoryBranch = ({
@@ -51,7 +51,7 @@ const CategoryBranch = ({
       {categories.map((category) => (
         <li key={category.id} style={{ paddingLeft: depth ? 20 : 0, marginTop: 8 }}>
           <CheckboxInput
-            checked={value.includes(category.id)}
+            checked={value === category.id}
             id={`${path}-category-${category.id}`}
             Label={<span>{category.name}</span>}
             onToggle={() => onToggle(category.id)}
@@ -73,13 +73,14 @@ const CategoryBranch = ({
 }
 
 /**
- * Renders the articles `categories` relationship as a checkbox tree, with
- * child categories indented under their parent.
+ * Renders the articles `category` relationship as a checkbox tree, with
+ * child categories indented under their parent. Selection is exclusive:
+ * checking a category unchecks the previous one, checking it again clears it.
  */
-export const CategoriesFieldClient: RelationshipFieldClientComponent = ({ field, path, readOnly }) => {
+export const CategoryFieldClient: RelationshipFieldClientComponent = ({ field, path, readOnly }) => {
   const { config } = useConfig()
   const { i18n } = useTranslation()
-  const { setValue, value } = useField<CategoryId[]>({ path })
+  const { setValue, value } = useField<CategoryId | null>({ path })
   const [categories, setCategories] = useState<CategoryDoc[]>()
 
   const noCategoriesMessage = (i18n.language === 'fr' ? fr : en).articles.messages.noCategories
@@ -124,12 +125,10 @@ export const CategoriesFieldClient: RelationshipFieldClientComponent = ({ field,
     return byParent
   }, [categories])
 
-  const selected = useMemo(() => (Array.isArray(value) ? value : []), [value])
+  const selected = value ?? null
 
   const onToggle = (id: CategoryId) => {
-    setValue(
-      selected.includes(id) ? selected.filter((selectedId) => selectedId !== id) : [...selected, id],
-    )
+    setValue(selected === id ? null : id)
   }
 
   return (

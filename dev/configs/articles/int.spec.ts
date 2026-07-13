@@ -64,7 +64,7 @@ describe('Plugin integration tests', () => {
     expect(child.breadcrumbs?.[1]).toMatchObject({ label: 'Tech News', url: '/news/tech-news' })
   })
 
-  test('can create an article with many categories', async () => {
+  test('can create an article with a category', async () => {
     const guides = await payload.create({
       collection: 'categories',
       data: {
@@ -73,25 +73,15 @@ describe('Plugin integration tests', () => {
       },
     })
 
-    const tutorials = await payload.create({
-      collection: 'categories',
-      data: {
-        name: 'Tutorials',
-        slug: 'tutorials',
-      },
-    })
-
     const article = await payload.create({
       collection: 'articles',
       data: {
         slug: 'categorized-article',
         title: 'Categorized Article',
-        categories: [guides.id, tutorials.id],
+        category: guides.id,
       },
     })
 
-    expect(article.categories).toHaveLength(2)
-    expect(article.categories?.[0]).toMatchObject({ id: guides.id })
-    expect(article.categories?.[1]).toMatchObject({ id: tutorials.id })
+    expect(article.category).toMatchObject({ id: guides.id })
   })
 })

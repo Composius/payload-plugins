@@ -5,7 +5,7 @@ export const fr: Translation = {
     plural: 'Articles',
     singular: 'Article',
     fields: {
-      categories: 'Catégories',
+      category: 'Catégorie',
       content: 'Contenu',
       coverImage: 'Image de couverture',
       publishedAt: 'Publié le',
