@@ -48,12 +48,19 @@ pnpm generate:importmap:articles
 
 ## Publish
 
-Each package is released independently:
+Each package is released independently.
+
+First commit everthing, then:
 
 ```bash
-# commit everything
-cd packages/payload-plugin-<name>
-pnpm version patch --tag-version-prefix="<name>@"  # or minor/major
+# articles
+cd packages/payload-plugin-articles
+pnpm version patch --tag-version-prefix="articles@"  # or minor/major
+git push --follow-tags
+
+# menus
+cd packages/payload-plugin-menus
+pnpm version patch --tag-version-prefix="menus@"  # or minor/major
 git push --follow-tags
 ```
 
