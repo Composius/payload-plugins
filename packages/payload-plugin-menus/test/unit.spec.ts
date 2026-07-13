@@ -1,4 +1,4 @@
-import type { Access, CollectionConfig, Config } from 'payload'
+import type { Access, Block, BlocksField, CollectionConfig, Config } from 'payload'
 
 import { describe, expect, test } from 'vitest'
 
@@ -14,6 +14,15 @@ const findMenus = (config: Config): CollectionConfig => {
   expect(menus).toBeDefined()
   return menus!
 }
+
+const findLinks = (menus: CollectionConfig): BlocksField => {
+  const links = menus.fields.find((field) => (field as { name?: string }).name === 'links')
+  expect(links).toBeDefined()
+  return links as BlocksField
+}
+
+const blockSlugs = (links: BlocksField): string[] =>
+  (links.blocks as Block[]).map((block) => block.slug)
 
 describe('access defaults', () => {
   test('anyone always allows', () => {
@@ -33,8 +42,31 @@ describe('VWPayloadPluginMenus', () => {
     const menus = findMenus(config)
 
     const fieldNames = menus.fields.map((field) => (field as { name?: string }).name)
-    expect(fieldNames).toContain('title')
-    expect(menus.admin?.useAsTitle).toBe('title')
+    expect(fieldNames).toContain('name')
+    expect(fieldNames).toContain('links')
+    expect(menus.admin?.useAsTitle).toBe('name')
+  })
+
+  test('links offers only external links by default', () => {
+    const config = VWPayloadPluginMenus()(baseConfig())
+    const links = findLinks(findMenus(config))
+
+    expect(blockSlugs(links)).toEqual(['external'])
+  })
+
+  test('links offers internal links when collections are configured', () => {
+    const config = VWPayloadPluginMenus({ collections: ['users', 'media'] })(baseConfig())
+    const links = findLinks(findMenus(config))
+
+    expect(blockSlugs(links)).toEqual(['internal', 'external'])
+
+    const internal = (links.blocks as Block[]).find((block) => block.slug === 'internal')!
+    const doc = internal.fields.find((field) => (field as { name?: string }).name === 'doc')
+    expect(doc).toMatchObject({
+      relationTo: ['users', 'media'],
+      required: true,
+      type: 'relationship',
+    })
   })
 
   test('default access: read is public, writes require a user', () => {

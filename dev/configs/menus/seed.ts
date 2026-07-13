@@ -27,7 +27,7 @@ export const seed = async (payload: Payload) => {
     await payload.create({
       collection: 'menus',
       data: {
-        title: 'Main menu',
+        name: 'Main menu',
       },
     })
   }

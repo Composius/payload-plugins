@@ -143,26 +143,33 @@ export interface Media {
  */
 export interface Menu {
   id: number;
-  title: string;
+  name: string;
+  links?:
+    | (
+        | {
+            doc: {
+              relationTo: 'users';
+              value: number | User;
+            };
+            /**
+             * Leave it blank to use the title of the linked document. Edit to override it.
+             */
+            title?: string | null;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'internal';
+          }
+        | {
+            title: string;
+            url: string;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'external';
+          }
+      )[]
+    | null;
   updatedAt: string;
   createdAt: string;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "payload-kv".
- */
-export interface PayloadKv {
-  id: number;
-  key: string;
-  data:
-    | {
-        [k: string]: unknown;
-      }
-    | unknown[]
-    | string
-    | number
-    | boolean
-    | null;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -188,6 +195,23 @@ export interface User {
     | null;
   password?: string | null;
   collection: 'users';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "payload-kv".
+ */
+export interface PayloadKv {
+  id: number;
+  key: string;
+  data:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -272,7 +296,27 @@ export interface MediaSelect<T extends boolean = true> {
  * via the `definition` "menus_select".
  */
 export interface MenusSelect<T extends boolean = true> {
-  title?: T;
+  name?: T;
+  links?:
+    | T
+    | {
+        internal?:
+          | T
+          | {
+              doc?: T;
+              title?: T;
+              id?: T;
+              blockName?: T;
+            };
+        external?:
+          | T
+          | {
+              title?: T;
+              url?: T;
+              id?: T;
+              blockName?: T;
+            };
+      };
   updatedAt?: T;
   createdAt?: T;
 }

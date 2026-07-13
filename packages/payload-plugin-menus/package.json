@@ -1,6 +1,6 @@
 {
   "name": "@vitrailweb/payload-plugin-menus",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "description": "Payload plugin that adds a Menus collection",
   "license": "MIT",
   "author": {
