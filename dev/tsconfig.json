@@ -22,5 +22,9 @@
     "next.config.mjs",
     ".next/types/**/*.ts"
   ],
-  "exclude": []
+  // Each suite's payload-types.ts augments the payload module with its own
+  // generated types; combined in one program they conflict, so files that
+  // depend on the augmentation are checked by per-suite tsconfigs instead
+  // (dev/configs/<suite>/tsconfig.json).
+  "exclude": ["configs/*/payload-types.ts", "configs/*/int.spec.ts"]
 }

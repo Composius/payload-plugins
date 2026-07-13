@@ -44,7 +44,9 @@ describe('VWPayloadPluginMenus', () => {
     const fieldNames = menus.fields.map((field) => (field as { name?: string }).name)
     expect(fieldNames).toContain('name')
     expect(fieldNames).toContain('links')
+    expect(fieldNames).toContain('linksCount')
     expect(menus.admin?.useAsTitle).toBe('name')
+    expect(menus.admin?.defaultColumns).toContain('linksCount')
   })
 
   test('links offers only external links by default', () => {

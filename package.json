@@ -26,7 +26,8 @@
     "test": "pnpm test:unit && pnpm test:int && pnpm test:e2e",
     "test:e2e": "playwright test",
     "test:int": "vitest run dev/configs",
-    "test:unit": "vitest run packages"
+    "test:unit": "vitest run packages",
+    "typecheck": "tsc --noEmit && tsc --noEmit -p dev/configs/articles && tsc --noEmit -p dev/configs/menus"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3.2.0",

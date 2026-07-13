@@ -1,4 +1,11 @@
-import type { Access, Block, CollectionConfig, CollectionSlug, PayloadRequest } from 'payload'
+import type {
+  Access,
+  Block,
+  CollectionConfig,
+  CollectionSlug,
+  Field,
+  PayloadRequest,
+} from 'payload'
 
 import { label } from '../translations/index.js'
 
@@ -12,6 +19,13 @@ export type MenusAccess = {
 export type MenusOptions = {
   access: Required<MenusAccess>
   collections: CollectionSlug[]
+}
+
+const newTab: Field = {
+  name: 'newTab',
+  type: 'checkbox',
+  defaultValue: false,
+  label: label((t) => t.fields.newTab),
 }
 
 const externalLink: Block = {
@@ -33,6 +47,7 @@ const externalLink: Block = {
       label: label((t) => t.fields.url),
       required: true,
     },
+    newTab,
   ],
 }
 
@@ -58,6 +73,7 @@ const internalLink = (collections: CollectionSlug[]): Block => ({
         description: label((t) => t.links.titleDescription),
       },
     },
+    newTab,
   ],
 })
 
@@ -88,7 +104,7 @@ const resolveDocTitle = async (
     depth: 0,
     req,
   })
-  return String(relatedDoc?.[useAsTitle] ?? '')
+  return String((relatedDoc as unknown as Record<string, unknown>)?.[useAsTitle] ?? '')
 }
 
 export const Menus = ({ access, collections }: MenusOptions): CollectionConfig => ({
@@ -99,7 +115,7 @@ export const Menus = ({ access, collections }: MenusOptions): CollectionConfig =
   },
   admin: {
     useAsTitle: 'name',
-    defaultColumns: ['name', 'updatedAt'],
+    defaultColumns: ['name', 'linksCount', 'updatedAt'],
   },
   access: {
     read: access.read,
@@ -160,6 +176,23 @@ export const Menus = ({ access, collections }: MenusOptions): CollectionConfig =
       type: 'blocks',
       label: label((t) => t.fields.links),
       blocks: [...(collections.length > 0 ? [internalLink(collections)] : []), externalLink],
+    },
+    {
+      name: 'linksCount',
+      type: 'number',
+      virtual: true,
+      label: label((t) => t.fields.linksCount),
+      admin: {
+        // List-view column only: never rendered in the edit form.
+        condition: () => false,
+        disableListFilter: true,
+      },
+      hooks: {
+        afterRead: [
+          ({ siblingData }) =>
+            Array.isArray(siblingData?.links) ? siblingData.links.length : 0,
+        ],
+      },
     },
   ],
 })

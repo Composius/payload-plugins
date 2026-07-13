@@ -1,7 +1,13 @@
 {
   "extends": "./tsconfig.base.json",
   "compilerOptions": {
-    "noEmit": true
+    "noEmit": true,
+    "baseUrl": ".",
+    "paths": {
+      "@payload-config": ["./dev/payload.config.ts"]
+    }
   },
-  "include": ["packages/*/src", "packages/*/test", "dev"]
+  "include": ["packages/*/src", "packages/*/test", "dev"],
+  // See dev/tsconfig.json: per-suite generated types conflict in one program.
+  "exclude": ["dev/configs/*/payload-types.ts", "dev/configs/*/int.spec.ts"]
 }

@@ -4,10 +4,11 @@ A [Payload CMS](https://payloadcms.com) plugin that adds a `menus` collection.
 
 ## Fields
 
-| Field   | Type     | Notes                         |
-| ------- | -------- | ----------------------------- |
-| `name`  | `text`   | required, used as admin title |
-| `links` | `blocks` | menu items, see below         |
+| Field        | Type     | Notes                                                    |
+| ------------ | -------- | -------------------------------------------------------- |
+| `name`       | `text`   | required, used as admin title                            |
+| `links`      | `blocks` | menu items, see below                                    |
+| `linksCount` | `number` | virtual, computed at read time; shown as list-view column |
 
 ### Links
 
@@ -17,6 +18,9 @@ Each item in `links` is one of two block types:
 - **`internal`** — a `doc` relationship to one of the collections configured via the
   `collections` option (pick the collection, then the document), plus an optional
   `title`. Only available when `collections` is non-empty.
+
+Both block types also have a `newTab` checkbox (default `false`) for opening the
+link in a new tab.
 
 For internal links, the title resolves at read time: when `title` is empty, an
 `afterRead` hook fills it with the linked document's title (its `admin.useAsTitle`

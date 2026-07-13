@@ -37,17 +37,40 @@ describe('Plugin integration tests', () => {
     expect(menu.name).toBe('Footer menu')
   })
 
+  test('linksCount reflects the number of links', async () => {
+    const empty = await payload.create({
+      collection: 'menus',
+      data: { name: 'Empty menu' },
+    })
+    expect(empty.linksCount).toBe(0)
+
+    const menu = await payload.create({
+      collection: 'menus',
+      data: {
+        name: 'Counted menu',
+        links: [
+          { blockType: 'external', title: 'One', url: 'https://example.com/1' },
+          { blockType: 'external', title: 'Two', url: 'https://example.com/2' },
+        ],
+      },
+    })
+    expect(menu.linksCount).toBe(2)
+  })
+
   test('stores external links', async () => {
     const menu = await payload.create({
       collection: 'menus',
       data: {
         name: 'External menu',
-        links: [{ blockType: 'external', title: 'Payload', url: 'https://payloadcms.com' }],
+        links: [
+          { blockType: 'external', newTab: true, title: 'Payload', url: 'https://payloadcms.com' },
+        ],
       },
     })
 
     expect(menu.links?.[0]).toMatchObject({
       blockType: 'external',
+      newTab: true,
       title: 'Payload',
       url: 'https://payloadcms.com',
     })

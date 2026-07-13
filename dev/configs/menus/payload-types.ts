@@ -155,6 +155,7 @@ export interface Menu {
              * Leave it blank to use the title of the linked document. Edit to override it.
              */
             title?: string | null;
+            newTab?: boolean | null;
             id?: string | null;
             blockName?: string | null;
             blockType: 'internal';
@@ -162,12 +163,14 @@ export interface Menu {
         | {
             title: string;
             url: string;
+            newTab?: boolean | null;
             id?: string | null;
             blockName?: string | null;
             blockType: 'external';
           }
       )[]
     | null;
+  linksCount?: number | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -305,6 +308,7 @@ export interface MenusSelect<T extends boolean = true> {
           | {
               doc?: T;
               title?: T;
+              newTab?: T;
               id?: T;
               blockName?: T;
             };
@@ -313,10 +317,12 @@ export interface MenusSelect<T extends boolean = true> {
           | {
               title?: T;
               url?: T;
+              newTab?: T;
               id?: T;
               blockName?: T;
             };
       };
+  linksCount?: T;
   updatedAt?: T;
   createdAt?: T;
 }

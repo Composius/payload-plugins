@@ -2,7 +2,9 @@ export const en = {
   fields: {
     document: 'Document',
     links: 'Links',
+    linksCount: 'Links count',
     name: 'Name',
+    newTab: 'Open in a new tab',
     title: 'Title',
     url: 'URL',
   },
