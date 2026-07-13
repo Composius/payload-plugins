@@ -9,6 +9,10 @@ const dirname = path.dirname(fileURLToPath(import.meta.url))
 
 export default buildDevConfig({
   dirname,
-  plugins: [VWPayloadPluginMenus()],
+  plugins: [
+    VWPayloadPluginMenus({
+      collections: ['users'],
+    }),
+  ],
   seed,
 })

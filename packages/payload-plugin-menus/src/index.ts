@@ -1,4 +1,4 @@
-import type { Config } from 'payload'
+import type { CollectionSlug, Config } from 'payload'
 
 import type { MenusAccess } from './collections/Menus.js'
 import { Menus } from './collections/Menus.js'
@@ -13,6 +13,11 @@ export type VWPayloadPluginMenusConfig = {
    * authenticated user.
    */
   access?: MenusAccess
+  /**
+   * Collections that can be targeted by internal links in a menu.
+   * When empty, only external links are available.
+   */
+  collections?: CollectionSlug[]
   disabled?: boolean
 }
 
@@ -30,7 +35,7 @@ export const VWPayloadPluginMenus =
       update: pluginOptions.access?.update ?? authenticated,
     }
 
-    config.collections.push(Menus({ access }))
+    config.collections.push(Menus({ access, collections: pluginOptions.collections ?? [] }))
 
     /**
      * If the plugin is disabled, we still want to keep added collections/fields so the database schema is consistent which is important for migrations.
