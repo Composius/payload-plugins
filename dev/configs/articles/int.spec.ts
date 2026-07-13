@@ -1,7 +1,8 @@
 import type { Payload } from 'payload'
 
-import config from '@payload-config'
 import { getPayload } from 'payload'
+
+import config from './config.js'
 import { afterAll, beforeAll, describe, expect, test } from 'vitest'
 
 let payload: Payload

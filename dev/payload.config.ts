@@ -1,55 +1,21 @@
-import { sqliteAdapter } from '@payloadcms/db-sqlite'
-import { lexicalEditor } from '@payloadcms/richtext-lexical'
-import path from 'path'
-import { buildConfig } from 'payload'
-import { VWPayloadPluginArticles } from '@vitrailweb/payload-plugin-articles'
-import sharp from 'sharp'
-import { fileURLToPath } from 'url'
+import type { SanitizedConfig } from 'payload'
 
-import { testEmailAdapter } from './helpers/testEmailAdapter.js'
-import { seed } from './seed.js'
+/**
+ * Selects the Payload config of one plugin suite. DEV_SUITE is required —
+ * every dev/generate/test script sets it explicitly (e.g. `pnpm dev:articles`).
+ * To add a plugin: add its loader here and the matching scripts in package.json.
+ */
+const suite = process.env.DEV_SUITE
 
-const filename = fileURLToPath(import.meta.url)
-const dirname = path.dirname(filename)
-
-if (!process.env.ROOT_DIR) {
-  process.env.ROOT_DIR = dirname
+const loaders: Record<string, () => Promise<{ default: Promise<SanitizedConfig> }>> = {
+  articles: () => import('./configs/articles/config.js'),
+  menus: () => import('./configs/menus/config.js'),
 }
 
-const databaseUrl =
-  process.env.NODE_ENV === 'test'
-    ? ':memory:'
-    : process.env.DATABASE_URL || `file:${path.resolve(dirname, 'payload.db')}`
+if (!suite || !loaders[suite]) {
+  throw new Error(
+    `DEV_SUITE must be set to one of: ${Object.keys(loaders).join(', ')} (got "${suite ?? ''}")`,
+  )
+}
 
-export default buildConfig({
-  admin: {
-    importMap: {
-      baseDir: path.resolve(dirname),
-    },
-  },
-  collections: [
-    {
-      slug: 'media',
-      fields: [],
-      upload: {
-        staticDir: path.resolve(dirname, 'media'),
-      },
-    },
-  ],
-  db: sqliteAdapter({
-    client: {
-      url: databaseUrl,
-    },
-  }),
-  editor: lexicalEditor(),
-  email: testEmailAdapter,
-  onInit: async (payload) => {
-    await seed(payload)
-  },
-  plugins: [VWPayloadPluginArticles()],
-  secret: process.env.PAYLOAD_SECRET || 'test-secret_key',
-  sharp,
-  typescript: {
-    outputFile: path.resolve(dirname, 'payload-types.ts'),
-  },
-})
+export default loaders[suite]().then((configModule) => configModule.default)

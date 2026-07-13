@@ -1,80 +1,63 @@
-# payload-vw-articles
+# Vitrail Web — Payload plugins
 
-A [Payload CMS](https://payloadcms.com) plugin that adds an `articles` collection with drafts (autosave), live preview, and SEO fields from `@payloadcms/plugin-seo`.
+pnpm monorepo of [Payload CMS](https://payloadcms.com) plugins.
 
-## Fields
+| Package                                                              | Description                        |
+| -------------------------------------------------------------------- | ---------------------------------- |
+| [@vitrailweb/payload-plugin-articles](packages/payload-plugin-articles) | Articles collection with drafts, live preview, and SEO |
+| [@vitrailweb/payload-plugin-menus](packages/payload-plugin-menus)       | Menus collection                   |
 
-| Field         | Type       | Notes                                     |
-| ------------- | ---------- | ----------------------------------------- |
-| `title`       | `text`     | required, used as admin title             |
-| `slug`        | `text`     | auto-generated from title, unique         |
-| `coverImage`  | `upload`   | relates to `media`                        |
-| `content`     | `richText` |                                           |
-| `publishedAt` | `date`     | auto-set on first publish                 |
-| `meta`        | `group`    | SEO title/description/image/preview       |
+## Layout
 
-> Requires a `media` upload collection in the host config.
-
-## Usage
-
-```ts
-import { buildConfig } from 'payload'
-import { VWPayloadPluginArticles } from 'payload-vw-articles'
-
-export default buildConfig({
-  plugins: [VWPayloadPluginArticles()],
-  // ...
-})
-```
-
-## Options
-
-All optional — defaults shown as comments:
-
-```ts
-VWPayloadPluginArticles({
-  // Access per operation. Defaults: read = published or authenticated,
-  // create/update/delete = authenticated.
-  access: { read, create, update, delete },
-
-  // Front-end URL of an article, used for (live) preview and SEO.
-  // Default: `${NEXT_PUBLIC_SERVER_URL}/articles/${slug}`
-  articleUrl: (slug) => string,
-
-  // SEO meta group + generate endpoints. `true` (default) uses built-in
-  // generate functions; pass an object to override any of them; `false` disables.
-  seo: { generateTitle, generateDescription, generateImage, generateURL },
-
-  // Keeps the collection schema but disables runtime behavior (default: false).
-  disabled: false,
-})
-```
+- `packages/*` — the publishable plugins. Each one exports its source (`src/index.ts`) during development and swaps to `dist/` on publish via `publishConfig`.
+- `dev/` — a single shared Next + Payload dev app. `dev/payload.config.ts` picks a per-plugin config from `dev/configs/<suite>/config.ts` based on the required `DEV_SUITE` env var.
 
 ## Development
 
 ```bash
 pnpm install
-pnpm dev            # start the dev Payload app
-pnpm test:int       # integration tests (vitest)
-pnpm test:e2e       # e2e tests (playwright)
-pnpm build          # build to dist/
+
+pnpm dev:articles   # dev app with the articles plugin → http://localhost:3000/admin
+pnpm dev:menus      # dev app with the menus plugin
+
+pnpm build          # build every package to dist/
+pnpm test:unit      # unit tests (packages/*/test)
+pnpm test:int       # integration tests (dev/configs/*/int.spec.ts)
+pnpm test:e2e       # playwright (articles suite)
+pnpm lint
 ```
 
-### Test locally
+Regenerate Payload artifacts per suite:
 
 ```bash
-# commit everything
-pnpm version patch  # or minor/major
-pnpm clean && pnpm build
-pnpm pack
+pnpm generate:types:articles
+pnpm generate:types:menus
+pnpm generate:importmap:articles
 ```
 
+## Adding a plugin
+
+1. Copy an existing package under `packages/payload-plugin-<name>` (package.json name/version, `src/`, `test/`).
+2. Add `dev/configs/<name>/{config.ts,seed.ts,int.spec.ts}` using `buildDevConfig()` from `dev/configs/shared.ts`.
+3. Register the suite in the `loaders` map of `dev/payload.config.ts`.
+4. Add `dev:<name>` and `generate:types:<name>` scripts to the root `package.json`, plus `workspace:*` devDependency on the new package.
+5. Add the short name to the `package` choices in `.github/workflows/publish.yml`.
 
 ## Publish
 
+Each package is released independently:
+
 ```bash
-# commit everything
-pnpm version patch  # or minor/major
-git push --follow-tags
-# create a release on Github
+cd packages/payload-plugin-<name>
+pnpm version patch --no-git-tag-version           # or minor/major
+git add -A && git commit -m "<name> vX.Y.Z" && git push
+```
+
+Then create a GitHub release with tag `<name>@<version>` (e.g. `articles@1.0.5`, `menus@0.1.0`) — the publish workflow builds and publishes that package to npm. The workflow can also be dispatched manually with a package choice.
+
+### Test a package locally
+
+```bash
+pnpm --filter @vitrailweb/payload-plugin-<name> build
+cd packages/payload-plugin-<name> && pnpm pack
 ```

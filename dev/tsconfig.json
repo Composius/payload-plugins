@@ -1,6 +1,17 @@
 {
-  "extends": "../tsconfig.json",
-  "exclude": [],
+  "extends": "../tsconfig.base.json",
+  "compilerOptions": {
+    "baseUrl": "./",
+    "paths": {
+      "@payload-config": ["./payload.config.ts"]
+    },
+    "noEmit": true,
+    "plugins": [
+      {
+        "name": "next"
+      }
+    ]
+  },
   "include": [
     "**/*.js",
     "**/*.jsx",
@@ -8,22 +19,8 @@
     "**/*.cjs",
     "**/*.ts",
     "**/*.tsx",
-    "../src/**/*.ts",
-    "../src/**/*.tsx",
     "next.config.mjs",
     ".next/types/**/*.ts"
   ],
-  "compilerOptions": {
-    "baseUrl": "./",
-    "paths": {
-      "@payload-config": [
-        "./payload.config.ts"
-      ],
-      "@vitrailweb/payload-plugin-articles": [
-        "../src/index.ts"
-      ]
-    },
-    "noEmit": true,
-    "emitDeclarationOnly": false,
-  }
+  "exclude": []
 }

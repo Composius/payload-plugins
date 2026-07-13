@@ -1,9 +1,20 @@
 name: Publish to npm
 
+# Publishes one package per run. Trigger with either:
+#  - a GitHub release whose tag is `<short-name>@<version>` (e.g. `articles@1.0.5`, `menus@0.1.0`)
+#  - manual dispatch, choosing the package (publishes its current package.json version)
 on:
   release:
     types: [published]
   workflow_dispatch:
+    inputs:
+      package:
+        description: Package to publish
+        type: choice
+        required: true
+        options:
+          - articles
+          - menus
 
 jobs:
   publish:
@@ -24,14 +35,47 @@ jobs:
           cache: pnpm
           registry-url: https://registry.npmjs.org
 
+      - name: Resolve package
+        id: resolve
+        env:
+          RELEASE_TAG: ${{ github.event.release.tag_name }}
+          DISPATCH_PACKAGE: ${{ inputs.package }}
+        run: |
+          if [ -n "$DISPATCH_PACKAGE" ]; then
+            SHORT="$DISPATCH_PACKAGE"
+          else
+            case "$RELEASE_TAG" in
+              *@*) SHORT="${RELEASE_TAG%%@*}" ;;
+              *)
+                echo "Release tag '$RELEASE_TAG' must be '<package>@<version>' (e.g. articles@1.0.5)"
+                exit 1
+                ;;
+            esac
+          fi
+          DIR="packages/payload-plugin-$SHORT"
+          if [ ! -f "$DIR/package.json" ]; then
+            echo "Unknown package '$SHORT' ($DIR/package.json not found)"
+            exit 1
+          fi
+          if [ -n "$RELEASE_TAG" ]; then
+            TAG_VERSION="${RELEASE_TAG#*@}"
+            PKG_VERSION="$(jq -r .version "$DIR/package.json")"
+            if [ "$TAG_VERSION" != "$PKG_VERSION" ]; then
+              echo "Tag version '$TAG_VERSION' does not match $DIR/package.json version '$PKG_VERSION'"
+              exit 1
+            fi
+          fi
+          echo "name=@vitrailweb/payload-plugin-$SHORT" >> "$GITHUB_OUTPUT"
+          echo "dir=$DIR" >> "$GITHUB_OUTPUT"
+
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
       - name: Unit tests
-        run: pnpm test:unit
+        run: pnpm vitest run "${{ steps.resolve.outputs.dir }}/test"
 
       - name: Build
-        run: pnpm build
+        run: pnpm --filter "${{ steps.resolve.outputs.name }}" build
 
       - name: Publish
-        run: pnpm publish --access public --no-git-checks
+        run: pnpm --filter "${{ steps.resolve.outputs.name }}" publish --access public --no-git-checks
