@@ -6,10 +6,12 @@ pnpm monorepo of [Payload CMS](https://payloadcms.com) plugins.
 | -------------------------------------------------------------------- | ---------------------------------- |
 | [@vitrailweb/payload-plugin-articles](packages/payload-plugin-articles) | Articles collection with drafts, live preview, and SEO |
 | [@vitrailweb/payload-plugin-menus](packages/payload-plugin-menus)       | Menus collection                   |
+| [@vitrailweb/payload-plugin-pages](packages/payload-plugin-pages)       | Pages collection with drafts, live preview, and SEO |
+| [@vitrailweb/payload-plugin-shared-components](packages/payload-plugin-shared-components) | Private — editor features, SEO field, and access defaults inlined into the plugins at build time |
 
 ## Layout
 
-- `packages/*` — the publishable plugins. Each one exports its source (`src/index.ts`) during development and swaps to `dist/` on publish via `publishConfig`.
+- `packages/*` — the publishable plugins. Each one exports its source (`src/index.ts`) during development and swaps to `dist/` on publish via `publishConfig`. `payload-plugin-shared-components` is private: articles and pages bundle it into their own `dist/` with tsup, so it is never published.
 - `dev/` — a single shared Next + Payload dev app. `dev/payload.config.ts` picks a per-plugin config from `dev/configs/<suite>/config.ts` based on the required `DEV_SUITE` env var.
 
 ## Development
@@ -19,6 +21,7 @@ pnpm install
 
 pnpm dev:articles   # dev app with the articles plugin → http://localhost:3000/admin
 pnpm dev:menus      # dev app with the menus plugin
+pnpm dev:pages      # dev app with the pages plugin
 
 pnpm build          # build every package to dist/
 pnpm test:unit      # unit tests (packages/*/test)
@@ -32,7 +35,9 @@ Regenerate Payload artifacts per suite:
 ```bash
 pnpm generate:types:articles
 pnpm generate:types:menus
+pnpm generate:types:pages
 pnpm generate:importmap:articles
+pnpm generate:importmap:pages
 ```
 
 ## Adding a plugin
@@ -55,12 +60,17 @@ First commit everthing, then:
 ```bash
 # articles
 cd packages/payload-plugin-articles
-pnpm version patch --tag-version-prefix="articles@"  # or minor/major
+pnpm version patch --tag-version-prefix="articles@" -m "Release: articles@%s"  # or minor/major
 git push --follow-tags
 
 # menus
 cd packages/payload-plugin-menus
-pnpm version patch --tag-version-prefix="menus@"  # or minor/major
+pnpm version patch --tag-version-prefix="menus@" -m "Release: menus@%s"  # or minor/major
+git push --follow-tags
+
+# pages
+cd packages/payload-plugin-pages
+pnpm version patch --tag-version-prefix="pages@" -m "Release: pages@%s"  # or minor/major
 git push --follow-tags
 ```
 

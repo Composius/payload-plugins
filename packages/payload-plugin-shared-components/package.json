@@ -1,7 +1,8 @@
 {
-  "name": "@vitrailweb/payload-plugin-articles",
-  "version": "1.0.6",
-  "description": "Payload plugin that adds an Articles collection",
+  "name": "@vitrailweb/payload-plugin-shared-components",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Shared building blocks (editor features, SEO field, access defaults) inlined into the Vitrail Web Payload plugins at build time",
   "license": "MIT",
   "author": {
     "name": "Vitrail Web"
@@ -9,7 +10,7 @@
   "repository": {
     "type": "git",
     "url": "https://github.com/Vitrail-Web/payload-plugins",
-    "directory": "packages/payload-plugin-articles"
+    "directory": "packages/payload-plugin-shared-components"
   },
   "type": "module",
   "exports": {
@@ -26,21 +27,11 @@
   },
   "main": "./src/index.ts",
   "types": "./src/index.ts",
-  "files": [
-    "dist"
-  ],
-  "scripts": {
-    "build": "tsup",
-    "clean": "rimraf {dist,*.tsbuildinfo}"
-  },
   "devDependencies": {
     "@payloadcms/plugin-seo": "3.84.1",
     "@payloadcms/richtext-lexical": "3.84.1",
     "@types/react": "19.2.14",
-    "@vitrailweb/payload-plugin-shared-components": "workspace:*",
     "payload": "3.84.1",
-    "rimraf": "3.0.2",
-    "tsup": "8.5.0",
     "typescript": "5.7.3"
   },
   "peerDependencies": {
@@ -51,23 +42,5 @@
   "engines": {
     "node": "^18.20.2 || >=20.9.0",
     "pnpm": "^9 || ^10 || ^11"
-  },
-  "publishConfig": {
-    "access": "public",
-    "registry": "https://registry.npmjs.org/",
-    "exports": {
-      ".": {
-        "import": "./dist/index.js",
-        "types": "./dist/index.d.ts",
-        "default": "./dist/index.js"
-      },
-      "./client": {
-        "import": "./dist/exports/client.js",
-        "types": "./dist/exports/client.d.ts",
-        "default": "./dist/exports/client.js"
-      }
-    },
-    "main": "./dist/index.js",
-    "types": "./dist/index.d.ts"
   }
 }

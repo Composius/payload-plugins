@@ -5,34 +5,34 @@ import type { SeoGenerators } from '@vitrailweb/payload-plugin-shared-components
 import { contentEditorFeatures, seoField } from '@vitrailweb/payload-plugin-shared-components'
 import { label } from '../translations/index.js'
 
-export type ArticlesAccess = {
+export type PagesAccess = {
   create?: Access
   delete?: Access
   read?: Access
   update?: Access
 }
 
-export type ArticlesSeoGenerators = SeoGenerators
+export type PagesSeoGenerators = SeoGenerators
 
-export type ArticlesOptions = {
-  access: Required<ArticlesAccess>
-  articleUrl: (slug?: string | null) => string
-  seo: false | ArticlesSeoGenerators
+export type PagesOptions = {
+  access: Required<PagesAccess>
+  pageUrl: (slug?: string | null) => string
+  seo: false | PagesSeoGenerators
 }
 
-export const Articles = ({ access, articleUrl, seo }: ArticlesOptions): CollectionConfig => ({
-  slug: 'articles',
+export const Pages = ({ access, pageUrl, seo }: PagesOptions): CollectionConfig => ({
+  slug: 'pages',
   labels: {
-    singular: label((t) => t.articles.singular),
-    plural: label((t) => t.articles.plural),
+    singular: label((t) => t.pages.singular),
+    plural: label((t) => t.pages.plural),
   },
   admin: {
     useAsTitle: 'title',
     defaultColumns: ['title', 'slug', '_status', 'publishedAt', 'updatedAt'],
     livePreview: {
-      url: ({ data }) => articleUrl(data?.slug as string | undefined),
+      url: ({ data }) => pageUrl(data?.slug as string | undefined),
     },
-    preview: (data) => articleUrl(data?.slug as string | undefined),
+    preview: (data) => pageUrl(data?.slug as string | undefined),
   },
   access: {
     read: access.read,
@@ -67,7 +67,7 @@ export const Articles = ({ access, articleUrl, seo }: ArticlesOptions): Collecti
       type: 'richText',
       label: label((t) => t.fields.content),
       editor: lexicalEditor({
-        features: contentEditorFeatures('@vitrailweb/payload-plugin-articles/client'),
+        features: contentEditorFeatures('@vitrailweb/payload-plugin-pages/client'),
       }),
     },
     {

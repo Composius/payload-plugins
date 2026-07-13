@@ -16,8 +16,11 @@ export type DevConfigOptions = {
 }
 
 export const buildDevConfig = ({ dirname, plugins, seed }: DevConfigOptions) => {
+  // Payload resolves the import map file from ROOT_DIR/app/(payload)/admin,
+  // so it must point at the dev app root (not the suite dir) for
+  // generate:importmap and the dev-mode auto-regeneration to work.
   if (!process.env.ROOT_DIR) {
-    process.env.ROOT_DIR = dirname
+    process.env.ROOT_DIR = path.resolve(dirname, '..', '..')
   }
 
   const databaseUrl =

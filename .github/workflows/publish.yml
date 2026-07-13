@@ -16,6 +16,7 @@ on:
         options:
           - articles
           - menus
+          - pages
 
 jobs:
   publish:
