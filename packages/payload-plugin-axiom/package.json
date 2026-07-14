@@ -1,6 +1,6 @@
 {
   "name": "@vitrailweb/payload-plugin-axiom",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Payload plugin that sends the Payload logger output to Axiom",
   "license": "MIT",
   "author": {
