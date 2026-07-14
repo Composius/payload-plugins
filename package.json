@@ -16,11 +16,13 @@
     "build": "pnpm --filter \"./packages/*\" build",
     "clean": "pnpm -r clean",
     "dev:articles": "cross-env DEV_SUITE=articles next dev dev --turbo",
+    "dev:axiom": "cross-env DEV_SUITE=axiom next dev dev --turbo",
     "dev:menus": "cross-env DEV_SUITE=menus next dev dev --turbo",
     "dev:pages": "cross-env DEV_SUITE=pages next dev dev --turbo",
     "generate:importmap:articles": "cross-env DEV_SUITE=articles pnpm payload generate:importmap",
     "generate:importmap:pages": "cross-env DEV_SUITE=pages pnpm payload generate:importmap",
     "generate:types:articles": "cross-env DEV_SUITE=articles pnpm payload generate:types",
+    "generate:types:axiom": "cross-env DEV_SUITE=axiom pnpm payload generate:types",
     "generate:types:menus": "cross-env DEV_SUITE=menus pnpm payload generate:types",
     "generate:types:pages": "cross-env DEV_SUITE=pages pnpm payload generate:types",
     "lint": "eslint",
@@ -30,7 +32,7 @@
     "test:e2e": "playwright test",
     "test:int": "vitest run dev/configs",
     "test:unit": "vitest run packages",
-    "typecheck": "tsc --noEmit && tsc --noEmit -p dev/configs/articles && tsc --noEmit -p dev/configs/menus && tsc --noEmit -p dev/configs/pages"
+    "typecheck": "tsc --noEmit && tsc --noEmit -p dev/configs/articles && tsc --noEmit -p dev/configs/axiom && tsc --noEmit -p dev/configs/menus && tsc --noEmit -p dev/configs/pages"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3.2.0",
@@ -47,6 +49,7 @@
     "@types/react": "19.2.14",
     "@types/react-dom": "19.2.3",
     "@vitrailweb/payload-plugin-articles": "workspace:*",
+    "@vitrailweb/payload-plugin-axiom": "workspace:*",
     "@vitrailweb/payload-plugin-menus": "workspace:*",
     "@vitrailweb/payload-plugin-pages": "workspace:*",
     "cross-env": "^7.0.3",

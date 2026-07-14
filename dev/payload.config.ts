@@ -9,6 +9,7 @@ const suite = process.env.DEV_SUITE
 
 const loaders: Record<string, () => Promise<{ default: Promise<SanitizedConfig> }>> = {
   articles: () => import('./configs/articles/config.js'),
+  axiom: () => import('./configs/axiom/config.js'),
   menus: () => import('./configs/menus/config.js'),
   pages: () => import('./configs/pages/config.js'),
 }
