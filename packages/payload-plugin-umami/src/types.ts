@@ -1,3 +1,14 @@
+import type { Access } from 'payload'
+
+export type UmamiAccess = {
+  /**
+   * Who can see the analytics. Evaluated when rendering the dashboard widget
+   * (denied users get nothing) and again in the report endpoint.
+   * Defaults to any authenticated user.
+   */
+  read?: Access
+}
+
 export type UmamiRange = '24h' | '7d' | '30d' | '90d'
 
 export const UMAMI_RANGES: UmamiRange[] = ['24h', '7d', '30d', '90d']

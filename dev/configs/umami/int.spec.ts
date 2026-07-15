@@ -26,8 +26,8 @@ describe('Plugin integration tests', () => {
     const widget = config.admin?.dashboard?.widgets?.find((w) => w.slug === 'umami')
     expect(widget).toBeDefined()
     const serialized = JSON.stringify(widget)
-    expect(serialized).toContain('@vitrailweb/payload-plugin-umami/client')
-    expect(serialized).toContain('UmamiDashboard')
+    expect(serialized).toContain('@vitrailweb/payload-plugin-umami/rsc')
+    expect(serialized).toContain('UmamiWidget')
   })
 
   test('shows the widget in the default layout alongside collections', () => {

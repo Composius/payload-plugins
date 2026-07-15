@@ -1,4 +1,4 @@
-import type { Endpoint, PayloadRequest } from 'payload'
+import type { Access, Endpoint, PayloadRequest } from 'payload'
 
 import { APIError } from 'payload'
 
@@ -19,6 +19,7 @@ export const REPORT_PATH = '/plugin-umami/report'
 export const reportEndpoint = (
   credentials: UmamiCredentials,
   defaultRange: UmamiReport['range'],
+  readAccess: Access,
 ): Endpoint => {
   // Created once so the self-hosted Bearer token is cached across requests.
   const client = createUmamiClient(credentials)
@@ -29,6 +30,11 @@ export const reportEndpoint = (
     handler: async (req: PayloadRequest): Promise<Response> => {
       if (!req.user) {
         throw new APIError('Unauthorized', 401)
+      }
+
+      // Same access rule that gates the dashboard widget.
+      if (!(await readAccess({ req }))) {
+        throw new APIError('Forbidden', 403)
       }
 
       const requested = req.query?.range

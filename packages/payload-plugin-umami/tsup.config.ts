@@ -25,4 +25,11 @@ export default defineConfig([
     // esbuild drops the "use client" directive when bundling; re-add it.
     banner: { js: "'use client'" },
   },
+  {
+    ...common,
+    entry: { 'exports/rsc': 'src/exports/rsc.ts' },
+    // The client components are imported via the package's own /client
+    // subpath, which stays external — the rsc bundle contains no client code.
+    external: ['@vitrailweb/payload-plugin-umami/client'],
+  },
 ])

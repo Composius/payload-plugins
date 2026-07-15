@@ -1,4 +1,4 @@
-import type { Config } from 'payload'
+import type { Access, Config } from 'payload'
 
 import { afterEach, describe, expect, test, vi } from 'vitest'
 
@@ -23,9 +23,27 @@ describe('VWPayloadPluginUmami', () => {
 
     expect(hasReportEndpoint(config)).toBe(true)
     expect(umamiWidget(config)).toBeDefined()
-    expect(JSON.stringify(umamiWidget(config))).toContain(
-      '@vitrailweb/payload-plugin-umami/client',
+    expect(JSON.stringify(umamiWidget(config))).toContain('@vitrailweb/payload-plugin-umami/rsc')
+  })
+
+  test('defaults read access to authenticated users, passed as serverProps', async () => {
+    const config = VWPayloadPluginUmami(cloudCreds)(baseConfig())
+
+    const component = umamiWidget(config)?.Component as { serverProps?: { access?: Access } }
+    const access = component.serverProps?.access
+    expect(access).toBeTypeOf('function')
+    expect(await access?.({ req: { user: null } } as Parameters<Access>[0])).toBe(false)
+    expect(await access?.({ req: { user: { id: 1 } } } as unknown as Parameters<Access>[0])).toBe(
+      true,
     )
+  })
+
+  test('uses a custom access.read function', async () => {
+    const read = vi.fn(() => false)
+    const config = VWPayloadPluginUmami({ ...cloudCreds, access: { read } })(baseConfig())
+
+    const component = umamiWidget(config)?.Component as { serverProps?: { access?: Access } }
+    expect(component.serverProps?.access).toBe(read)
   })
 
   test('shows the widget in the default layout, before collections', () => {

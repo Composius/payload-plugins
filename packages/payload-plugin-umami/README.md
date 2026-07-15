@@ -47,6 +47,21 @@ VWPayloadPluginUmami({
 })
 ```
 
+To restrict who sees the analytics, pass an `access` object (Payload `Access`
+functions, like other plugins — only `read` for now):
+
+```ts
+VWPayloadPluginUmami({
+  // ...
+  access: {
+    read: ({ req: { user } }) => user?.role === 'admin',
+  },
+})
+```
+
+Denied users don't get the dashboard widget (it renders nothing, server-side)
+and the report endpoint answers 403.
+
 When `websiteId` or credentials are missing (e.g. env vars unset in local dev or
 CI), the plugin logs a warning and registers nothing instead of failing the
 config build.
@@ -58,6 +73,7 @@ config build.
 
 | Option              | Type                                  | Notes                                                                                                  |
 | ------------------- | ------------------------------------- | ------------------------------------------------------------------------------------------------------ |
+| `access`            | `{ read?: Access }`                   | who can see the analytics — checked when rendering the widget (denied users get nothing) and in the report endpoint (403). Default: any authenticated user |
 | `websiteId`         | `string`                              | required — the Umami website ID (UUID) to report on                                                    |
 | `apiKey`            | `string`                              | Umami Cloud API key (`x-umami-api-key`). Use this **or** `username`/`password`; takes precedence       |
 | `username`          | `string`                              | self-hosted username (with `password`)                                                                 |

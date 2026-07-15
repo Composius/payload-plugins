@@ -1,15 +1,23 @@
-import type { Config } from 'payload'
+import type { Access, Config } from 'payload'
 
-import type { UmamiRange, UmamiStatId } from './types.js'
+import type { UmamiAccess, UmamiRange, UmamiStatId } from './types.js'
 
 import { reportEndpoint } from './endpoints/report.js'
 import { en } from './translations/en.js'
 import { fr } from './translations/fr.js'
 import { DEFAULT_STATS } from './types.js'
 
-export type { UmamiRange, UmamiReport, UmamiStatId } from './types.js'
+export type { UmamiAccess, UmamiRange, UmamiReport, UmamiStatId } from './types.js'
+
+/** Default `read` access: any authenticated user. */
+export const authenticated: Access = ({ req: { user } }) => Boolean(user)
 
 export type VWPayloadPluginUmamiConfig = {
+  /**
+   * Access control for the analytics, per operation. Only `read` exists for
+   * now. Default: `read` requires an authenticated user.
+   */
+  access?: UmamiAccess
   /** Umami website ID (UUID) to report on. */
   websiteId: string
   /**
@@ -54,8 +62,8 @@ export type VWPayloadPluginUmamiConfig = {
   disabled?: boolean
 }
 
-const COMPONENT_PATH = '@vitrailweb/payload-plugin-umami/client'
-const COMPONENT_EXPORT = 'UmamiDashboard'
+const COMPONENT_PATH = '@vitrailweb/payload-plugin-umami/rsc'
+const COMPONENT_EXPORT = 'UmamiWidget'
 export const WIDGET_SLUG = 'umami'
 
 /**
@@ -86,6 +94,7 @@ export const VWPayloadPluginUmami =
     }
 
     const defaultRange = pluginOptions.defaultRange ?? '7d'
+    const readAccess = pluginOptions.access?.read ?? authenticated
 
     config.endpoints = [
       ...(config.endpoints ?? []),
@@ -99,6 +108,7 @@ export const VWPayloadPluginUmami =
           websiteId,
         },
         defaultRange,
+        readAccess,
       ),
     ]
 
@@ -110,6 +120,8 @@ export const VWPayloadPluginUmami =
     if (!config.admin.dashboard) config.admin.dashboard = { widgets: [] }
     config.admin.dashboard.widgets.push({
       slug: WIDGET_SLUG,
+      // A server component (UmamiWidget) gates rendering on `access.read`,
+      // then hands the serializable props to the client dashboard.
       Component: {
         path: COMPONENT_PATH,
         exportName: COMPONENT_EXPORT,
@@ -117,6 +129,10 @@ export const VWPayloadPluginUmami =
           defaultRange,
           showRangeSelector: pluginOptions.showRangeSelector ?? true,
           stats: pluginOptions.stats ?? DEFAULT_STATS,
+        },
+        // serverProps stay on the server — safe to carry the access function.
+        serverProps: {
+          access: readAccess,
         },
       },
       label: { en: en.umami.title, fr: fr.umami.title },
