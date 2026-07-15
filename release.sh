@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+log() { echo "==> $*"; }
+
 if [ -n "$(git status --porcelain)" ]; then
   echo "Working tree is not clean — commit or stash your changes before releasing:" >&2
   git status --short >&2
@@ -29,13 +31,13 @@ if [ ! -d "$pkg_dir" ]; then
   exit 1
 fi
 
-echo "Releasing a $version_type version of $name"
+log "Releasing a $version_type version of $name"
 
 (cd "$pkg_dir" && pnpm version "$version_type" --no-git-tag-version)
 VERSION=$(node -p "require('./$pkg_dir/package.json').version")
 
 # Update the version in the plugin table of the root README
-echo "Updating README table for $name to version $VERSION"
+log "Updating README table for $name to version $VERSION"
 node - "$name" "$VERSION" <<'NODE'
 const fs = require('fs');
 const [name, version] = process.argv.slice(2);
@@ -50,10 +52,10 @@ if (updated === content) {
 fs.writeFileSync(readme, updated);
 NODE
 
-echo "Committing and tagging release $name@$VERSION"
+log "Committing and tagging release $name@$VERSION"
 git add "$pkg_dir/package.json" README.md
 git commit -m "Release: $name@$VERSION"
-git tag "$name@$VERSION"
-git push --follow-tags
+git tag -a "$name@$VERSION" -m "Release: $name@$VERSION"
+git push origin main "$name@$VERSION"
 
-echo "Release $name@$VERSION complete"
+log "Release $name@$VERSION complete"
