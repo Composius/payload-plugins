@@ -1,7 +1,7 @@
 'use client'
 
 import { useConfig, useTranslation } from '@payloadcms/ui'
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
 
 import type {
   UmamiDashboardProps,
@@ -58,6 +58,21 @@ export const UmamiDashboard = ({
   const { config } = useConfig()
   const { i18n } = useTranslation()
   const t = (i18n.language === 'fr' ? fr : en).umami
+
+  // Umami reports countries as ISO 3166-1 alpha-2 codes; Intl.DisplayNames
+  // localizes them in the admin language with no bundled data.
+  const countryName = useMemo(() => {
+    const regionNames = new Intl.DisplayNames([i18n.language, 'en'], { type: 'region' })
+    return (code: string): string => {
+      if (!code) return code
+      try {
+        return regionNames.of(code.toUpperCase()) ?? code
+      } catch {
+        // Invalid code (e.g. Umami's "Unknown" bucket) — show it as-is.
+        return code
+      }
+    }
+  }, [i18n.language])
   const [range, setRange] = useState<UmamiRange>(defaultRange)
   const [report, setReport] = useState<UmamiReport>()
   const [status, setStatus] = useState<'error' | 'loading' | 'ready'>('loading')
@@ -141,7 +156,7 @@ export const UmamiDashboard = ({
           <TopList emptyLabel={t.messages.noPages} items={report.topPages} title={t.topPages} />
           <TopList
             emptyLabel={t.messages.noCountries}
-            items={report.topCountries}
+            items={report.topCountries.map((point) => ({ ...point, x: countryName(point.x) }))}
             title={t.topCountries}
           />
         </div>
