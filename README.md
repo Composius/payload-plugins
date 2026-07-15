@@ -51,7 +51,7 @@ pnpm generate:importmap:pages
 6. Add the code
 7. For publishing for the first time, login to npm `npm login` and run `pnpm --filter @vitrailweb/payload-plugin-<name> publish --access public --no-git-checks`.
 8. Go to npmjs.com and in the packages of the account, go to Settings and add a Trusted Publisher.
-9. Continue with the next section, as local publish is not trusted.
+9. Continue with the next section, as local publish is not trusted. And for local testing in another project run `npm logout` first.
 
 
 ## Publish
