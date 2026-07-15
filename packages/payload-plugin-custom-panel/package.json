@@ -1,6 +1,6 @@
 {
   "name": "@vitrailweb/payload-plugin-custom-panel",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Payload plugin that adds a configurable panel (site title, welcome message, link buttons) above the admin dashboard",
   "license": "MIT",
   "author": {
