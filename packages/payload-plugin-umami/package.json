@@ -1,6 +1,6 @@
 {
   "name": "@vitrailweb/payload-plugin-umami",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "description": "Payload plugin that adds Umami web-analytics widgets to the admin dashboard",
   "license": "MIT",
   "author": {
