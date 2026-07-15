@@ -49,7 +49,27 @@ export const panelStyles = `
   justify-content: flex-end;
   min-height: 100px;
   padding: 1.25rem;
+  position: relative;
   text-decoration: none;
+}
+/* New-tab indicator, top-right corner of the tile. */
+.custom-panel__button-newtab {
+  color: var(--theme-elevation-500);
+  line-height: 0;
+  position: absolute;
+  right: 0.75rem;
+  top: 0.75rem;
+}
+.custom-panel__button:hover .custom-panel__button-newtab {
+  color: var(--theme-text);
+}
+.custom-panel__sr-only {
+  clip: rect(0 0 0 0);
+  height: 1px;
+  overflow: hidden;
+  position: absolute;
+  white-space: nowrap;
+  width: 1px;
 }
 .custom-panel__button:hover {
   background: var(--theme-elevation-100);

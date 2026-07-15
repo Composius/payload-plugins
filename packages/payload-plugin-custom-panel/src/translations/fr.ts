@@ -3,5 +3,6 @@ import type { Translation } from './index.js'
 export const fr: Translation = {
   customPanel: {
     linksLabel: 'Liens rapides',
+    opensInNewTab: 'S’ouvre dans un nouvel onglet',
   },
 }

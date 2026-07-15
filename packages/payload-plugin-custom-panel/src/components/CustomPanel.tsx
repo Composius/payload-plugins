@@ -83,6 +83,25 @@ export const CustomPanel = async ({
                   <span className="custom-panel__button-label">
                     {resolveLocalizedText(link.label, language)}
                   </span>
+                  {link.newTab ? (
+                    <>
+                      <span aria-hidden="true" className="custom-panel__button-newtab">
+                        <svg
+                          fill="none"
+                          height="14"
+                          stroke="currentColor"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth="2"
+                          viewBox="0 0 24 24"
+                          width="14"
+                        >
+                          <path d="M7 17 17 7M8 7h9v9" />
+                        </svg>
+                      </span>
+                      <span className="custom-panel__sr-only">{t.opensInNewTab}</span>
+                    </>
+                  ) : null}
                 </a>
               ))}
             </nav>

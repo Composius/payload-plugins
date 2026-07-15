@@ -71,7 +71,8 @@ VWPayloadPluginCustomPanel({
 Each link in a row's `links` is a `CustomPanelLink`:
 `{ label: LocalizedText, url: string, newTab?: boolean, icon?: string }` —
 `icon` is an emoji/short text, or an image URL/path (`https://…`, `/…`,
-`data:`) rendered as `<img>`.
+`data:`) rendered as `<img>`. `newTab` links show an ↗ arrow in the tile's
+corner (with a screen-reader hint).
 | `disabled` | `boolean`           | leaves the config untouched                                                                        |
 
 `LocalizedText` is `string | Record<string, string>` — a per-language record
