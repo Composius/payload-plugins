@@ -62,7 +62,9 @@ Each package is released independently.
 First commit everthing, then:
 
 ```bash
-# run release.sh script with the short name of the plugin and patch|minor|major
+# Run release.sh script with the short name of the plugin and patch|minor|major
+# The first time do:
+# chmod +x release.sh
 ./release.sh articles patch
 ./release.sh pages patch
 ./release.sh menus patch
