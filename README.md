@@ -49,8 +49,9 @@ pnpm generate:importmap:pages
 4. Add `dev:<name>` and `generate:types:<name>` scripts to the root `package.json`, plus `workspace:*` devDependency on the new package.
 5. Add the short name to the `package` choices in `.github/workflows/publish.yml`.
 6. Add the code
-7. For publishing for the first time, login to npm `npm login` and run `pnpm --filter @vitrailweb/payload-plugin-<name> publish --access public --no-git-checks`. Then continue with the next section, as local publish is not trusted.
+7. For publishing for the first time, login to npm `npm login` and run `pnpm --filter @vitrailweb/payload-plugin-<name> publish --access public --no-git-checks`.
 8. Go to npmjs.com and in the packages of the account, go to Settings and add a Trusted Publisher.
+9. Continue with the next section, as local publish is not trusted.
 
 
 ## Publish
@@ -78,6 +79,11 @@ git push --follow-tags
 # axiom
 cd packages/payload-plugin-axiom
 pnpm version patch --tag-version-prefix="axiom@" -m "Release: axiom@%s"  # or minor/major
+git push --follow-tags
+
+# umami
+cd packages/payload-plugin-umami
+pnpm version patch --tag-version-prefix="umami@" -m "Release: umami@%s"  # or minor/major
 git push --follow-tags
 ```
 
