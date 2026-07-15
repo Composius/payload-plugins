@@ -2,6 +2,7 @@ export const en = {
   umami: {
     title: 'Analytics',
     timeRange: 'Time range',
+    chartMetric: 'Chart stat',
     ranges: {
       '24h': 'Last 24 hours',
       '7d': 'Last 7 days',

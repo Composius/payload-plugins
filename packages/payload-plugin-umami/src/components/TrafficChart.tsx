@@ -1,25 +1,25 @@
 'use client'
 
-import React, { useMemo } from 'react'
-import {
-  CartesianGrid,
-  Legend,
-  Line,
-  LineChart,
-  ResponsiveContainer,
-  Tooltip,
-  XAxis,
-  YAxis,
-} from 'recharts'
+import React, { useMemo, useState } from 'react'
+import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
 
 import type { UmamiRange, UmamiSeries } from '../types.js'
 
 export type TrafficChartProps = {
   series: UmamiSeries
   range: UmamiRange
+  /** Accessible label for the stat dropdown. */
+  metricLabel: string
   viewsLabel: string
   visitorsLabel: string
 }
+
+/**
+ * The stats Umami exposes as a time series. Visits over time is not
+ * available: the `/pageviews` endpoint only returns pageviews and sessions
+ * buckets (Umami's own dashboard chart has the same two).
+ */
+type ChartMetric = 'views' | 'visitors'
 
 type Row = { t: number; views: number; visitors: number }
 
@@ -40,12 +40,26 @@ const mergeSeries = (series: UmamiSeries): Row[] => {
 }
 
 /**
- * Visitors + views over time. Single y-axis, two categorical series (views =
- * blue slot 1, visitors = aqua slot 2). Series colors are theme-aware CSS vars
- * defined by the dashboard; chrome uses Payload's admin theme variables.
+ * Traffic over time as a bar chart showing one stat at a time — views (the
+ * default) or visitors, picked from an in-card dropdown. Single series, so no
+ * legend; the color follows the stat (views = blue, visitors = aqua, the
+ * series CSS vars defined by the dashboard). Chrome uses Payload's admin
+ * theme variables.
  */
-export const TrafficChart = ({ range, series, viewsLabel, visitorsLabel }: TrafficChartProps) => {
+export const TrafficChart = ({
+  metricLabel,
+  range,
+  series,
+  viewsLabel,
+  visitorsLabel,
+}: TrafficChartProps) => {
+  const [metric, setMetric] = useState<ChartMetric>('views')
   const data = useMemo(() => mergeSeries(series), [series])
+
+  const metricLabels: Record<ChartMetric, string> = {
+    views: viewsLabel,
+    visitors: visitorsLabel,
+  }
 
   const formatTick = (t: number) => {
     const date = new Date(t)
@@ -56,8 +70,22 @@ export const TrafficChart = ({ range, series, viewsLabel, visitorsLabel }: Traff
 
   return (
     <div className="umami-card umami-chart">
+      <div className="umami-chart__header">
+        <select
+          aria-label={metricLabel}
+          className="umami-dashboard__select"
+          onChange={(event) => setMetric(event.target.value as ChartMetric)}
+          value={metric}
+        >
+          {(['views', 'visitors'] as const).map((value) => (
+            <option key={value} value={value}>
+              {metricLabels[value]}
+            </option>
+          ))}
+        </select>
+      </div>
       <ResponsiveContainer height={280} width="100%">
-        <LineChart data={data} margin={{ top: 8, right: 12, bottom: 0, left: -8 }}>
+        <BarChart data={data} margin={{ top: 8, right: 12, bottom: 0, left: -8 }}>
           <CartesianGrid stroke="var(--umami-grid)" vertical={false} />
           <XAxis
             dataKey="t"
@@ -80,26 +108,17 @@ export const TrafficChart = ({ range, series, viewsLabel, visitorsLabel }: Traff
               borderRadius: 4,
               color: 'var(--theme-text)',
             }}
+            cursor={{ fill: 'var(--umami-grid)', opacity: 0.5 }}
             labelFormatter={(t) => new Date(Number(t)).toLocaleString()}
           />
-          <Legend />
-          <Line
-            dataKey="views"
-            dot={false}
-            name={viewsLabel}
-            stroke="var(--umami-series-views)"
-            strokeWidth={2}
-            type="monotone"
+          <Bar
+            dataKey={metric}
+            fill={metric === 'views' ? 'var(--umami-series-views)' : 'var(--umami-series-visitors)'}
+            maxBarSize={40}
+            name={metricLabels[metric]}
+            radius={[4, 4, 0, 0]}
           />
-          <Line
-            dataKey="visitors"
-            dot={false}
-            name={visitorsLabel}
-            stroke="var(--umami-series-visitors)"
-            strokeWidth={2}
-            type="monotone"
-          />
-        </LineChart>
+        </BarChart>
       </ResponsiveContainer>
     </div>
   )

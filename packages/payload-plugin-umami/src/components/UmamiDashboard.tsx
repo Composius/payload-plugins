@@ -132,6 +132,7 @@ export const UmamiDashboard = ({
               )
             })}
           <TrafficChart
+            metricLabel={t.chartMetric}
             range={report.range}
             series={report.series}
             viewsLabel={t.stats.views}

@@ -4,6 +4,7 @@ export const fr: Translation = {
   umami: {
     title: 'Statistiques',
     timeRange: 'Période',
+    chartMetric: 'Métrique du graphique',
     ranges: {
       '24h': 'Dernières 24 heures',
       '7d': '7 derniers jours',

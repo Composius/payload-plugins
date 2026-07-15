@@ -61,6 +61,7 @@ html[data-theme='light'] .umami-dashboard {
 .umami-stat__label { color: var(--theme-elevation-600); font-size: 0.85rem; }
 .umami-stat__value { font-size: 2rem; font-weight: 700; line-height: 1; }
 .umami-chart { grid-column: span 4; }
+.umami-chart__header { display: flex; justify-content: flex-end; margin-bottom: 0.75rem; }
 .umami-top { grid-column: span 2; }
 .umami-top__list { list-style: none; margin: 0.75rem 0 0; padding: 0; }
 .umami-top__row { align-items: baseline; display: flex; gap: 0.75rem; justify-content: space-between; padding: 0.3rem 0; }
