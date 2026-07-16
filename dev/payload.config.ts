@@ -11,6 +11,7 @@ const loaders: Record<string, () => Promise<{ default: Promise<SanitizedConfig> 
   articles: () => import('./configs/articles/config.js'),
   axiom: () => import('./configs/axiom/config.js'),
   'custom-panel': () => import('./configs/custom-panel/config.js'),
+  'home-nav': () => import('./configs/home-nav/config.js'),
   menus: () => import('./configs/menus/config.js'),
   pages: () => import('./configs/pages/config.js'),
   umami: () => import('./configs/umami/config.js'),

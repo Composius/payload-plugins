@@ -56,6 +56,9 @@ importers:
       '@vitrailweb/payload-plugin-custom-panel':
         specifier: workspace:*
         version: link:packages/payload-plugin-custom-panel
+      '@vitrailweb/payload-plugin-home-nav':
+        specifier: workspace:*
+        version: link:packages/payload-plugin-home-nav
       '@vitrailweb/payload-plugin-menus':
         specifier: workspace:*
         version: link:packages/payload-plugin-menus
@@ -177,6 +180,30 @@ importers:
 
   packages/payload-plugin-custom-panel:
     devDependencies:
+      '@types/react':
+        specifier: 19.2.14
+        version: 19.2.14
+      payload:
+        specifier: 3.84.1
+        version: 3.84.1(graphql@16.14.2)(typescript@5.7.3)
+      react:
+        specifier: 19.2.6
+        version: 19.2.6
+      rimraf:
+        specifier: 3.0.2
+        version: 3.0.2
+      tsup:
+        specifier: 8.5.0
+        version: 8.5.0(@swc/core@1.15.43)(postcss@8.5.16)(tsx@4.21.0)(typescript@5.7.3)
+      typescript:
+        specifier: 5.7.3
+        version: 5.7.3
+
+  packages/payload-plugin-home-nav:
+    devDependencies:
+      '@payloadcms/ui':
+        specifier: 3.84.1
+        version: 3.84.1(@types/react@19.2.14)(monaco-editor@0.55.1)(next@16.2.6(@babel/core@7.29.7)(@playwright/test@1.58.2)(react-dom@19.2.6(react@19.2.6))(react@19.2.6)(sass@1.77.4))(payload@3.84.1(graphql@16.14.2)(typescript@5.7.3))(react-dom@19.2.6(react@19.2.6))(react@19.2.6)(typescript@5.7.3)
       '@types/react':
         specifier: 19.2.14
         version: 19.2.14

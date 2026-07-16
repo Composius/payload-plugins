@@ -19,6 +19,7 @@ on:
           - pages
           - axiom
           - custom-panel
+          - home-nav
 
 jobs:
   publish:
