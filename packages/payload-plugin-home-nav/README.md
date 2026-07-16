@@ -13,7 +13,8 @@ Both are **server components** resolved against the admin language. The label
 defaults to the plugin's bundled translations ("Home" / "Accueil") and can be
 overridden with a plain string or a per-language record. A custom icon the
 project already configured through `admin.components.graphics.Icon` is kept
-and rendered next to the label.
+and rendered next to the label — the plugin re-registers it under
+`admin.dependencies` so it stays in the import map.
 
 ## Usage
 

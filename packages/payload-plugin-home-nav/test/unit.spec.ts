@@ -50,6 +50,50 @@ describe('VWPayloadPluginHomeNav', () => {
     expect(icon(config)?.serverProps?.icon).toBe('/components/MyIcon#MyIcon')
   })
 
+  test('keeps an existing custom icon in the import map via admin.dependencies', () => {
+    const existing = {
+      admin: {
+        components: { graphics: { Icon: '@/components/graphics/Icon#Icon' } },
+      },
+      collections: [],
+    } as unknown as Config
+
+    const config = VWPayloadPluginHomeNav()(existing)
+
+    expect(config.admin?.dependencies?.['home-nav-icon']).toEqual({
+      type: 'component',
+      path: '@/components/graphics/Icon#Icon',
+    })
+  })
+
+  test('normalizes the dependency key like the runtime lookup', () => {
+    const noExport = VWPayloadPluginHomeNav()({
+      admin: { components: { graphics: { Icon: '/components/MyIcon' } } },
+      collections: [],
+    } as unknown as Config)
+    expect(noExport.admin?.dependencies?.['home-nav-icon']).toMatchObject({
+      path: '/components/MyIcon#default',
+    })
+
+    const objectForm = VWPayloadPluginHomeNav()({
+      admin: {
+        components: {
+          graphics: { Icon: { path: '/components/MyIcon', exportName: 'MyIcon' } },
+        },
+      },
+      collections: [],
+    } as unknown as Config)
+    expect(objectForm.admin?.dependencies?.['home-nav-icon']).toMatchObject({
+      path: '/components/MyIcon#MyIcon',
+    })
+  })
+
+  test('adds no dependency when no custom icon exists', () => {
+    const config = VWPayloadPluginHomeNav()(baseConfig())
+
+    expect(config.admin?.dependencies).toBeUndefined()
+  })
+
   test('prepends the home link to beforeNavLinks', () => {
     const existing = {
       admin: {

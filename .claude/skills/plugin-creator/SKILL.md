@@ -218,6 +218,13 @@ automatically and already gitignored (`/dev/configs/*/*.db`).
   it inside the plugin component via `RenderServerComponent` (from
   `@payloadcms/ui/elements/RenderServerComponent`) with a `Fallback` — don't
   discard it. Pattern: home-nav's `HomeNavIcon`.
+- `generate:importmap` only scans the known component slots and
+  `admin.dependencies`. A component reference tucked into `serverProps` (like
+  the captured icon above) is invisible to it and fails at runtime with
+  "PayloadComponent not found in importMap". Register such references in
+  `config.admin.dependencies` with a `path` normalized to the runtime lookup
+  key — `path#exportName`, `#default` when there is no export name (see
+  home-nav's `src/index.ts`).
 - Styling admin slot components: emit an inline `<style>` from the component
   (custom-panel/home-nav pattern). Unlayered rules win over Payload's
   `@layer payload-default` styles, so no `!important`. Two traps home-nav

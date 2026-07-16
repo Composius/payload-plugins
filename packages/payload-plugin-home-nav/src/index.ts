@@ -59,6 +59,28 @@ export const VWPayloadPluginHomeNav =
       // The slot is taken over, but a custom icon the project configured is
       // handed to the component and rendered next to the label.
       const existingIcon = config.admin.components.graphics.Icon
+
+      if (existingIcon) {
+        // `generate:importmap` only scans the known component slots (plus
+        // `admin.dependencies`) — the previous icon now lives in serverProps,
+        // invisible to the scanner, so register it as an explicit dependency.
+        // The key must match the runtime lookup: `path#exportName`, with
+        // `default` when no export name is given.
+        const pathAndExport =
+          typeof existingIcon === 'string' ? existingIcon : existingIcon.path
+        let [path, exportName] = pathAndExport.includes('#')
+          ? pathAndExport.split('#', 2)
+          : [pathAndExport, 'default']
+        if (typeof existingIcon === 'object' && existingIcon.exportName) {
+          exportName = existingIcon.exportName
+        }
+
+        config.admin.dependencies = {
+          ...config.admin.dependencies,
+          'home-nav-icon': { type: 'component', path: `${path}#${exportName}` },
+        }
+      }
+
       config.admin.components.graphics.Icon = {
         path: COMPONENT_PATH,
         exportName: 'HomeNavIcon',
