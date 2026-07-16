@@ -7,7 +7,7 @@ pnpm monorepo of [Payload CMS](https://payloadcms.com) plugins.
 | [@vitrailweb/payload-plugin-articles](packages/payload-plugin-articles) | 1.2.0 | Articles and categories collections with drafts, live preview, and SEO |
 | [@vitrailweb/payload-plugin-axiom](packages/payload-plugin-axiom)       | 0.2.1 | Axiom plugin                       |
 | [@vitrailweb/payload-plugin-custom-panel](packages/payload-plugin-custom-panel) | 0.1.2 | Configurable panel (site title, message, link buttons) above the admin dashboard |
-| [@vitrailweb/payload-plugin-home-nav](packages/payload-plugin-home-nav) | 0.1.0 | Translated "Home" label next to the admin navbar icon and a Home link at the top of the nav sidebar |
+| [@vitrailweb/payload-plugin-home-nav](packages/payload-plugin-home-nav) | 0.1.1 | Translated "Home" label next to the admin navbar icon and a Home link at the top of the nav sidebar |
 | [@vitrailweb/payload-plugin-menus](packages/payload-plugin-menus)       | 0.3.2 | Menus collection                   |
 | [@vitrailweb/payload-plugin-pages](packages/payload-plugin-pages)       | 0.1.1 | Pages collection with drafts, live preview, and SEO |
 | [@vitrailweb/payload-plugin-umami](packages/payload-plugin-umami)       | 0.3.1 | Umami widget |

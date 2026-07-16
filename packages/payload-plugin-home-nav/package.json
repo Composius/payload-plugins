@@ -1,6 +1,6 @@
 {
   "name": "@vitrailweb/payload-plugin-home-nav",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Payload plugin that labels the admin navbar icon with a translated “Home” and adds a Home link at the top of the nav sidebar",
   "license": "MIT",
   "author": {
