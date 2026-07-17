@@ -29,6 +29,16 @@ custom title to override it. A `beforeChange` hook discards a submitted title th
 merely matches the linked document's current title, so saving the untouched
 auto-filled value in the admin panel does not freeze it into an override.
 
+## Requirements
+
+The following dependencies are required to be installed in your project before using this plugin:
+
+- `payload` (`^3.84.1`)
+
+```bash
+pnpm add payload
+```
+
 ## Usage
 
 ```ts

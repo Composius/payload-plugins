@@ -109,8 +109,16 @@ behavior, and the `disabled` schema-consistency rule.
 
 Same shape as `packages/payload-plugin-menus/README.md`:
 title `# @vitrailweb/payload-plugin-<name>`, one-line intro, a Fields
-table (if it adds collections), a Usage section with a `buildConfig`
-snippet, and an Options table documenting every config option.
+table (if it adds collections), a Requirements section, a Usage section
+with a `buildConfig` snippet, and an Options table documenting every
+config option.
+
+The Requirements section goes right before Usage and lists every
+`peerDependency` (with its version range) as dependencies required to be
+installed in the project before using the plugin, followed by a
+`pnpm add …` command installing them all — see
+`packages/payload-plugin-menus/README.md` for the exact wording. Keep it
+in sync with `peerDependencies` in `package.json`.
 
 ## Step 2 — dev suite: `dev/configs/<name>/`
 

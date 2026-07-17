@@ -7,6 +7,16 @@ to send logs to [Axiom](https://axiom.co), using the official
 By default logs keep going to stdout as well, so local output and existing log
 collection keep working.
 
+## Requirements
+
+The following dependencies are required to be installed in your project before using this plugin:
+
+- `payload` (`^3.84.1`)
+
+```bash
+pnpm add payload
+```
+
 ## Usage
 
 ```ts

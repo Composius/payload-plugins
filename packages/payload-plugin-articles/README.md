@@ -37,6 +37,21 @@ Categories are nestable: pick a `parent` and `@payloadcms/plugin-nested-docs` ke
 `breadcrumbs` (doc, label, url) up to date on save, including on all descendants.
 The parent picker excludes the category itself and its descendants.
 
+## Requirements
+
+The following dependencies are required to be installed in your project before using this plugin:
+
+- `@payloadcms/plugin-nested-docs` (`^3.84.1`)
+- `@payloadcms/plugin-seo` (`^3.84.1`)
+- `@payloadcms/richtext-lexical` (`^3.84.1`)
+- `@payloadcms/ui` (`^3.84.1`)
+- `payload` (`^3.84.1`)
+- `react` (`^19.0.0`)
+
+```bash
+pnpm add @payloadcms/plugin-nested-docs @payloadcms/plugin-seo @payloadcms/richtext-lexical @payloadcms/ui payload react
+```
+
 ## Usage
 
 ```ts

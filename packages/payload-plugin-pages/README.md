@@ -15,6 +15,18 @@ A [Payload CMS](https://payloadcms.com) plugin that adds a `pages` collection wi
 
 > Requires a `media` upload collection in the host config.
 
+## Requirements
+
+The following dependencies are required to be installed in your project before using this plugin:
+
+- `@payloadcms/plugin-seo` (`^3.84.1`)
+- `@payloadcms/richtext-lexical` (`^3.84.1`)
+- `payload` (`^3.84.1`)
+
+```bash
+pnpm add @payloadcms/plugin-seo @payloadcms/richtext-lexical payload
+```
+
 ## Usage
 
 ```ts

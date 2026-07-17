@@ -6,6 +6,18 @@ Shared building blocks used by the Vitrail Web [Payload CMS](https://payloadcms.
 - **SEO** (`seoField`, `defaultGenerate*`, `SEO_DESCRIPTION_MAX_LENGTH`) — the sidebar `meta` group built from `@payloadcms/plugin-seo` fields, and default generate functions (title from `title`, description from `content` rich text, image from `coverImage`, URL from a slug-to-URL function).
 - **Access** (`anyone`, `authenticated`, `authenticatedOrPublished`).
 
+## Requirements
+
+The following dependencies are required to be installed in your project before using this plugin:
+
+- `@payloadcms/plugin-seo` (`^3.84.1`)
+- `@payloadcms/richtext-lexical` (`^3.84.1`)
+- `payload` (`^3.84.1`)
+
+```bash
+pnpm add @payloadcms/plugin-seo @payloadcms/richtext-lexical payload
+```
+
 ## Development
 
 From the monorepo root:

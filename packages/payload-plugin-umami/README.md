@@ -17,6 +17,19 @@ Analytics are fetched **server-side** through a proxy endpoint
 (`/api/plugin-umami/report`), so your Umami API key or password never reaches the
 browser. The endpoint is admin-only (requires an authenticated Payload user).
 
+## Requirements
+
+The following dependencies are required to be installed in your project before using this plugin:
+
+- `@payloadcms/ui` (`^3.84.1`)
+- `payload` (`^3.84.1`)
+- `react` (`^19.0.0`)
+- `recharts` (`^2.12.0 || ^3.0.0`)
+
+```bash
+pnpm add @payloadcms/ui payload react recharts
+```
+
 ## Usage
 
 ```ts

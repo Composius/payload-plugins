@@ -11,6 +11,17 @@ per request, and denied users get nothing. Every text option accepts either a
 plain string or a per-language record (`{ en: '…', fr: '…' }`) resolved
 against the admin language.
 
+## Requirements
+
+The following dependencies are required to be installed in your project before using this plugin:
+
+- `payload` (`^3.84.1`)
+- `react` (`^19.0.0`)
+
+```bash
+pnpm add payload react
+```
+
 ## Usage
 
 ```ts

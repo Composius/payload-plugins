@@ -16,6 +16,18 @@ project already configured through `admin.components.graphics.Icon` is kept
 and rendered next to the label — the plugin re-registers it under
 `admin.dependencies` so it stays in the import map.
 
+## Requirements
+
+The following dependencies are required to be installed in your project before using this plugin:
+
+- `@payloadcms/ui` (`^3.84.1`)
+- `payload` (`^3.84.1`)
+- `react` (`^19.0.0`)
+
+```bash
+pnpm add @payloadcms/ui payload react
+```
+
 ## Usage
 
 ```ts
