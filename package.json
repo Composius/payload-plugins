@@ -19,6 +19,7 @@
     "dev:axiom": "cross-env DEV_SUITE=axiom next dev dev --turbo",
     "dev:custom-panel": "cross-env DEV_SUITE=custom-panel next dev dev --turbo",
     "dev:home-nav": "cross-env DEV_SUITE=home-nav next dev dev --turbo",
+    "dev:media": "cross-env DEV_SUITE=media next dev dev --turbo",
     "dev:menus": "cross-env DEV_SUITE=menus next dev dev --turbo",
     "dev:pages": "cross-env DEV_SUITE=pages next dev dev --turbo",
     "dev:umami": "cross-env DEV_SUITE=umami next dev dev --turbo",
@@ -31,6 +32,7 @@
     "generate:types:axiom": "cross-env DEV_SUITE=axiom pnpm payload generate:types",
     "generate:types:custom-panel": "cross-env DEV_SUITE=custom-panel pnpm payload generate:types",
     "generate:types:home-nav": "cross-env DEV_SUITE=home-nav pnpm payload generate:types",
+    "generate:types:media": "cross-env DEV_SUITE=media pnpm payload generate:types",
     "generate:types:menus": "cross-env DEV_SUITE=menus pnpm payload generate:types",
     "generate:types:pages": "cross-env DEV_SUITE=pages pnpm payload generate:types",
     "generate:types:umami": "cross-env DEV_SUITE=umami pnpm payload generate:types",
@@ -41,7 +43,7 @@
     "test:e2e": "playwright test",
     "test:int": "vitest run dev/configs",
     "test:unit": "vitest run packages",
-    "typecheck": "tsc --noEmit && tsc --noEmit -p dev/configs/articles && tsc --noEmit -p dev/configs/axiom && tsc --noEmit -p dev/configs/custom-panel && tsc --noEmit -p dev/configs/home-nav && tsc --noEmit -p dev/configs/menus && tsc --noEmit -p dev/configs/pages && tsc --noEmit -p dev/configs/umami"
+    "typecheck": "tsc --noEmit && tsc --noEmit -p dev/configs/articles && tsc --noEmit -p dev/configs/axiom && tsc --noEmit -p dev/configs/custom-panel && tsc --noEmit -p dev/configs/home-nav && tsc --noEmit -p dev/configs/media && tsc --noEmit -p dev/configs/menus && tsc --noEmit -p dev/configs/pages && tsc --noEmit -p dev/configs/umami"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3.2.0",
@@ -61,6 +63,7 @@
     "@vitrailweb/payload-plugin-axiom": "workspace:*",
     "@vitrailweb/payload-plugin-custom-panel": "workspace:*",
     "@vitrailweb/payload-plugin-home-nav": "workspace:*",
+    "@vitrailweb/payload-plugin-media": "workspace:*",
     "@vitrailweb/payload-plugin-menus": "workspace:*",
     "@vitrailweb/payload-plugin-pages": "workspace:*",
     "@vitrailweb/payload-plugin-umami": "workspace:*",

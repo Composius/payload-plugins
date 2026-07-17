@@ -9,13 +9,20 @@ import sharp from 'sharp'
 import { testEmailAdapter } from '../helpers/testEmailAdapter.js'
 
 export type DevConfigOptions = {
+  /** Set to false when a plugin provides its own `media` collection. */
+  defaultMediaCollection?: boolean
   /** The suite directory (dev/configs/<suite>), used for per-suite db, media and types files. */
   dirname: string
   plugins: Plugin[]
   seed?: (payload: Payload) => Promise<void>
 }
 
-export const buildDevConfig = ({ dirname, plugins, seed }: DevConfigOptions) => {
+export const buildDevConfig = ({
+  defaultMediaCollection = true,
+  dirname,
+  plugins,
+  seed,
+}: DevConfigOptions) => {
   // Payload resolves the import map file from ROOT_DIR/app/(payload)/admin,
   // so it must point at the dev app root (not the suite dir) for
   // generate:importmap and the dev-mode auto-regeneration to work.
@@ -35,15 +42,17 @@ export const buildDevConfig = ({ dirname, plugins, seed }: DevConfigOptions) => 
         baseDir: path.resolve(dirname, '..', '..'),
       },
     },
-    collections: [
-      {
-        slug: 'media',
-        fields: [],
-        upload: {
-          staticDir: path.resolve(dirname, 'media'),
-        },
-      },
-    ],
+    collections: defaultMediaCollection
+      ? [
+          {
+            slug: 'media',
+            fields: [],
+            upload: {
+              staticDir: path.resolve(dirname, 'media'),
+            },
+          },
+        ]
+      : [],
     db: sqliteAdapter({
       client: {
         url: databaseUrl,

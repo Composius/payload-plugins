@@ -1,0 +1,57 @@
+{
+  "name": "@vitrailweb/payload-plugin-media",
+  "version": "0.1.0",
+  "description": "Configurable media uploads collection (access, unique filenames, storage prefix, image sizes)",
+  "license": "MIT",
+  "author": {
+    "name": "Vitrail Web"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Vitrail-Web/payload-plugins",
+    "directory": "packages/payload-plugin-media"
+  },
+  "type": "module",
+  "exports": {
+    ".": {
+      "import": "./src/index.ts",
+      "types": "./src/index.ts",
+      "default": "./src/index.ts"
+    }
+  },
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsup",
+    "clean": "rimraf {dist,*.tsbuildinfo}"
+  },
+  "devDependencies": {
+    "payload": "3.84.1",
+    "rimraf": "3.0.2",
+    "tsup": "8.5.0",
+    "typescript": "5.7.3"
+  },
+  "peerDependencies": {
+    "payload": "^3.84.1"
+  },
+  "engines": {
+    "node": ">=20.9.0",
+    "pnpm": "^9 || ^10 || ^11"
+  },
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/",
+    "exports": {
+      ".": {
+        "import": "./dist/index.js",
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.js"
+      }
+    },
+    "main": "./dist/index.js",
+    "types": "./dist/index.d.ts"
+  }
+}
