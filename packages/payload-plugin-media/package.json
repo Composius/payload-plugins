@@ -1,6 +1,6 @@
 {
   "name": "@vitrailweb/payload-plugin-media",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Configurable media uploads collection (access, unique filenames, storage prefix, image sizes)",
   "license": "MIT",
   "author": {
