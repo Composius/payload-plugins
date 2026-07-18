@@ -50,6 +50,9 @@ importers:
       '@vitrailweb/payload-plugin-articles':
         specifier: workspace:*
         version: link:packages/payload-plugin-articles
+      '@vitrailweb/payload-plugin-auth':
+        specifier: workspace:*
+        version: link:packages/payload-plugin-auth
       '@vitrailweb/payload-plugin-axiom':
         specifier: workspace:*
         version: link:packages/payload-plugin-axiom
@@ -152,6 +155,21 @@ importers:
       react:
         specifier: 19.2.6
         version: 19.2.6
+      rimraf:
+        specifier: 3.0.2
+        version: 3.0.2
+      tsup:
+        specifier: 8.5.0
+        version: 8.5.0(@swc/core@1.15.43)(postcss@8.5.16)(tsx@4.21.0)(typescript@5.7.3)
+      typescript:
+        specifier: 5.7.3
+        version: 5.7.3
+
+  packages/payload-plugin-auth:
+    devDependencies:
+      payload:
+        specifier: 3.84.1
+        version: 3.84.1(graphql@16.14.2)(typescript@5.7.3)
       rimraf:
         specifier: 3.0.2
         version: 3.0.2

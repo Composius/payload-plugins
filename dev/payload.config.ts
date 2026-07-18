@@ -9,6 +9,7 @@ const suite = process.env.DEV_SUITE
 
 const loaders: Record<string, () => Promise<{ default: Promise<SanitizedConfig> }>> = {
   articles: () => import('./configs/articles/config.js'),
+  auth: () => import('./configs/auth/config.js'),
   axiom: () => import('./configs/axiom/config.js'),
   'custom-panel': () => import('./configs/custom-panel/config.js'),
   health: () => import('./configs/health/config.js'),

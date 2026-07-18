@@ -16,6 +16,7 @@
     "build": "pnpm --filter \"./packages/*\" build",
     "clean": "pnpm -r clean",
     "dev:articles": "cross-env DEV_SUITE=articles next dev dev --turbo",
+    "dev:auth": "cross-env DEV_SUITE=auth next dev dev --turbo",
     "dev:axiom": "cross-env DEV_SUITE=axiom next dev dev --turbo",
     "dev:custom-panel": "cross-env DEV_SUITE=custom-panel next dev dev --turbo",
     "dev:health": "cross-env DEV_SUITE=health next dev dev --turbo",
@@ -30,6 +31,7 @@
     "generate:importmap:pages": "cross-env DEV_SUITE=pages pnpm payload generate:importmap",
     "generate:importmap:umami": "cross-env DEV_SUITE=umami pnpm payload generate:importmap",
     "generate:types:articles": "cross-env DEV_SUITE=articles pnpm payload generate:types",
+    "generate:types:auth": "cross-env DEV_SUITE=auth pnpm payload generate:types",
     "generate:types:axiom": "cross-env DEV_SUITE=axiom pnpm payload generate:types",
     "generate:types:custom-panel": "cross-env DEV_SUITE=custom-panel pnpm payload generate:types",
     "generate:types:health": "cross-env DEV_SUITE=health pnpm payload generate:types",
@@ -45,7 +47,7 @@
     "test:e2e": "playwright test",
     "test:int": "vitest run dev/configs",
     "test:unit": "vitest run packages",
-    "typecheck": "tsc --noEmit && tsc --noEmit -p dev/configs/articles && tsc --noEmit -p dev/configs/axiom && tsc --noEmit -p dev/configs/custom-panel && tsc --noEmit -p dev/configs/health && tsc --noEmit -p dev/configs/home-nav && tsc --noEmit -p dev/configs/media && tsc --noEmit -p dev/configs/menus && tsc --noEmit -p dev/configs/pages && tsc --noEmit -p dev/configs/umami"
+    "typecheck": "tsc --noEmit && tsc --noEmit -p dev/configs/articles && tsc --noEmit -p dev/configs/auth && tsc --noEmit -p dev/configs/axiom && tsc --noEmit -p dev/configs/custom-panel && tsc --noEmit -p dev/configs/health && tsc --noEmit -p dev/configs/home-nav && tsc --noEmit -p dev/configs/media && tsc --noEmit -p dev/configs/menus && tsc --noEmit -p dev/configs/pages && tsc --noEmit -p dev/configs/umami"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3.2.0",
@@ -62,6 +64,7 @@
     "@types/react": "19.2.14",
     "@types/react-dom": "19.2.3",
     "@vitrailweb/payload-plugin-articles": "workspace:*",
+    "@vitrailweb/payload-plugin-auth": "workspace:*",
     "@vitrailweb/payload-plugin-axiom": "workspace:*",
     "@vitrailweb/payload-plugin-custom-panel": "workspace:*",
     "@vitrailweb/payload-plugin-health": "workspace:*",
