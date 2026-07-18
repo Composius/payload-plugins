@@ -1,6 +1,6 @@
 {
   "name": "@vitrailweb/payload-plugin-health",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Health check endpoint with optional custom checks",
   "license": "MIT",
   "author": {
