@@ -5,7 +5,7 @@ pnpm monorepo of [Payload CMS](https://payloadcms.com) plugins.
 | Package                                                              | Version | Description                        |
 | -------------------------------------------------------------------- | ------- | ---------------------------------- |
 | [@vitrailweb/payload-plugin-articles](packages/payload-plugin-articles) | 1.2.0 | Articles and categories collections with drafts, live preview, and SEO |
-| [@vitrailweb/payload-plugin-auth](packages/payload-plugin-auth)         | 0.1.0 | Users auth collection with configurable roles and role-based access helpers |
+| [@vitrailweb/payload-plugin-auth](packages/payload-plugin-auth)         | 0.1.1 | Users auth collection with configurable roles and role-based access helpers |
 | [@vitrailweb/payload-plugin-axiom](packages/payload-plugin-axiom)       | 0.2.1 | Axiom plugin                       |
 | [@vitrailweb/payload-plugin-custom-panel](packages/payload-plugin-custom-panel) | 0.1.2 | Configurable panel (site title, message, link buttons) above the admin dashboard |
 | [@vitrailweb/payload-plugin-health](packages/payload-plugin-health)     | 0.1.1 | Health check endpoint with optional custom checks |
