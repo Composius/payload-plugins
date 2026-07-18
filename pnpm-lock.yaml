@@ -56,6 +56,9 @@ importers:
       '@vitrailweb/payload-plugin-custom-panel':
         specifier: workspace:*
         version: link:packages/payload-plugin-custom-panel
+      '@vitrailweb/payload-plugin-health':
+        specifier: workspace:*
+        version: link:packages/payload-plugin-health
       '@vitrailweb/payload-plugin-home-nav':
         specifier: workspace:*
         version: link:packages/payload-plugin-home-nav
@@ -192,6 +195,21 @@ importers:
       react:
         specifier: 19.2.6
         version: 19.2.6
+      rimraf:
+        specifier: 3.0.2
+        version: 3.0.2
+      tsup:
+        specifier: 8.5.0
+        version: 8.5.0(@swc/core@1.15.43)(postcss@8.5.16)(tsx@4.21.0)(typescript@5.7.3)
+      typescript:
+        specifier: 5.7.3
+        version: 5.7.3
+
+  packages/payload-plugin-health:
+    devDependencies:
+      payload:
+        specifier: 3.84.1
+        version: 3.84.1(graphql@16.14.2)(typescript@5.7.3)
       rimraf:
         specifier: 3.0.2
         version: 3.0.2

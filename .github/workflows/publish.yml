@@ -20,6 +20,7 @@ on:
           - pages
           - axiom
           - custom-panel
+          - health
           - home-nav
 
 jobs:
