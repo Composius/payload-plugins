@@ -20,13 +20,13 @@ Do NOT invent structure. Copy the closest existing plugin and adapt:
 
 | New plugin is… | Copy from | Build tool |
 |---|---|---|
-| A collection (fields, hooks, access), no admin UI components | `packages/payload-plugin-menus` | swc + tsc (`.swcrc`, `build:swc`/`build:types` scripts) |
+| A collection (fields, hooks, access), no admin UI components | `packages/payload-plugin-menus` | tsup, single `index` entry |
 | Server-only integration (hooks/endpoints, no collection, no UI) | `packages/payload-plugin-axiom` | tsup, single `index` entry |
 | Admin UI, server components only (panels, nav/header slots — no state/effects of its own; interactive leaves like `Link`/`PayloadIcon` come from `@payloadcms/ui`) | `packages/payload-plugin-custom-panel` or `-home-nav` | tsup with `index` + `exports/rsc` entries, no client bundle, no banner |
 | Admin UI with own client components (state, hooks, charts) | `packages/payload-plugin-umami` | tsup with `index` + `exports/client` (+ `exports/rsc`) entries, `"use client"` banner on the client bundle |
 | Content collection with drafts/live-preview/SEO reusing shared editor features | `packages/payload-plugin-articles` or `-pages` | tsup, bundles `@vitrailweb/payload-plugin-shared-components` (private, never published) into its own dist |
 
-Read the template's `package.json`, `tsup.config.ts`/`.swcrc`, and
+Read the template's `package.json`, `tsup.config.ts`, and
 `tsconfig.json` before writing anything.
 
 ## Step 1 — the package: `packages/payload-plugin-<name>/`
@@ -37,7 +37,7 @@ Required files:
 package.json
 README.md
 tsconfig.json
-tsup.config.ts        (or .swcrc for the menus/swc variant)
+tsup.config.ts
 src/index.ts
 src/translations/index.ts
 src/translations/en.ts
