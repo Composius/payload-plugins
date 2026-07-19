@@ -1,6 +1,6 @@
 {
   "name": "@composius/payload-plugin-auth",
-  "version": "0.1.1",
+  "version": "1.0.0",
   "description": "Users auth collection with configurable roles and role-based access helpers",
   "license": "MIT",
   "author": {
