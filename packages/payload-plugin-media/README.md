@@ -1,4 +1,4 @@
-# @vitrailweb/payload-plugin-media
+# @composius/payload-plugin-media
 
 A [Payload CMS](https://payloadcms.com) plugin that adds a `media` upload
 collection: images are converted to WebP (quality 90), the original is capped
@@ -46,11 +46,11 @@ pnpm add payload
 
 ```ts
 import { buildConfig } from 'payload'
-import { VWPayloadPluginMedia } from '@vitrailweb/payload-plugin-media'
+import { ComposiusPayloadPluginMedia } from '@composius/payload-plugin-media'
 
 export default buildConfig({
   plugins: [
-    VWPayloadPluginMedia({
+    ComposiusPayloadPluginMedia({
       prefix: { folder: process.env.R2_FOLDER },
     }),
   ],
@@ -63,7 +63,7 @@ export default buildConfig({
 All optional — defaults shown as comments:
 
 ```ts
-VWPayloadPluginMedia({
+ComposiusPayloadPluginMedia({
   // Access per operation. Defaults: read = anyone,
   // create/update/delete = authenticated.
   access: { read, create, update, delete },
@@ -100,7 +100,7 @@ pnpm install
 pnpm dev:media                                        # dev Payload app with this plugin
 pnpm vitest run packages/payload-plugin-media/test    # unit tests
 pnpm vitest run dev/configs/media                     # integration tests
-pnpm --filter @vitrailweb/payload-plugin-media build  # build to dist/
+pnpm --filter @composius/payload-plugin-media build  # build to dist/
 ```
 
 See the [root README](../../README.md) for the release flow.

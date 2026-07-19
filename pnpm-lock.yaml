@@ -8,6 +8,36 @@ importers:
 
   .:
     devDependencies:
+      '@composius/payload-plugin-articles':
+        specifier: workspace:*
+        version: link:packages/payload-plugin-articles
+      '@composius/payload-plugin-auth':
+        specifier: workspace:*
+        version: link:packages/payload-plugin-auth
+      '@composius/payload-plugin-axiom':
+        specifier: workspace:*
+        version: link:packages/payload-plugin-axiom
+      '@composius/payload-plugin-custom-panel':
+        specifier: workspace:*
+        version: link:packages/payload-plugin-custom-panel
+      '@composius/payload-plugin-health':
+        specifier: workspace:*
+        version: link:packages/payload-plugin-health
+      '@composius/payload-plugin-home-nav':
+        specifier: workspace:*
+        version: link:packages/payload-plugin-home-nav
+      '@composius/payload-plugin-media':
+        specifier: workspace:*
+        version: link:packages/payload-plugin-media
+      '@composius/payload-plugin-menus':
+        specifier: workspace:*
+        version: link:packages/payload-plugin-menus
+      '@composius/payload-plugin-pages':
+        specifier: workspace:*
+        version: link:packages/payload-plugin-pages
+      '@composius/payload-plugin-umami':
+        specifier: workspace:*
+        version: link:packages/payload-plugin-umami
       '@eslint/eslintrc':
         specifier: ^3.2.0
         version: 3.3.6
@@ -47,36 +77,6 @@ importers:
       '@types/react-dom':
         specifier: 19.2.3
         version: 19.2.3(@types/react@19.2.14)
-      '@vitrailweb/payload-plugin-articles':
-        specifier: workspace:*
-        version: link:packages/payload-plugin-articles
-      '@vitrailweb/payload-plugin-auth':
-        specifier: workspace:*
-        version: link:packages/payload-plugin-auth
-      '@vitrailweb/payload-plugin-axiom':
-        specifier: workspace:*
-        version: link:packages/payload-plugin-axiom
-      '@vitrailweb/payload-plugin-custom-panel':
-        specifier: workspace:*
-        version: link:packages/payload-plugin-custom-panel
-      '@vitrailweb/payload-plugin-health':
-        specifier: workspace:*
-        version: link:packages/payload-plugin-health
-      '@vitrailweb/payload-plugin-home-nav':
-        specifier: workspace:*
-        version: link:packages/payload-plugin-home-nav
-      '@vitrailweb/payload-plugin-media':
-        specifier: workspace:*
-        version: link:packages/payload-plugin-media
-      '@vitrailweb/payload-plugin-menus':
-        specifier: workspace:*
-        version: link:packages/payload-plugin-menus
-      '@vitrailweb/payload-plugin-pages':
-        specifier: workspace:*
-        version: link:packages/payload-plugin-pages
-      '@vitrailweb/payload-plugin-umami':
-        specifier: workspace:*
-        version: link:packages/payload-plugin-umami
       cross-env:
         specifier: ^7.0.3
         version: 7.0.3
@@ -131,6 +131,9 @@ importers:
 
   packages/payload-plugin-articles:
     devDependencies:
+      '@composius/payload-plugin-shared-components':
+        specifier: workspace:*
+        version: link:../payload-plugin-shared-components
       '@payloadcms/plugin-nested-docs':
         specifier: 3.84.1
         version: 3.84.1(payload@3.84.1(graphql@16.14.2)(typescript@5.7.3))
@@ -146,9 +149,6 @@ importers:
       '@types/react':
         specifier: 19.2.14
         version: 19.2.14
-      '@vitrailweb/payload-plugin-shared-components':
-        specifier: workspace:*
-        version: link:../payload-plugin-shared-components
       payload:
         specifier: 3.84.1
         version: 3.84.1(graphql@16.14.2)(typescript@5.7.3)
@@ -294,6 +294,9 @@ importers:
 
   packages/payload-plugin-pages:
     devDependencies:
+      '@composius/payload-plugin-shared-components':
+        specifier: workspace:*
+        version: link:../payload-plugin-shared-components
       '@payloadcms/plugin-seo':
         specifier: 3.84.1
         version: 3.84.1(@types/react@19.2.14)(monaco-editor@0.55.1)(next@16.2.6(@babel/core@7.29.7)(@playwright/test@1.58.2)(react-dom@19.2.6(react@19.2.6))(react@19.2.6)(sass@1.77.4))(payload@3.84.1(graphql@16.14.2)(typescript@5.7.3))(react-dom@19.2.6(react@19.2.6))(react@19.2.6)(typescript@5.7.3)
@@ -303,9 +306,6 @@ importers:
       '@types/react':
         specifier: 19.2.14
         version: 19.2.14
-      '@vitrailweb/payload-plugin-shared-components':
-        specifier: workspace:*
-        version: link:../payload-plugin-shared-components
       payload:
         specifier: 3.84.1
         version: 3.84.1(graphql@16.14.2)(typescript@5.7.3)

@@ -6,7 +6,7 @@ import { anyone, authenticated } from './defaults.js'
 
 export type { MenusAccess }
 
-export type VWPayloadPluginMenusConfig = {
+export type ComposiusPayloadPluginMenusConfig = {
   /**
    * Access control for the menus collection, per operation.
    * Defaults: `read` allows anyone, `create`/`update`/`delete` require an
@@ -21,8 +21,8 @@ export type VWPayloadPluginMenusConfig = {
   disabled?: boolean
 }
 
-export const VWPayloadPluginMenus =
-  (pluginOptions: VWPayloadPluginMenusConfig = {}) =>
+export const ComposiusPayloadPluginMenus =
+  (pluginOptions: ComposiusPayloadPluginMenusConfig = {}) =>
   (config: Config): Config => {
     if (!config.collections) {
       config.collections = []

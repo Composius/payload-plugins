@@ -1,4 +1,4 @@
-import { VWPayloadPluginMenus } from '@vitrailweb/payload-plugin-menus'
+import { ComposiusPayloadPluginMenus } from '@composius/payload-plugin-menus'
 import path from 'path'
 import { fileURLToPath } from 'url'
 
@@ -10,7 +10,7 @@ const dirname = path.dirname(fileURLToPath(import.meta.url))
 export default buildDevConfig({
   dirname,
   plugins: [
-    VWPayloadPluginMenus({
+    ComposiusPayloadPluginMenus({
       collections: ['users'],
     }),
   ],

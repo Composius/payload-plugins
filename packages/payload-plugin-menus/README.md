@@ -1,4 +1,4 @@
-# @vitrailweb/payload-plugin-menus
+# @composius/payload-plugin-menus
 
 A [Payload CMS](https://payloadcms.com) plugin that adds a `menus` collection.
 
@@ -43,10 +43,10 @@ pnpm add payload
 
 ```ts
 import { buildConfig } from 'payload'
-import { VWPayloadPluginMenus } from '@vitrailweb/payload-plugin-menus'
+import { ComposiusPayloadPluginMenus } from '@composius/payload-plugin-menus'
 
 export default buildConfig({
-  plugins: [VWPayloadPluginMenus({ collections: ['pages'] })],
+  plugins: [ComposiusPayloadPluginMenus({ collections: ['pages'] })],
   // ...
 })
 ```
@@ -56,7 +56,7 @@ export default buildConfig({
 All optional — defaults shown as comments:
 
 ```ts
-VWPayloadPluginMenus({
+ComposiusPayloadPluginMenus({
   // Access per operation. Defaults: read = anyone,
   // create/update/delete = authenticated.
   access: { read, create, update, delete },
@@ -79,7 +79,7 @@ pnpm install
 pnpm dev:menus                                        # dev Payload app with this plugin
 pnpm vitest run packages/payload-plugin-menus/test    # unit tests
 pnpm vitest run dev/configs/menus                     # integration tests
-pnpm --filter @vitrailweb/payload-plugin-menus build  # build to dist/
+pnpm --filter @composius/payload-plugin-menus build  # build to dist/
 ```
 
 See the [root README](../../README.md) for the release flow.

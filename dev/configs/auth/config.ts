@@ -1,4 +1,4 @@
-import { VWPayloadPluginAuth } from '@vitrailweb/payload-plugin-auth'
+import { ComposiusPayloadPluginAuth } from '@composius/payload-plugin-auth'
 import path from 'path'
 import { fileURLToPath } from 'url'
 
@@ -9,6 +9,6 @@ const dirname = path.dirname(fileURLToPath(import.meta.url))
 
 export default buildDevConfig({
   dirname,
-  plugins: [VWPayloadPluginAuth()],
+  plugins: [ComposiusPayloadPluginAuth()],
   seed,
 })

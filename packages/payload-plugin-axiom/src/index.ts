@@ -4,7 +4,7 @@ import type { DestinationStream, LevelWithSilent, LoggerOptions, StreamEntry } f
 import axiomTransport from '@axiomhq/pino'
 import { multistream } from 'pino'
 
-export type VWPayloadPluginAxiomConfig = {
+export type ComposiusPayloadPluginAxiomConfig = {
   /**
    * The Axiom dataset the logs are ingested into.
    */
@@ -62,8 +62,8 @@ export type VWPayloadPluginAxiomConfig = {
  * targets are resolved by module path at runtime, which breaks under
  * bundlers (Next.js/Turbopack) and pnpm's strict node_modules.
  */
-export const VWPayloadPluginAxiom =
-  (pluginOptions: VWPayloadPluginAxiomConfig) =>
+export const ComposiusPayloadPluginAxiom =
+  (pluginOptions: ComposiusPayloadPluginAxiomConfig) =>
   async (config: Config): Promise<Config> => {
     if (pluginOptions.disabled) {
       return config
@@ -76,7 +76,7 @@ export const VWPayloadPluginAxiom =
     // crashing the config build.
     if (!dataset || !token) {
       console.warn(
-        '[@vitrailweb/payload-plugin-axiom] `dataset` or `token` is missing, logs will not be sent to Axiom.',
+        '[@composius/payload-plugin-axiom] `dataset` or `token` is missing, logs will not be sent to Axiom.',
       )
       return config
     }
@@ -133,7 +133,7 @@ export const VWPayloadPluginAxiom =
         await incomingOnInit(payload)
       }
       payload.logger.info(
-        { dataset, plugin: '@vitrailweb/payload-plugin-axiom' },
+        { dataset, plugin: '@composius/payload-plugin-axiom' },
         `Axiom logging enabled for dataset "${dataset}"`,
       )
     }

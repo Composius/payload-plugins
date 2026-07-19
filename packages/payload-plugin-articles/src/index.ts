@@ -22,7 +22,7 @@ import {
   defaultGenerateURL,
 } from './defaults.js'
 
-export type VWPayloadPluginArticlesConfig = {
+export type ComposiusPayloadPluginArticlesConfig = {
   /**
    * Access control for the articles collection, per operation.
    * Defaults: `read` allows authenticated users or published documents,
@@ -60,8 +60,8 @@ export type VWPayloadPluginArticlesConfig = {
       }
 }
 
-export const VWPayloadPluginArticles =
-  (pluginOptions: VWPayloadPluginArticlesConfig = {}) =>
+export const ComposiusPayloadPluginArticles =
+  (pluginOptions: ComposiusPayloadPluginArticlesConfig = {}) =>
   (config: Config): Config => {
     if (!config.collections) {
       config.collections = []

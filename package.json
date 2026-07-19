@@ -1,15 +1,15 @@
 {
-  "name": "vitrailweb-payload-plugins",
+  "name": "composius-payload-plugins",
   "version": "0.0.0",
   "private": true,
-  "description": "Monorepo for Vitrail Web Payload plugins",
+  "description": "Monorepo for Composius Payload plugins",
   "license": "MIT",
   "author": {
-    "name": "Vitrail Web"
+    "name": "Composius"
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/Vitrail-Web/payload-plugins"
+    "url": "https://github.com/Composius/payload-plugins"
   },
   "type": "module",
   "scripts": {
@@ -63,16 +63,16 @@
     "@types/node": "22.19.9",
     "@types/react": "19.2.14",
     "@types/react-dom": "19.2.3",
-    "@vitrailweb/payload-plugin-articles": "workspace:*",
-    "@vitrailweb/payload-plugin-auth": "workspace:*",
-    "@vitrailweb/payload-plugin-axiom": "workspace:*",
-    "@vitrailweb/payload-plugin-custom-panel": "workspace:*",
-    "@vitrailweb/payload-plugin-health": "workspace:*",
-    "@vitrailweb/payload-plugin-home-nav": "workspace:*",
-    "@vitrailweb/payload-plugin-media": "workspace:*",
-    "@vitrailweb/payload-plugin-menus": "workspace:*",
-    "@vitrailweb/payload-plugin-pages": "workspace:*",
-    "@vitrailweb/payload-plugin-umami": "workspace:*",
+    "@composius/payload-plugin-articles": "workspace:*",
+    "@composius/payload-plugin-auth": "workspace:*",
+    "@composius/payload-plugin-axiom": "workspace:*",
+    "@composius/payload-plugin-custom-panel": "workspace:*",
+    "@composius/payload-plugin-health": "workspace:*",
+    "@composius/payload-plugin-home-nav": "workspace:*",
+    "@composius/payload-plugin-media": "workspace:*",
+    "@composius/payload-plugin-menus": "workspace:*",
+    "@composius/payload-plugin-pages": "workspace:*",
+    "@composius/payload-plugin-umami": "workspace:*",
     "cross-env": "^7.0.3",
     "eslint": "^9.23.0",
     "eslint-config-next": "16.2.6",

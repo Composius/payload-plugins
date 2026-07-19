@@ -1,14 +1,14 @@
 {
-  "name": "@vitrailweb/payload-plugin-menus",
+  "name": "@composius/payload-plugin-menus",
   "version": "0.3.3",
   "description": "Payload plugin that adds a Menus collection",
   "license": "MIT",
   "author": {
-    "name": "Vitrail Web"
+    "name": "Composius"
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/Vitrail-Web/payload-plugins",
+    "url": "https://github.com/Composius/payload-plugins",
     "directory": "packages/payload-plugin-menus"
   },
   "type": "module",

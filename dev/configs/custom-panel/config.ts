@@ -1,4 +1,4 @@
-import { VWPayloadPluginCustomPanel } from '@vitrailweb/payload-plugin-custom-panel'
+import { ComposiusPayloadPluginCustomPanel } from '@composius/payload-plugin-custom-panel'
 import path from 'path'
 import { fileURLToPath } from 'url'
 
@@ -10,8 +10,8 @@ const dirname = path.dirname(fileURLToPath(import.meta.url))
 export default buildDevConfig({
   dirname,
   plugins: [
-    VWPayloadPluginCustomPanel({
-      title: 'Vitrail Web',
+    ComposiusPayloadPluginCustomPanel({
+      title: 'Composius',
       rows: [
         {
           message: {

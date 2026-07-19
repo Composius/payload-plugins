@@ -5,7 +5,7 @@ import type { LocalizedText } from './localized.js'
 export { resolveLocalizedText } from './localized.js'
 export type { LocalizedText } from './localized.js'
 
-export type VWPayloadPluginHomeNavConfig = {
+export type ComposiusPayloadPluginHomeNavConfig = {
   /**
    * Where "Home" links to.
    * @default the admin dashboard (`routes.admin`)
@@ -33,7 +33,7 @@ export type VWPayloadPluginHomeNavConfig = {
   disabled?: boolean
 }
 
-const COMPONENT_PATH = '@vitrailweb/payload-plugin-home-nav/rsc'
+const COMPONENT_PATH = '@composius/payload-plugin-home-nav/rsc'
 
 /**
  * Makes the admin's way home obvious: a translated "Home" label next to the
@@ -41,8 +41,8 @@ const COMPONENT_PATH = '@vitrailweb/payload-plugin-home-nav/rsc'
  * matching "Home" link at the top of the collapsible nav sidebar. Both are
  * server components resolved against the admin language.
  */
-export const VWPayloadPluginHomeNav =
-  (pluginOptions: VWPayloadPluginHomeNavConfig = {}) =>
+export const ComposiusPayloadPluginHomeNav =
+  (pluginOptions: ComposiusPayloadPluginHomeNavConfig = {}) =>
   (config: Config): Config => {
     if (pluginOptions.disabled) {
       return config

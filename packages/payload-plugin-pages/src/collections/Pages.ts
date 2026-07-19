@@ -1,8 +1,8 @@
 import type { Access, CollectionConfig } from 'payload'
 import { slugField } from 'payload'
 import { lexicalEditor } from '@payloadcms/richtext-lexical'
-import type { SeoGenerators } from '@vitrailweb/payload-plugin-shared-components'
-import { contentEditorFeatures, seoField } from '@vitrailweb/payload-plugin-shared-components'
+import type { SeoGenerators } from '@composius/payload-plugin-shared-components'
+import { contentEditorFeatures, seoField } from '@composius/payload-plugin-shared-components'
 import { label } from '../translations/index.js'
 
 export type PagesAccess = {
@@ -67,7 +67,7 @@ export const Pages = ({ access, pageUrl, seo }: PagesOptions): CollectionConfig 
       type: 'richText',
       label: label((t) => t.fields.content),
       editor: lexicalEditor({
-        features: contentEditorFeatures('@vitrailweb/payload-plugin-pages/client'),
+        features: contentEditorFeatures('@composius/payload-plugin-pages/client'),
       }),
     },
     {

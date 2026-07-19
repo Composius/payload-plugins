@@ -2,7 +2,7 @@ import type { Access, CollectionConfig, Config, SelectField } from 'payload'
 
 import { describe, expect, test } from 'vitest'
 
-import { hasRole, hasRoleFieldLevel, hasRoleOrOwner, VWPayloadPluginAuth } from '../src/index.js'
+import { hasRole, hasRoleFieldLevel, hasRoleOrOwner, ComposiusPayloadPluginAuth } from '../src/index.js'
 
 const accessArgs = (user: unknown) => ({ req: { user } }) as Parameters<Access>[0]
 
@@ -54,9 +54,9 @@ describe('access helpers', () => {
   })
 })
 
-describe('VWPayloadPluginAuth', () => {
+describe('ComposiusPayloadPluginAuth', () => {
   test('adds the users collection with auth and admin settings', () => {
-    const config = VWPayloadPluginAuth()(baseConfig())
+    const config = ComposiusPayloadPluginAuth()(baseConfig())
     const users = findUsers(config)
 
     const fieldNames = users.fields.map((field) => (field as { name?: string }).name)
@@ -71,7 +71,7 @@ describe('VWPayloadPluginAuth', () => {
   })
 
   test('collection is hidden in the admin UI for non-admins', () => {
-    const config = VWPayloadPluginAuth()(baseConfig())
+    const config = ComposiusPayloadPluginAuth()(baseConfig())
     const hidden = findUsers(config).admin?.hidden as (args: { user: unknown }) => boolean
 
     expect(hidden({ user: { role: 'admin' } })).toBe(false)
@@ -80,7 +80,7 @@ describe('VWPayloadPluginAuth', () => {
   })
 
   test('role field defaults, saves to JWT, and is admin-only to change', () => {
-    const config = VWPayloadPluginAuth()(baseConfig())
+    const config = ComposiusPayloadPluginAuth()(baseConfig())
     const role = findRole(findUsers(config))
 
     expect(role.defaultValue).toBe('viewer')
@@ -92,7 +92,7 @@ describe('VWPayloadPluginAuth', () => {
   })
 
   test('default access: admins manage, users read/update themselves', () => {
-    const config = VWPayloadPluginAuth()(baseConfig())
+    const config = ComposiusPayloadPluginAuth()(baseConfig())
     const users = findUsers(config)
 
     expect(users.access?.create?.(accessArgs({ id: 1, role: 'viewer' }))).toBe(false)
@@ -105,7 +105,7 @@ describe('VWPayloadPluginAuth', () => {
 
   test('custom access overrides replace only the provided operations', () => {
     const read: Access = () => true
-    const config = VWPayloadPluginAuth({ access: { read } })(baseConfig())
+    const config = ComposiusPayloadPluginAuth({ access: { read } })(baseConfig())
     const users = findUsers(config)
 
     expect(users.access?.read).toBe(read)
@@ -113,7 +113,7 @@ describe('VWPayloadPluginAuth', () => {
   })
 
   test('custom roles, adminRole and defaultRole are applied', () => {
-    const config = VWPayloadPluginAuth({
+    const config = ComposiusPayloadPluginAuth({
       adminRole: 'owner',
       defaultRole: 'member',
       roles: [
@@ -134,10 +134,10 @@ describe('VWPayloadPluginAuth', () => {
   })
 
   test('throws when adminRole or defaultRole is not a configured role', () => {
-    expect(() => VWPayloadPluginAuth({ adminRole: 'boss' })(baseConfig())).toThrow(
+    expect(() => ComposiusPayloadPluginAuth({ adminRole: 'boss' })(baseConfig())).toThrow(
       /adminRole "boss"/,
     )
-    expect(() => VWPayloadPluginAuth({ defaultRole: 'guest' })(baseConfig())).toThrow(
+    expect(() => ComposiusPayloadPluginAuth({ defaultRole: 'guest' })(baseConfig())).toThrow(
       /defaultRole "guest"/,
     )
   })
@@ -148,7 +148,7 @@ describe('VWPayloadPluginAuth', () => {
       admin: { useAsTitle: 'email' },
       fields: [{ name: 'bio', type: 'textarea' }],
     }
-    const config = VWPayloadPluginAuth()({ collections: [existing] } as unknown as Config)
+    const config = ComposiusPayloadPluginAuth()({ collections: [existing] } as unknown as Config)
 
     expect(config.collections).toHaveLength(1)
     const users = findUsers(config)
@@ -164,7 +164,7 @@ describe('VWPayloadPluginAuth', () => {
       slug: 'users',
       fields: [{ name: 'name', type: 'text' }],
     }
-    const config = VWPayloadPluginAuth()({ collections: [existing] } as unknown as Config)
+    const config = ComposiusPayloadPluginAuth()({ collections: [existing] } as unknown as Config)
 
     const names = findUsers(config).fields.filter(
       (field) => (field as { name?: string }).name === 'name',
@@ -173,12 +173,12 @@ describe('VWPayloadPluginAuth', () => {
   })
 
   test('supports a custom collection slug', () => {
-    const config = VWPayloadPluginAuth({ slug: 'members' })(baseConfig())
+    const config = ComposiusPayloadPluginAuth({ slug: 'members' })(baseConfig())
     findUsers(config, 'members')
   })
 
   test('disabled still registers the collection for schema consistency', () => {
-    const config = VWPayloadPluginAuth({ disabled: true })(baseConfig())
+    const config = ComposiusPayloadPluginAuth({ disabled: true })(baseConfig())
     findUsers(config)
   })
 })

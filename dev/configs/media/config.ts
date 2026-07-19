@@ -1,4 +1,4 @@
-import { VWPayloadPluginMedia } from '@vitrailweb/payload-plugin-media'
+import { ComposiusPayloadPluginMedia } from '@composius/payload-plugin-media'
 import path from 'path'
 import { fileURLToPath } from 'url'
 
@@ -11,7 +11,7 @@ export default buildDevConfig({
   defaultMediaCollection: false,
   dirname,
   plugins: [
-    VWPayloadPluginMedia({
+    ComposiusPayloadPluginMedia({
       prefix: { folder: 'uploads' },
       randomSuffix: false,
       staticDir: path.resolve(dirname, 'media'),

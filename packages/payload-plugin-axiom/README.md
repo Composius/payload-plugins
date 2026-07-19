@@ -1,4 +1,4 @@
-# @vitrailweb/payload-plugin-axiom
+# @composius/payload-plugin-axiom
 
 A [Payload CMS](https://payloadcms.com) plugin that configures the Payload logger
 to send logs to [Axiom](https://axiom.co), using the official
@@ -21,11 +21,11 @@ pnpm add payload
 
 ```ts
 import { buildConfig } from 'payload'
-import { VWPayloadPluginAxiom } from '@vitrailweb/payload-plugin-axiom'
+import { ComposiusPayloadPluginAxiom } from '@composius/payload-plugin-axiom'
 
 export default buildConfig({
   plugins: [
-    VWPayloadPluginAxiom({
+    ComposiusPayloadPluginAxiom({
       dataset: process.env.AXIOM_DATASET || '',
       token: process.env.AXIOM_TOKEN || '',
     }),
@@ -58,7 +58,7 @@ instead of failing.
 ```ts
 import pretty from 'pino-pretty'
 
-VWPayloadPluginAxiom({
+ComposiusPayloadPluginAxiom({
   dataset: process.env.AXIOM_DATASET || '',
   token: process.env.AXIOM_TOKEN || '',
   console: process.env.NODE_ENV === 'development' ? pretty({ colorize: true }) : true,

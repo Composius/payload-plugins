@@ -8,7 +8,7 @@ export type { CustomPanelAccess, CustomPanelLink, CustomPanelRow, LocalizedText 
 /** Default `read` access: any authenticated user. */
 export const authenticated: Access = ({ req: { user } }) => Boolean(user)
 
-export type VWPayloadPluginCustomPanelConfig = {
+export type ComposiusPayloadPluginCustomPanelConfig = {
   /**
    * Access control for the panel, per operation. Only `read` exists.
    * Default: `read` requires an authenticated user.
@@ -25,7 +25,7 @@ export type VWPayloadPluginCustomPanelConfig = {
   disabled?: boolean
 }
 
-const COMPONENT_PATH = '@vitrailweb/payload-plugin-custom-panel/rsc'
+const COMPONENT_PATH = '@composius/payload-plugin-custom-panel/rsc'
 const COMPONENT_EXPORT = 'CustomPanel'
 
 /**
@@ -34,8 +34,8 @@ const COMPONENT_EXPORT = 'CustomPanel'
  * all from plugin options. Rendered as a server component gated by
  * `access.read`, so denied users get nothing.
  */
-export const VWPayloadPluginCustomPanel =
-  (pluginOptions: VWPayloadPluginCustomPanelConfig = {}) =>
+export const ComposiusPayloadPluginCustomPanel =
+  (pluginOptions: ComposiusPayloadPluginCustomPanelConfig = {}) =>
   (config: Config): Config => {
     if (pluginOptions.disabled) {
       return config

@@ -1,4 +1,4 @@
-# @vitrailweb/payload-plugin-home-nav
+# @composius/payload-plugin-home-nav
 
 A [Payload CMS](https://payloadcms.com) plugin that makes the admin's way home
 obvious:
@@ -32,11 +32,11 @@ pnpm add @payloadcms/ui payload react
 
 ```ts
 import { buildConfig } from 'payload'
-import { VWPayloadPluginHomeNav } from '@vitrailweb/payload-plugin-home-nav'
+import { ComposiusPayloadPluginHomeNav } from '@composius/payload-plugin-home-nav'
 
 export default buildConfig({
   plugins: [
-    VWPayloadPluginHomeNav(),
+    ComposiusPayloadPluginHomeNav(),
   ],
   // ...
 })
@@ -45,7 +45,7 @@ export default buildConfig({
 Point "Home" somewhere else (e.g. the public site) or change the label:
 
 ```ts
-VWPayloadPluginHomeNav({
+ComposiusPayloadPluginHomeNav({
   href: '/',
   label: { en: 'Back to site', fr: 'Retour au site' },
 })
@@ -77,7 +77,7 @@ pnpm generate:importmap:home-nav                            # register the compo
 pnpm dev:home-nav                                           # dev Payload app with this plugin
 pnpm vitest run packages/payload-plugin-home-nav/test       # unit tests
 pnpm vitest run dev/configs/home-nav                        # integration tests
-pnpm --filter @vitrailweb/payload-plugin-home-nav build     # build to dist/
+pnpm --filter @composius/payload-plugin-home-nav build     # build to dist/
 ```
 
 See the [root README](../../README.md) for the release flow.

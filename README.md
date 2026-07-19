@@ -1,20 +1,20 @@
-# Vitrail Web — Payload plugins
+# Composius — Payload plugins
 
 pnpm monorepo of [Payload CMS](https://payloadcms.com) plugins.
 
 | Package                                                              | Version | Description                        |
 | -------------------------------------------------------------------- | ------- | ---------------------------------- |
-| [@vitrailweb/payload-plugin-articles](packages/payload-plugin-articles) | 1.2.0 | Articles and categories collections with drafts, live preview, and SEO |
-| [@vitrailweb/payload-plugin-auth](packages/payload-plugin-auth)         | 0.1.1 | Users auth collection with configurable roles and role-based access helpers |
-| [@vitrailweb/payload-plugin-axiom](packages/payload-plugin-axiom)       | 0.2.1 | Axiom plugin                       |
-| [@vitrailweb/payload-plugin-custom-panel](packages/payload-plugin-custom-panel) | 0.1.2 | Configurable panel (site title, message, link buttons) above the admin dashboard |
-| [@vitrailweb/payload-plugin-health](packages/payload-plugin-health)     | 0.1.1 | Health check endpoint with optional custom checks |
-| [@vitrailweb/payload-plugin-home-nav](packages/payload-plugin-home-nav) | 0.1.2 | Translated "Home" label next to the admin navbar icon and a Home link at the top of the nav sidebar |
-| [@vitrailweb/payload-plugin-media](packages/payload-plugin-media)       | 0.1.1 | Configurable media uploads collection (access, unique filenames, storage prefix, image sizes) |
-| [@vitrailweb/payload-plugin-menus](packages/payload-plugin-menus)       | 0.3.3 | Menus collection                   |
-| [@vitrailweb/payload-plugin-pages](packages/payload-plugin-pages)       | 0.1.1 | Pages collection with drafts, live preview, and SEO |
-| [@vitrailweb/payload-plugin-umami](packages/payload-plugin-umami)       | 0.3.1 | Umami widget |
-| [@vitrailweb/payload-plugin-shared-components](packages/payload-plugin-shared-components) | 0.1.0 (private) | Private — editor features, SEO field, and access defaults inlined into the plugins at build time |
+| [@composius/payload-plugin-articles](packages/payload-plugin-articles) | 1.2.0 | Articles and categories collections with drafts, live preview, and SEO |
+| [@composius/payload-plugin-auth](packages/payload-plugin-auth)         | 0.1.1 | Users auth collection with configurable roles and role-based access helpers |
+| [@composius/payload-plugin-axiom](packages/payload-plugin-axiom)       | 0.2.1 | Axiom plugin                       |
+| [@composius/payload-plugin-custom-panel](packages/payload-plugin-custom-panel) | 0.1.2 | Configurable panel (site title, message, link buttons) above the admin dashboard |
+| [@composius/payload-plugin-health](packages/payload-plugin-health)     | 0.1.1 | Health check endpoint with optional custom checks |
+| [@composius/payload-plugin-home-nav](packages/payload-plugin-home-nav) | 0.1.2 | Translated "Home" label next to the admin navbar icon and a Home link at the top of the nav sidebar |
+| [@composius/payload-plugin-media](packages/payload-plugin-media)       | 0.1.1 | Configurable media uploads collection (access, unique filenames, storage prefix, image sizes) |
+| [@composius/payload-plugin-menus](packages/payload-plugin-menus)       | 0.3.3 | Menus collection                   |
+| [@composius/payload-plugin-pages](packages/payload-plugin-pages)       | 0.1.1 | Pages collection with drafts, live preview, and SEO |
+| [@composius/payload-plugin-umami](packages/payload-plugin-umami)       | 0.3.1 | Umami widget |
+| [@composius/payload-plugin-shared-components](packages/payload-plugin-shared-components) | 0.1.0 (private) | Private — editor features, SEO field, and access defaults inlined into the plugins at build time |
 
 ## Layout
 
@@ -55,7 +55,7 @@ pnpm generate:importmap:pages
 4. Add `dev:<name>` and `generate:types:<name>` scripts to the root `package.json`, plus `workspace:*` devDependency on the new package.
 5. Add the short name to the `package` choices in `.github/workflows/publish.yml`.
 6. Add the code and commit.
-7. For publishing for the first time, login to npm `npm login` and run `pnpm --filter @vitrailweb/payload-plugin-<name> publish --access public --no-git-checks`.
+7. For publishing for the first time, login to npm `npm login` and run `pnpm --filter @composius/payload-plugin-<name> publish --access public --no-git-checks`.
 8. Go to npmjs.com and in the packages of the account, go to Settings and add a Trusted Publisher.
 9. Continue with the next section, as local publish is not trusted. And for local testing in another project run `npm logout` first.
 
@@ -85,6 +85,6 @@ First commit everthing, then:
 ### Test a package locally
 
 ```bash
-pnpm --filter @vitrailweb/payload-plugin-<name> build
+pnpm --filter @composius/payload-plugin-<name> build
 cd packages/payload-plugin-<name> && pnpm pack
 ```

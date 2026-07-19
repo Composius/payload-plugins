@@ -1,14 +1,14 @@
 {
-  "name": "@vitrailweb/payload-plugin-umami",
+  "name": "@composius/payload-plugin-umami",
   "version": "0.3.1",
   "description": "Payload plugin that adds Umami web-analytics widgets to the admin dashboard",
   "license": "MIT",
   "author": {
-    "name": "Vitrail Web"
+    "name": "Composius"
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/Vitrail-Web/payload-plugins",
+    "url": "https://github.com/Composius/payload-plugins",
     "directory": "packages/payload-plugin-umami"
   },
   "type": "module",

@@ -1,4 +1,4 @@
-# @vitrailweb/payload-plugin-custom-panel
+# @composius/payload-plugin-custom-panel
 
 A [Payload CMS](https://payloadcms.com) plugin that adds a panel above the
 admin dashboard (`admin.components.beforeDashboard`) showing the **site
@@ -26,11 +26,11 @@ pnpm add payload react
 
 ```ts
 import { buildConfig } from 'payload'
-import { VWPayloadPluginCustomPanel } from '@vitrailweb/payload-plugin-custom-panel'
+import { ComposiusPayloadPluginCustomPanel } from '@composius/payload-plugin-custom-panel'
 
 export default buildConfig({
   plugins: [
-    VWPayloadPluginCustomPanel({
+    ComposiusPayloadPluginCustomPanel({
       title: 'My Site',
       rows: [
         {
@@ -60,7 +60,7 @@ To restrict who sees the panel, pass an `access` object (Payload `Access`
 functions, like other plugins — only `read` for now):
 
 ```ts
-VWPayloadPluginCustomPanel({
+ComposiusPayloadPluginCustomPanel({
   // ...
   access: {
     read: ({ req: { user } }) => user?.role === 'admin',
@@ -102,7 +102,7 @@ pnpm generate:importmap:custom-panel                          # register the pan
 pnpm dev:custom-panel                                          # dev Payload app with this plugin
 pnpm vitest run packages/payload-plugin-custom-panel/test      # unit tests
 pnpm vitest run dev/configs/custom-panel                        # integration tests
-pnpm --filter @vitrailweb/payload-plugin-custom-panel build    # build to dist/
+pnpm --filter @composius/payload-plugin-custom-panel build    # build to dist/
 ```
 
 See the [root README](../../README.md) for the release flow.

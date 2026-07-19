@@ -1,14 +1,14 @@
 {
-  "name": "@vitrailweb/payload-plugin-home-nav",
+  "name": "@composius/payload-plugin-home-nav",
   "version": "0.1.2",
   "description": "Payload plugin that labels the admin navbar icon with a translated “Home” and adds a Home link at the top of the nav sidebar",
   "license": "MIT",
   "author": {
-    "name": "Vitrail Web"
+    "name": "Composius"
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/Vitrail-Web/payload-plugins",
+    "url": "https://github.com/Composius/payload-plugins",
     "directory": "packages/payload-plugin-home-nav"
   },
   "type": "module",

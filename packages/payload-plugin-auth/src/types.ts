@@ -20,7 +20,7 @@ export type UsersOptions = {
   slug: string
 }
 
-export type VWPayloadPluginAuthConfig = {
+export type ComposiusPayloadPluginAuthConfig = {
   /**
    * Access control for the users collection, per operation.
    * Defaults: `create`/`delete` require the admin role, `read`/`update` allow

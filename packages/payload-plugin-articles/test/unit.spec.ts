@@ -13,7 +13,7 @@ import {
   defaultGenerateURL,
   SEO_DESCRIPTION_MAX_LENGTH,
 } from '../src/defaults.js'
-import { VWPayloadPluginArticles } from '../src/index.js'
+import { ComposiusPayloadPluginArticles } from '../src/index.js'
 
 const accessArgs = (user: unknown) => ({ req: { user } }) as Parameters<Access>[0]
 
@@ -106,9 +106,9 @@ describe('SEO generate defaults', () => {
   })
 })
 
-describe('VWPayloadPluginArticles', () => {
+describe('ComposiusPayloadPluginArticles', () => {
   test('adds the articles collection', () => {
-    const config = VWPayloadPluginArticles()(baseConfig())
+    const config = ComposiusPayloadPluginArticles()(baseConfig())
     const articles = findArticles(config)
 
     expect(articles.versions).toMatchObject({ drafts: { autosave: true } })
@@ -118,7 +118,7 @@ describe('VWPayloadPluginArticles', () => {
   })
 
   test('adds the categories collection', () => {
-    const config = VWPayloadPluginArticles()(baseConfig())
+    const config = ComposiusPayloadPluginArticles()(baseConfig())
     const categories = findCategories(config)
 
     const fieldNames = categories.fields.flatMap((field) =>
@@ -134,7 +134,7 @@ describe('VWPayloadPluginArticles', () => {
   })
 
   test('articles get a single category relationship to categories', () => {
-    const config = VWPayloadPluginArticles()(baseConfig())
+    const config = ComposiusPayloadPluginArticles()(baseConfig())
     const articles = findArticles(config)
 
     const category = articles.fields.find(
@@ -146,12 +146,12 @@ describe('VWPayloadPluginArticles', () => {
     })
     expect((category as { hasMany?: boolean }).hasMany).toBeUndefined()
     expect((category as { admin?: { components?: { Field?: unknown } } }).admin?.components?.Field).toBe(
-      '@vitrailweb/payload-plugin-articles/client#CategoryFieldClient',
+      '@composius/payload-plugin-articles/client#CategoryFieldClient',
     )
   })
 
   test('nested docs plugin wires breadcrumbs hooks and parent filterOptions', () => {
-    const config = VWPayloadPluginArticles()(baseConfig())
+    const config = ComposiusPayloadPluginArticles()(baseConfig())
     const categories = findCategories(config)
 
     expect(categories.hooks?.beforeChange?.length).toBeGreaterThan(0)
@@ -161,7 +161,7 @@ describe('VWPayloadPluginArticles', () => {
   })
 
   test('disabled keeps the nested docs fields but skips its hooks', () => {
-    const config = VWPayloadPluginArticles({ disabled: true })(baseConfig())
+    const config = ComposiusPayloadPluginArticles({ disabled: true })(baseConfig())
     const categories = findCategories(config)
 
     const fieldNames = categories.fields.map((field) => (field as { name?: string }).name)
@@ -171,7 +171,7 @@ describe('VWPayloadPluginArticles', () => {
   })
 
   test('adds the SEO meta group and endpoints by default', () => {
-    const config = VWPayloadPluginArticles()(baseConfig())
+    const config = ComposiusPayloadPluginArticles()(baseConfig())
     const articles = findArticles(config)
 
     const meta = articles.fields.find((field) => (field as { name?: string }).name === 'meta')
@@ -181,7 +181,7 @@ describe('VWPayloadPluginArticles', () => {
   })
 
   test('seo: false removes the meta group and skips the SEO plugin', () => {
-    const config = VWPayloadPluginArticles({ seo: false })(baseConfig())
+    const config = ComposiusPayloadPluginArticles({ seo: false })(baseConfig())
     const articles = findArticles(config)
 
     const meta = articles.fields.find((field) => (field as { name?: string }).name === 'meta')
@@ -190,14 +190,14 @@ describe('VWPayloadPluginArticles', () => {
   })
 
   test('disabled still registers the collection for schema consistency', () => {
-    const config = VWPayloadPluginArticles({ disabled: true })(baseConfig())
+    const config = ComposiusPayloadPluginArticles({ disabled: true })(baseConfig())
     findArticles(config)
     expect(config.endpoints ?? []).toHaveLength(0)
   })
 
   test('custom access overrides replace only the provided operations', () => {
     const create: Access = () => false
-    const config = VWPayloadPluginArticles({ access: { create } })(baseConfig())
+    const config = ComposiusPayloadPluginArticles({ access: { create } })(baseConfig())
     const articles = findArticles(config)
 
     expect(articles.access?.create).toBe(create)
@@ -205,7 +205,7 @@ describe('VWPayloadPluginArticles', () => {
   })
 
   test('categories default to public read and authenticated writes', () => {
-    const config = VWPayloadPluginArticles()(baseConfig())
+    const config = ComposiusPayloadPluginArticles()(baseConfig())
     const categories = findCategories(config)
 
     expect(categories.access?.read).toBe(anyone)
@@ -216,7 +216,7 @@ describe('VWPayloadPluginArticles', () => {
 
   test('custom categoriesAccess overrides replace only the provided operations', () => {
     const read: Access = () => false
-    const config = VWPayloadPluginArticles({ categoriesAccess: { read } })(baseConfig())
+    const config = ComposiusPayloadPluginArticles({ categoriesAccess: { read } })(baseConfig())
     const categories = findCategories(config)
 
     expect(categories.access?.read).toBe(read)
@@ -224,7 +224,7 @@ describe('VWPayloadPluginArticles', () => {
   })
 
   test('custom articleUrl is used for admin previews', () => {
-    const config = VWPayloadPluginArticles({
+    const config = ComposiusPayloadPluginArticles({
       articleUrl: (slug) => `https://custom.dev/${slug}`,
     })(baseConfig())
     const articles = findArticles(config)

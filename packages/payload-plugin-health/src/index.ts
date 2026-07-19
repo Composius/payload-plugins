@@ -20,7 +20,7 @@ export type HealthResponse = {
   checks?: Record<string, HealthCheckResult>
 }
 
-export type VWPayloadPluginHealthConfig = {
+export type ComposiusPayloadPluginHealthConfig = {
   /**
    * Path of the health endpoint, mounted on the Payload API route
    * (`/api${path}` with the default Payload config).
@@ -42,8 +42,8 @@ export type VWPayloadPluginHealthConfig = {
  * `200 { status: 'ok' }` when the process — and every configured check —
  * is healthy, and `503 { status: 'error' }` otherwise.
  */
-export const VWPayloadPluginHealth =
-  (pluginOptions: VWPayloadPluginHealthConfig = {}) =>
+export const ComposiusPayloadPluginHealth =
+  (pluginOptions: ComposiusPayloadPluginHealthConfig = {}) =>
   (config: Config): Config => {
     // The plugin adds no collections or fields, so the database schema is
     // unaffected and disabling can skip the endpoint entirely.

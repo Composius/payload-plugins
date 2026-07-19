@@ -73,7 +73,7 @@ jobs:
               exit 1
             fi
           fi
-          echo "name=@vitrailweb/payload-plugin-$SHORT" >> "$GITHUB_OUTPUT"
+          echo "name=@composius/payload-plugin-$SHORT" >> "$GITHUB_OUTPUT"
           echo "dir=$DIR" >> "$GITHUB_OUTPUT"
 
       - name: Install dependencies

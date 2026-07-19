@@ -1,4 +1,4 @@
-import { VWPayloadPluginPages } from '@vitrailweb/payload-plugin-pages'
+import { ComposiusPayloadPluginPages } from '@composius/payload-plugin-pages'
 import path from 'path'
 import { fileURLToPath } from 'url'
 
@@ -9,6 +9,6 @@ const dirname = path.dirname(fileURLToPath(import.meta.url))
 
 export default buildDevConfig({
   dirname,
-  plugins: [VWPayloadPluginPages()],
+  plugins: [ComposiusPayloadPluginPages()],
   seed,
 })

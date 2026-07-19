@@ -1,14 +1,14 @@
 {
-  "name": "@vitrailweb/payload-plugin-media",
+  "name": "@composius/payload-plugin-media",
   "version": "0.1.1",
   "description": "Configurable media uploads collection (access, unique filenames, storage prefix, image sizes)",
   "license": "MIT",
   "author": {
-    "name": "Vitrail Web"
+    "name": "Composius"
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/Vitrail-Web/payload-plugins",
+    "url": "https://github.com/Composius/payload-plugins",
     "directory": "packages/payload-plugin-media"
   },
   "type": "module",

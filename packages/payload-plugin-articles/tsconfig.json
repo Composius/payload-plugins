@@ -6,10 +6,10 @@
     // Resolve the private shared package to its source so tsup bundles its
     // JS and types into dist/ instead of leaving it as an external import.
     "paths": {
-      "@vitrailweb/payload-plugin-shared-components": [
+      "@composius/payload-plugin-shared-components": [
         "../payload-plugin-shared-components/src/index.ts"
       ],
-      "@vitrailweb/payload-plugin-shared-components/client": [
+      "@composius/payload-plugin-shared-components/client": [
         "../payload-plugin-shared-components/src/exports/client.ts"
       ]
     }

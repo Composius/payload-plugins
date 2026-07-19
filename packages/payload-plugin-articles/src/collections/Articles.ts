@@ -1,8 +1,8 @@
 import type { Access, CollectionConfig } from 'payload'
 import { slugField } from 'payload'
 import { lexicalEditor } from '@payloadcms/richtext-lexical'
-import type { SeoGenerators } from '@vitrailweb/payload-plugin-shared-components'
-import { contentEditorFeatures, seoField } from '@vitrailweb/payload-plugin-shared-components'
+import type { SeoGenerators } from '@composius/payload-plugin-shared-components'
+import { contentEditorFeatures, seoField } from '@composius/payload-plugin-shared-components'
 import { label } from '../translations/index.js'
 
 export type ArticlesAccess = {
@@ -61,7 +61,7 @@ export const Articles = ({ access, articleUrl, seo }: ArticlesOptions): Collecti
       admin: {
         position: 'sidebar',
         components: {
-          Field: '@vitrailweb/payload-plugin-articles/client#CategoryFieldClient',
+          Field: '@composius/payload-plugin-articles/client#CategoryFieldClient',
         },
       },
     },
@@ -79,7 +79,7 @@ export const Articles = ({ access, articleUrl, seo }: ArticlesOptions): Collecti
       type: 'richText',
       label: label((t) => t.articles.fields.content),
       editor: lexicalEditor({
-        features: contentEditorFeatures('@vitrailweb/payload-plugin-articles/client'),
+        features: contentEditorFeatures('@composius/payload-plugin-articles/client'),
       }),
     },
     {

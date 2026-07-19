@@ -1,14 +1,14 @@
 {
-  "name": "@vitrailweb/payload-plugin-axiom",
+  "name": "@composius/payload-plugin-axiom",
   "version": "0.2.1",
   "description": "Payload plugin that sends the Payload logger output to Axiom",
   "license": "MIT",
   "author": {
-    "name": "Vitrail Web"
+    "name": "Composius"
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/Vitrail-Web/payload-plugins",
+    "url": "https://github.com/Composius/payload-plugins",
     "directory": "packages/payload-plugin-axiom"
   },
   "type": "module",

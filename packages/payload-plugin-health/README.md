@@ -1,4 +1,4 @@
-# @vitrailweb/payload-plugin-health
+# @composius/payload-plugin-health
 
 A [Payload CMS](https://payloadcms.com) plugin that adds a health check
 endpoint (default: `GET /api/health`) for load balancers, uptime monitors, and
@@ -23,11 +23,11 @@ pnpm add payload
 
 ```ts
 import { buildConfig } from 'payload'
-import { VWPayloadPluginHealth } from '@vitrailweb/payload-plugin-health'
+import { ComposiusPayloadPluginHealth } from '@composius/payload-plugin-health'
 
 export default buildConfig({
   plugins: [
-    VWPayloadPluginHealth({
+    ComposiusPayloadPluginHealth({
       checks: {
         database: async (req) => {
           // Probes the database through the admin user collection,

@@ -1,7 +1,7 @@
 import { defineConfig } from 'tsup'
 
 /**
- * The private @vitrailweb/payload-plugin-shared-components package is inlined
+ * The private @composius/payload-plugin-shared-components package is inlined
  * into dist/ (JS via the devDependency, types via the tsconfig `paths`
  * mapping), so the published package has no dependency on it. Peer
  * dependencies (payload, @payloadcms/*) stay external.

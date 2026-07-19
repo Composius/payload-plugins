@@ -15,7 +15,7 @@ describe('Plugin integration tests', () => {
     const components = sanitized.admin?.components?.beforeDashboard ?? []
     const panel = components.find(
       (c) =>
-        typeof c === 'object' && c.path === '@vitrailweb/payload-plugin-custom-panel/rsc',
+        typeof c === 'object' && c.path === '@composius/payload-plugin-custom-panel/rsc',
     )
     expect(panel).toBeDefined()
     expect(typeof panel === 'object' && panel.exportName).toBe('CustomPanel')
@@ -25,13 +25,13 @@ describe('Plugin integration tests', () => {
     const components = sanitized.admin?.components?.beforeDashboard ?? []
     const panel = components.find(
       (c) =>
-        typeof c === 'object' && c.path === '@vitrailweb/payload-plugin-custom-panel/rsc',
+        typeof c === 'object' && c.path === '@composius/payload-plugin-custom-panel/rsc',
     )
     const serverProps =
       typeof panel === 'object'
         ? (panel.serverProps as { rows?: unknown[]; title?: unknown })
         : undefined
-    expect(serverProps?.title).toBe('Vitrail Web')
+    expect(serverProps?.title).toBe('Composius')
     expect(serverProps?.rows).toHaveLength(2)
   })
 })

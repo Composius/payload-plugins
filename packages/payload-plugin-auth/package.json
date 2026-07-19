@@ -1,14 +1,14 @@
 {
-  "name": "@vitrailweb/payload-plugin-auth",
+  "name": "@composius/payload-plugin-auth",
   "version": "0.1.1",
   "description": "Users auth collection with configurable roles and role-based access helpers",
   "license": "MIT",
   "author": {
-    "name": "Vitrail Web"
+    "name": "Composius"
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/Vitrail-Web/payload-plugins",
+    "url": "https://github.com/Composius/payload-plugins",
     "directory": "packages/payload-plugin-auth"
   },
   "type": "module",

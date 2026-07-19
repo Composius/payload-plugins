@@ -18,7 +18,7 @@ import {
   defaultPageUrl,
 } from './defaults.js'
 
-export type VWPayloadPluginPagesConfig = {
+export type ComposiusPayloadPluginPagesConfig = {
   /**
    * Access control for the pages collection, per operation.
    * Defaults: `read` allows authenticated users or published documents,
@@ -50,8 +50,8 @@ export type VWPayloadPluginPagesConfig = {
       }
 }
 
-export const VWPayloadPluginPages =
-  (pluginOptions: VWPayloadPluginPagesConfig = {}) =>
+export const ComposiusPayloadPluginPages =
+  (pluginOptions: ComposiusPayloadPluginPagesConfig = {}) =>
   (config: Config): Config => {
     if (!config.collections) {
       config.collections = []

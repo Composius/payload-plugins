@@ -1,4 +1,4 @@
-# @vitrailweb/payload-plugin-pages
+# @composius/payload-plugin-pages
 
 A [Payload CMS](https://payloadcms.com) plugin that adds a `pages` collection with drafts (autosave), live preview, and SEO fields from `@payloadcms/plugin-seo`.
 
@@ -31,10 +31,10 @@ pnpm add @payloadcms/plugin-seo @payloadcms/richtext-lexical payload
 
 ```ts
 import { buildConfig } from 'payload'
-import { VWPayloadPluginPages } from '@vitrailweb/payload-plugin-pages'
+import { ComposiusPayloadPluginPages } from '@composius/payload-plugin-pages'
 
 export default buildConfig({
-  plugins: [VWPayloadPluginPages()],
+  plugins: [ComposiusPayloadPluginPages()],
   // ...
 })
 ```
@@ -44,7 +44,7 @@ export default buildConfig({
 All optional — defaults shown as comments:
 
 ```ts
-VWPayloadPluginPages({
+ComposiusPayloadPluginPages({
   // Access per operation. Defaults: read = published or authenticated,
   // create/update/delete = authenticated.
   access: { read, create, update, delete },
@@ -71,7 +71,7 @@ pnpm install
 pnpm dev:pages                                        # dev Payload app with this plugin
 pnpm vitest run packages/payload-plugin-pages/test    # unit tests
 pnpm vitest run dev/configs/pages                     # integration tests
-pnpm --filter @vitrailweb/payload-plugin-pages build  # build to dist/
+pnpm --filter @composius/payload-plugin-pages build  # build to dist/
 ```
 
 See the [root README](../../README.md) for the release flow.

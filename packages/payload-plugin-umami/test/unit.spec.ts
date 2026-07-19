@@ -2,7 +2,7 @@ import type { Access, Config } from 'payload'
 
 import { afterEach, describe, expect, test, vi } from 'vitest'
 
-import { VWPayloadPluginUmami } from '../src/index.js'
+import { ComposiusPayloadPluginUmami } from '../src/index.js'
 
 const baseConfig = (): Config => ({ collections: [] }) as unknown as Config
 
@@ -17,17 +17,17 @@ afterEach(() => {
   vi.restoreAllMocks()
 })
 
-describe('VWPayloadPluginUmami', () => {
+describe('ComposiusPayloadPluginUmami', () => {
   test('registers the report endpoint and the dashboard widget', () => {
-    const config = VWPayloadPluginUmami(cloudCreds)(baseConfig())
+    const config = ComposiusPayloadPluginUmami(cloudCreds)(baseConfig())
 
     expect(hasReportEndpoint(config)).toBe(true)
     expect(umamiWidget(config)).toBeDefined()
-    expect(JSON.stringify(umamiWidget(config))).toContain('@vitrailweb/payload-plugin-umami/rsc')
+    expect(JSON.stringify(umamiWidget(config))).toContain('@composius/payload-plugin-umami/rsc')
   })
 
   test('defaults read access to authenticated users, passed as serverProps', async () => {
-    const config = VWPayloadPluginUmami(cloudCreds)(baseConfig())
+    const config = ComposiusPayloadPluginUmami(cloudCreds)(baseConfig())
 
     const component = umamiWidget(config)?.Component as { serverProps?: { access?: Access } }
     const access = component.serverProps?.access
@@ -40,14 +40,14 @@ describe('VWPayloadPluginUmami', () => {
 
   test('uses a custom access.read function', async () => {
     const read = vi.fn(() => false)
-    const config = VWPayloadPluginUmami({ ...cloudCreds, access: { read } })(baseConfig())
+    const config = ComposiusPayloadPluginUmami({ ...cloudCreds, access: { read } })(baseConfig())
 
     const component = umamiWidget(config)?.Component as { serverProps?: { access?: Access } }
     expect(component.serverProps?.access).toBe(read)
   })
 
   test('shows the widget in the default layout, before collections', () => {
-    const config = VWPayloadPluginUmami(cloudCreds)(baseConfig())
+    const config = ComposiusPayloadPluginUmami(cloudCreds)(baseConfig())
 
     expect(config.admin?.dashboard?.defaultLayout).toEqual([
       { widgetSlug: 'umami', width: 'full' },
@@ -66,7 +66,7 @@ describe('VWPayloadPluginUmami', () => {
       collections: [],
     } as unknown as Config
 
-    const config = VWPayloadPluginUmami(cloudCreds)(existing)
+    const config = ComposiusPayloadPluginUmami(cloudCreds)(existing)
 
     expect(config.admin?.dashboard?.defaultLayout).toEqual([
       { widgetSlug: 'collections', width: 'full' },
@@ -76,7 +76,7 @@ describe('VWPayloadPluginUmami', () => {
   })
 
   test('passes defaultRange and showRangeSelector as clientProps, not credentials', () => {
-    const config = VWPayloadPluginUmami({
+    const config = ComposiusPayloadPluginUmami({
       ...cloudCreds,
       defaultRange: '30d',
       showRangeSelector: false,
@@ -90,7 +90,7 @@ describe('VWPayloadPluginUmami', () => {
   })
 
   test('defaults stat cards to visitors/views and their previous period', () => {
-    const config = VWPayloadPluginUmami(cloudCreds)(baseConfig())
+    const config = ComposiusPayloadPluginUmami(cloudCreds)(baseConfig())
 
     expect(JSON.stringify(umamiWidget(config))).toContain(
       '"stats":["visitors","views","visitorsPrev","viewsPrev"]',
@@ -98,7 +98,7 @@ describe('VWPayloadPluginUmami', () => {
   })
 
   test('passes custom stat cards as clientProps', () => {
-    const config = VWPayloadPluginUmami({
+    const config = ComposiusPayloadPluginUmami({
       ...cloudCreds,
       stats: ['visits', 'duration', 'durationPrev'],
     })(baseConfig())
@@ -117,14 +117,14 @@ describe('VWPayloadPluginUmami', () => {
       endpoints: [{ path: '/other', method: 'get', handler: async () => new Response() }],
     } as unknown as Config
 
-    const config = VWPayloadPluginUmami(cloudCreds)(existing)
+    const config = ComposiusPayloadPluginUmami(cloudCreds)(existing)
 
     expect(widgets(config)).toHaveLength(2)
     expect(config.endpoints).toHaveLength(2)
   })
 
   test('disabled leaves the config untouched', () => {
-    const config = VWPayloadPluginUmami({ ...cloudCreds, disabled: true })(baseConfig())
+    const config = ComposiusPayloadPluginUmami({ ...cloudCreds, disabled: true })(baseConfig())
 
     expect(hasReportEndpoint(config)).toBe(false)
     expect(umamiWidget(config)).toBeUndefined()
@@ -133,7 +133,7 @@ describe('VWPayloadPluginUmami', () => {
   test('warns and registers nothing when websiteId is missing', () => {
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
 
-    const config = VWPayloadPluginUmami({ websiteId: '', apiKey: 'key-1' })(baseConfig())
+    const config = ComposiusPayloadPluginUmami({ websiteId: '', apiKey: 'key-1' })(baseConfig())
 
     expect(warn).toHaveBeenCalledOnce()
     expect(hasReportEndpoint(config)).toBe(false)
@@ -143,14 +143,14 @@ describe('VWPayloadPluginUmami', () => {
   test('warns and registers nothing when credentials are missing', () => {
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
 
-    const config = VWPayloadPluginUmami({ websiteId: 'site-1' })(baseConfig())
+    const config = ComposiusPayloadPluginUmami({ websiteId: 'site-1' })(baseConfig())
 
     expect(warn).toHaveBeenCalledOnce()
     expect(hasReportEndpoint(config)).toBe(false)
   })
 
   test('accepts self-hosted username/password as credentials', () => {
-    const config = VWPayloadPluginUmami({
+    const config = ComposiusPayloadPluginUmami({
       websiteId: 'site-1',
       baseUrl: 'https://umami.example.com',
       username: 'admin',

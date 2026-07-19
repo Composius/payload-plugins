@@ -2,7 +2,7 @@ import type { Access, Config } from 'payload'
 
 import { describe, expect, test, vi } from 'vitest'
 
-import { resolveLocalizedText, VWPayloadPluginCustomPanel } from '../src/index.js'
+import { resolveLocalizedText, ComposiusPayloadPluginCustomPanel } from '../src/index.js'
 
 const baseConfig = (): Config => ({ collections: [] }) as unknown as Config
 
@@ -20,11 +20,11 @@ const panelComponents = (config: Config): PanelComponent[] =>
   (config.admin?.components?.beforeDashboard ?? []) as PanelComponent[]
 
 const panel = (config: Config) =>
-  panelComponents(config).find((c) => c.path === '@vitrailweb/payload-plugin-custom-panel/rsc')
+  panelComponents(config).find((c) => c.path === '@composius/payload-plugin-custom-panel/rsc')
 
-describe('VWPayloadPluginCustomPanel', () => {
+describe('ComposiusPayloadPluginCustomPanel', () => {
   test('registers the beforeDashboard component', () => {
-    const config = VWPayloadPluginCustomPanel({ title: 'My Site' })(baseConfig())
+    const config = ComposiusPayloadPluginCustomPanel({ title: 'My Site' })(baseConfig())
 
     expect(panel(config)).toBeDefined()
     expect(panel(config)?.exportName).toBe('CustomPanel')
@@ -38,7 +38,7 @@ describe('VWPayloadPluginCustomPanel', () => {
       },
       { message: 'Second row' },
     ]
-    const config = VWPayloadPluginCustomPanel({
+    const config = ComposiusPayloadPluginCustomPanel({
       title: 'My Site',
       rows,
     })(baseConfig())
@@ -49,13 +49,13 @@ describe('VWPayloadPluginCustomPanel', () => {
   })
 
   test('defaults rows to an empty array', () => {
-    const config = VWPayloadPluginCustomPanel()(baseConfig())
+    const config = ComposiusPayloadPluginCustomPanel()(baseConfig())
 
     expect(panel(config)?.serverProps?.rows).toEqual([])
   })
 
   test('defaults read access to authenticated users, passed as serverProps', async () => {
-    const config = VWPayloadPluginCustomPanel({ title: 'My Site' })(baseConfig())
+    const config = ComposiusPayloadPluginCustomPanel({ title: 'My Site' })(baseConfig())
 
     const access = panel(config)?.serverProps?.access
     expect(access).toBeTypeOf('function')
@@ -67,7 +67,7 @@ describe('VWPayloadPluginCustomPanel', () => {
 
   test('uses a custom access.read function', () => {
     const read = vi.fn(() => false)
-    const config = VWPayloadPluginCustomPanel({ access: { read } })(baseConfig())
+    const config = ComposiusPayloadPluginCustomPanel({ access: { read } })(baseConfig())
 
     expect(panel(config)?.serverProps?.access).toBe(read)
   })
@@ -80,14 +80,14 @@ describe('VWPayloadPluginCustomPanel', () => {
       collections: [],
     } as unknown as Config
 
-    const config = VWPayloadPluginCustomPanel({ title: 'My Site' })(existing)
+    const config = ComposiusPayloadPluginCustomPanel({ title: 'My Site' })(existing)
 
     expect(panelComponents(config)).toHaveLength(2)
     expect(panel(config)).toBeDefined()
   })
 
   test('disabled leaves the config untouched', () => {
-    const config = VWPayloadPluginCustomPanel({ title: 'My Site', disabled: true })(baseConfig())
+    const config = ComposiusPayloadPluginCustomPanel({ title: 'My Site', disabled: true })(baseConfig())
 
     expect(panel(config)).toBeUndefined()
   })

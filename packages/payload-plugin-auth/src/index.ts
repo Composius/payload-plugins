@@ -3,10 +3,10 @@ import type { Config } from 'payload'
 import { hasRole, hasRoleFieldLevel, hasRoleOrOwner } from './access.js'
 import { withUsersAuth } from './collections/Users.js'
 import { label } from './translations/index.js'
-import type { Role, UsersAccess, VWPayloadPluginAuthConfig } from './types.js'
+import type { Role, UsersAccess, ComposiusPayloadPluginAuthConfig } from './types.js'
 
 export { hasRole, hasRoleFieldLevel, hasRoleOrOwner }
-export type { Role, UsersAccess, VWPayloadPluginAuthConfig }
+export type { Role, UsersAccess, ComposiusPayloadPluginAuthConfig }
 
 const defaultRoles: Role[] = [
   { label: label((t) => t.roles.admin), value: 'admin' },
@@ -14,8 +14,8 @@ const defaultRoles: Role[] = [
   { label: label((t) => t.roles.viewer), value: 'viewer' },
 ]
 
-export const VWPayloadPluginAuth =
-  (pluginOptions: VWPayloadPluginAuthConfig = {}) =>
+export const ComposiusPayloadPluginAuth =
+  (pluginOptions: ComposiusPayloadPluginAuthConfig = {}) =>
   (config: Config): Config => {
     const slug = pluginOptions.slug ?? 'users'
     const roles = pluginOptions.roles ?? defaultRoles
@@ -27,12 +27,12 @@ export const VWPayloadPluginAuth =
     const roleValues = roles.map((role) => role.value)
     if (!roleValues.includes(adminRole)) {
       throw new Error(
-        `VWPayloadPluginAuth: adminRole "${adminRole}" is not one of the configured roles (${roleValues.join(', ')})`,
+        `ComposiusPayloadPluginAuth: adminRole "${adminRole}" is not one of the configured roles (${roleValues.join(', ')})`,
       )
     }
     if (!roleValues.includes(defaultRole)) {
       throw new Error(
-        `VWPayloadPluginAuth: defaultRole "${defaultRole}" is not one of the configured roles (${roleValues.join(', ')})`,
+        `ComposiusPayloadPluginAuth: defaultRole "${defaultRole}" is not one of the configured roles (${roleValues.join(', ')})`,
       )
     }
 

@@ -1,14 +1,14 @@
 {
-  "name": "@vitrailweb/payload-plugin-health",
+  "name": "@composius/payload-plugin-health",
   "version": "0.1.1",
   "description": "Health check endpoint with optional custom checks",
   "license": "MIT",
   "author": {
-    "name": "Vitrail Web"
+    "name": "Composius"
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/Vitrail-Web/payload-plugins",
+    "url": "https://github.com/Composius/payload-plugins",
     "directory": "packages/payload-plugin-health"
   },
   "type": "module",

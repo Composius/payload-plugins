@@ -9,7 +9,7 @@ import type {
 import { describe, expect, test } from 'vitest'
 
 import { anyone, authenticated, defaultImageSizes } from '../src/defaults.js'
-import { buildPrefix, uniqueFilename, VWPayloadPluginMedia } from '../src/index.js'
+import { buildPrefix, uniqueFilename, ComposiusPayloadPluginMedia } from '../src/index.js'
 
 const accessArgs = (user: unknown) => ({ req: { user } }) as Parameters<Access>[0]
 
@@ -70,9 +70,9 @@ describe('uniqueFilename', () => {
   })
 })
 
-describe('VWPayloadPluginMedia', () => {
+describe('ComposiusPayloadPluginMedia', () => {
   test('adds the media upload collection', () => {
-    const config = VWPayloadPluginMedia()(baseConfig())
+    const config = ComposiusPayloadPluginMedia()(baseConfig())
     const media = findMedia(config)
 
     const fieldNames = media.fields.map((field) => (field as { name?: string }).name)
@@ -89,7 +89,7 @@ describe('VWPayloadPluginMedia', () => {
 
   test('custom image sizes replace the defaults', () => {
     const imageSizes = [{ name: 'hero', width: 1920 }]
-    const config = VWPayloadPluginMedia({ imageSizes })(baseConfig())
+    const config = ComposiusPayloadPluginMedia({ imageSizes })(baseConfig())
 
     expect(upload(findMedia(config))).toMatchObject({
       adminThumbnail: 'hero',
@@ -98,7 +98,7 @@ describe('VWPayloadPluginMedia', () => {
   })
 
   test('default access: read is public, writes require a user', () => {
-    const config = VWPayloadPluginMedia()(baseConfig())
+    const config = ComposiusPayloadPluginMedia()(baseConfig())
     const media = findMedia(config)
 
     expect(media.access?.read).toBe(anyone)
@@ -109,7 +109,7 @@ describe('VWPayloadPluginMedia', () => {
 
   test('custom access overrides replace only the provided operations', () => {
     const create: Access = () => false
-    const config = VWPayloadPluginMedia({ access: { create } })(baseConfig())
+    const config = ComposiusPayloadPluginMedia({ access: { create } })(baseConfig())
     const media = findMedia(config)
 
     expect(media.access?.create).toBe(create)
@@ -117,7 +117,7 @@ describe('VWPayloadPluginMedia', () => {
   })
 
   test('renames uploaded files on create by default', () => {
-    const config = VWPayloadPluginMedia()(baseConfig())
+    const config = ComposiusPayloadPluginMedia()(baseConfig())
     const [hook] = findMedia(config).hooks?.beforeOperation ?? []
     expect(hook).toBeDefined()
 
@@ -131,12 +131,12 @@ describe('VWPayloadPluginMedia', () => {
   })
 
   test('randomSuffix: false disables the rename hook', () => {
-    const config = VWPayloadPluginMedia({ randomSuffix: false })(baseConfig())
+    const config = ComposiusPayloadPluginMedia({ randomSuffix: false })(baseConfig())
     expect(findMedia(config).hooks?.beforeOperation).toBeUndefined()
   })
 
   test('prefix option sets data.prefix on create', () => {
-    const config = VWPayloadPluginMedia({ prefix: 'uploads/site' })(baseConfig())
+    const config = ComposiusPayloadPluginMedia({ prefix: 'uploads/site' })(baseConfig())
     const [hook] = findMedia(config).hooks?.beforeValidate ?? []
     expect(hook).toBeDefined()
 
@@ -150,12 +150,12 @@ describe('VWPayloadPluginMedia', () => {
   })
 
   test('no prefix option means no prefix hook', () => {
-    const config = VWPayloadPluginMedia()(baseConfig())
+    const config = ComposiusPayloadPluginMedia()(baseConfig())
     expect(findMedia(config).hooks?.beforeValidate).toBeUndefined()
   })
 
   test('disabled still registers the collection for schema consistency', () => {
-    const config = VWPayloadPluginMedia({ disabled: true })(baseConfig())
+    const config = ComposiusPayloadPluginMedia({ disabled: true })(baseConfig())
     findMedia(config)
   })
 })

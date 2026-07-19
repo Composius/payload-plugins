@@ -1,4 +1,4 @@
-# @vitrailweb/payload-plugin-auth
+# @composius/payload-plugin-auth
 
 A [Payload CMS](https://payloadcms.com) plugin that turns a `users` collection into a
 role-based auth collection — configurable roles, sensible auth hardening, and exported
@@ -43,11 +43,11 @@ pnpm add payload
 
 ```ts
 import { buildConfig } from 'payload'
-import { VWPayloadPluginAuth, hasRole, hasRoleOrOwner } from '@vitrailweb/payload-plugin-auth'
+import { ComposiusPayloadPluginAuth, hasRole, hasRoleOrOwner } from '@composius/payload-plugin-auth'
 
 export default buildConfig({
   plugins: [
-    VWPayloadPluginAuth({
+    ComposiusPayloadPluginAuth({
       // Custom roles: the role select offers these instead of the defaults
       roles: [
         { label: 'Admin', value: 'admin' },
@@ -89,7 +89,7 @@ export default buildConfig({
 All optional — defaults shown as comments:
 
 ```ts
-VWPayloadPluginAuth({
+ComposiusPayloadPluginAuth({
   // Access per operation. Defaults: create/delete = admin role,
   // read/update = admin role or the user themselves.
   access: { read, create, update, delete },
@@ -124,7 +124,7 @@ pnpm install
 pnpm dev:auth                                        # dev Payload app with this plugin
 pnpm vitest run packages/payload-plugin-auth/test    # unit tests
 pnpm vitest run dev/configs/auth                     # integration tests
-pnpm --filter @vitrailweb/payload-plugin-auth build  # build to dist/
+pnpm --filter @composius/payload-plugin-auth build  # build to dist/
 ```
 
 See the [root README](../../README.md) for the release flow.

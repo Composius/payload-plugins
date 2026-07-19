@@ -1,4 +1,4 @@
-import { VWPayloadPluginAxiom } from '@vitrailweb/payload-plugin-axiom'
+import { ComposiusPayloadPluginAxiom } from '@composius/payload-plugin-axiom'
 import path from 'path'
 import { fileURLToPath } from 'url'
 
@@ -10,7 +10,7 @@ const dirname = path.dirname(fileURLToPath(import.meta.url))
 export default buildDevConfig({
   dirname,
   plugins: [
-    VWPayloadPluginAxiom({
+    ComposiusPayloadPluginAxiom({
       dataset: process.env.AXIOM_DATASET || '',
       token: process.env.AXIOM_TOKEN || '',
       // Only needed for personal tokens / regional or self-hosted deployments.

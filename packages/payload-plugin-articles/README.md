@@ -1,4 +1,4 @@
-# @vitrailweb/payload-plugin-articles
+# @composius/payload-plugin-articles
 
 A [Payload CMS](https://payloadcms.com) plugin that adds an `articles` collection with drafts (autosave), live preview, and SEO fields from `@payloadcms/plugin-seo`, plus a nestable `categories` collection (breadcrumbs from `@payloadcms/plugin-nested-docs`) for organizing articles.
 
@@ -56,10 +56,10 @@ pnpm add @payloadcms/plugin-nested-docs @payloadcms/plugin-seo @payloadcms/richt
 
 ```ts
 import { buildConfig } from 'payload'
-import { VWPayloadPluginArticles } from '@vitrailweb/payload-plugin-articles'
+import { ComposiusPayloadPluginArticles } from '@composius/payload-plugin-articles'
 
 export default buildConfig({
-  plugins: [VWPayloadPluginArticles()],
+  plugins: [ComposiusPayloadPluginArticles()],
   // ...
 })
 ```
@@ -69,7 +69,7 @@ export default buildConfig({
 All optional — defaults shown as comments:
 
 ```ts
-VWPayloadPluginArticles({
+ComposiusPayloadPluginArticles({
   // Articles access per operation. Defaults: read = published or authenticated,
   // create/update/delete = authenticated.
   access: { read, create, update, delete },
@@ -101,7 +101,7 @@ pnpm dev:articles                                        # dev Payload app with 
 pnpm vitest run packages/payload-plugin-articles/test    # unit tests
 pnpm vitest run dev/configs/articles                     # integration tests
 pnpm test:e2e                                            # e2e tests (playwright)
-pnpm --filter @vitrailweb/payload-plugin-articles build  # build to dist/
+pnpm --filter @composius/payload-plugin-articles build  # build to dist/
 ```
 
 See the [root README](../../README.md) for the release flow.

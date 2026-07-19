@@ -10,9 +10,9 @@ Scaffolds a new plugin `packages/payload-plugin-<name>/` plus its dev suite
 All paths below are relative to the repo root.
 
 `<name>` is short, lowercase kebab-case (`menus`, `umami`, `custom-panel`,
-`home-nav`). The exported factory is `VWPayloadPlugin<PascalName>` and its
-options type is `VWPayloadPlugin<PascalName>Config` (e.g. `VWPayloadPluginMenus`
-/ `VWPayloadPluginHomeNavConfig`).
+`home-nav`). The exported factory is `ComposiusPayloadPlugin<PascalName>` and its
+options type is `ComposiusPayloadPlugin<PascalName>Config` (e.g. `ComposiusPayloadPluginMenus`
+/ `ComposiusPayloadPluginHomeNavConfig`).
 
 ## Step 0 — pick a template plugin
 
@@ -24,7 +24,7 @@ Do NOT invent structure. Copy the closest existing plugin and adapt:
 | Server-only integration (hooks/endpoints, no collection, no UI) | `packages/payload-plugin-axiom` | tsup, single `index` entry |
 | Admin UI, server components only (panels, nav/header slots — no state/effects of its own; interactive leaves like `Link`/`PayloadIcon` come from `@payloadcms/ui`) | `packages/payload-plugin-custom-panel` or `-home-nav` | tsup with `index` + `exports/rsc` entries, no client bundle, no banner |
 | Admin UI with own client components (state, hooks, charts) | `packages/payload-plugin-umami` | tsup with `index` + `exports/client` (+ `exports/rsc`) entries, `"use client"` banner on the client bundle |
-| Content collection with drafts/live-preview/SEO reusing shared editor features | `packages/payload-plugin-articles` or `-pages` | tsup, bundles `@vitrailweb/payload-plugin-shared-components` (private, never published) into its own dist |
+| Content collection with drafts/live-preview/SEO reusing shared editor features | `packages/payload-plugin-articles` or `-pages` | tsup, bundles `@composius/payload-plugin-shared-components` (private, never published) into its own dist |
 
 Read the template's `package.json`, `tsup.config.ts`, and
 `tsconfig.json` before writing anything.
@@ -47,7 +47,7 @@ test/unit.spec.ts
 
 ### package.json rules (copy template, then edit)
 
-- `"name": "@vitrailweb/payload-plugin-<name>"`, `"version": "0.1.0"`,
+- `"name": "@composius/payload-plugin-<name>"`, `"version": "0.1.0"`,
   one-line `"description"` (it also goes in the root README table).
 - `"repository"` keeps the repo URL and sets
   `"directory": "packages/payload-plugin-<name>"`.
@@ -65,8 +65,8 @@ test/unit.spec.ts
 
 Plugin factory pattern (see `packages/payload-plugin-menus/src/index.ts`):
 
-- `export const VWPayloadPlugin<PascalName> = (pluginOptions = {}) => (config: Config): Config => { … }`
-- Export the config type: `export type VWPayloadPlugin<PascalName>Config = { … }`
+- `export const ComposiusPayloadPlugin<PascalName> = (pluginOptions = {}) => (config: Config): Config => { … }`
+- Export the config type: `export type ComposiusPayloadPlugin<PascalName>Config = { … }`
   with JSDoc on every option; include `disabled?: boolean`.
 - **Even when `pluginOptions.disabled` is true, still push collections/fields
   before returning** — the database schema must stay consistent for
@@ -108,7 +108,7 @@ behavior, and the `disabled` schema-consistency rule.
 ### README.md
 
 Same shape as `packages/payload-plugin-menus/README.md`:
-title `# @vitrailweb/payload-plugin-<name>`, one-line intro, a Fields
+title `# @composius/payload-plugin-<name>`, one-line intro, a Fields
 table (if it adds collections), a Requirements section, a Usage section
 with a `buildConfig` snippet, and an Options table documenting every
 config option.
@@ -124,7 +124,7 @@ in sync with `peerDependencies` in `package.json`.
 
 Four files, copied from `dev/configs/menus/` and adapted:
 
-- `config.ts` — `buildDevConfig({ dirname, plugins: [VWPayloadPlugin<PascalName>({ … })], seed })`
+- `config.ts` — `buildDevConfig({ dirname, plugins: [ComposiusPayloadPlugin<PascalName>({ … })], seed })`
   from `../shared.js`. Wire plugin options to env vars if the plugin needs
   external services (see `dev/configs/umami/config.ts`).
 - `seed.ts` — always seed `devUser` from `../../helpers/credentials.js`
@@ -162,8 +162,8 @@ Add, keeping each script group alphabetized:
 - Only if the plugin has admin UI components:
   `"generate:importmap:<name>": "cross-env DEV_SUITE=<name> pnpm payload generate:importmap"`
 - Append `&& tsc --noEmit -p dev/configs/<name>` to the `typecheck` script.
-- devDependencies: `"@vitrailweb/payload-plugin-<name>": "workspace:*"`
-  (sorted with the other `@vitrailweb/*` entries).
+- devDependencies: `"@composius/payload-plugin-<name>": "workspace:*"`
+  (sorted with the other `@composius/*` entries).
 
 Then run `pnpm install` to link the workspace package.
 
@@ -174,7 +174,7 @@ Then run `pnpm install` to link the workspace package.
   `packages/payload-plugin-<name>)` followed by `| <semver> |`:
 
 ```
-| [@vitrailweb/payload-plugin-<name>](packages/payload-plugin-<name>) | 0.1.0 | <description> |
+| [@composius/payload-plugin-<name>](packages/payload-plugin-<name>) | 0.1.0 | <description> |
 ```
 
 - Add a `./release.sh <name> patch` line to the "Publish" section's code
@@ -191,7 +191,7 @@ pnpm generate:importmap:<name>        # only if the plugin has UI components
 pnpm test:unit                        # vitest run packages
 pnpm vitest run dev/configs/<name>    # just the new suite's int tests
 pnpm typecheck
-pnpm --filter @vitrailweb/payload-plugin-<name> build   # dist/ builds cleanly
+pnpm --filter @composius/payload-plugin-<name> build   # dist/ builds cleanly
 ```
 
 Do NOT run eslint (it hangs in this repo). Verification is tests +
@@ -215,7 +215,7 @@ automatically and already gitignored (`/dev/configs/*/*.db`).
   need `banner: { js: "'use client'" }` (see
   `packages/payload-plugin-umami/tsup.config.ts`).
 - Admin components are registered as
-  `{ path: '@vitrailweb/payload-plugin-<name>/rsc', exportName, serverProps }`.
+  `{ path: '@composius/payload-plugin-<name>/rsc', exportName, serverProps }`.
   Server components receive the admin template's `ServerProps` (`i18n`,
   `payload`, `user`, …) merged with the config's own `serverProps`
   (`RenderServerComponent` does the merge). `serverProps` never reach the
@@ -243,7 +243,7 @@ automatically and already gitignored (`/dev/configs/*/*.db`).
   (e.g. `nav__link`, `nav__link-label`) where injected items should match
   built-in ones, and always eyeball `pnpm dev:<name>` after touching an
   admin slot — tests and typecheck don't catch rendering issues.
-- `@vitrailweb/payload-plugin-shared-components` is private and must never
+- `@composius/payload-plugin-shared-components` is private and must never
   become a `dependency`/`peerDependency` of a published plugin — articles
   and pages bundle it into their own `dist/` via tsup.
 - Publishing itself is manual (`./release.sh <name> patch`) and is NOT part

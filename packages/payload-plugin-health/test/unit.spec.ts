@@ -4,7 +4,7 @@ import { describe, expect, test } from 'vitest'
 
 import type { HealthResponse } from '../src/index.js'
 
-import { VWPayloadPluginHealth } from '../src/index.js'
+import { ComposiusPayloadPluginHealth } from '../src/index.js'
 
 const baseConfig = (): Config => ({ collections: [] }) as unknown as Config
 
@@ -21,16 +21,16 @@ const invoke = async (config: Config, path = '/health') => {
   return { body: (await response.json()) as HealthResponse, response }
 }
 
-describe('VWPayloadPluginHealth', () => {
+describe('ComposiusPayloadPluginHealth', () => {
   test('adds a GET /health endpoint by default', () => {
-    const config = VWPayloadPluginHealth()(baseConfig())
+    const config = ComposiusPayloadPluginHealth()(baseConfig())
     const endpoint = getEndpoint(config)
 
     expect(endpoint.method).toBe('get')
   })
 
   test('path option overrides the endpoint path', () => {
-    const config = VWPayloadPluginHealth({ path: '/status' })(baseConfig())
+    const config = ComposiusPayloadPluginHealth({ path: '/status' })(baseConfig())
 
     expect(getEndpoint(config, '/status').method).toBe('get')
     expect(config.endpoints?.some((entry) => entry.path === '/health')).toBe(false)
@@ -45,14 +45,14 @@ describe('VWPayloadPluginHealth', () => {
     }
     config.endpoints = [existing]
 
-    const result = VWPayloadPluginHealth()(config)
+    const result = ComposiusPayloadPluginHealth()(config)
 
     expect(result.endpoints).toContain(existing)
     expect(result.endpoints).toHaveLength(2)
   })
 
   test('responds 200 ok without checks', async () => {
-    const config = VWPayloadPluginHealth()(baseConfig())
+    const config = ComposiusPayloadPluginHealth()(baseConfig())
     const { body, response } = await invoke(config)
 
     expect(response.status).toBe(200)
@@ -63,7 +63,7 @@ describe('VWPayloadPluginHealth', () => {
   })
 
   test('responds 200 with per-check results when every check passes', async () => {
-    const config = VWPayloadPluginHealth({
+    const config = ComposiusPayloadPluginHealth({
       checks: {
         async database() {},
         cache() {},
@@ -80,7 +80,7 @@ describe('VWPayloadPluginHealth', () => {
   })
 
   test('responds 503 with the failing check message when a check throws', async () => {
-    const config = VWPayloadPluginHealth({
+    const config = ComposiusPayloadPluginHealth({
       checks: {
         database() {},
         async cache() {
@@ -99,7 +99,7 @@ describe('VWPayloadPluginHealth', () => {
   })
 
   test('reports non-Error throws as strings', async () => {
-    const config = VWPayloadPluginHealth({
+    const config = ComposiusPayloadPluginHealth({
       checks: {
         cache() {
           throw 'boom'
@@ -114,7 +114,7 @@ describe('VWPayloadPluginHealth', () => {
 
   test('checks receive the request', async () => {
     let received: PayloadRequest | undefined
-    const config = VWPayloadPluginHealth({
+    const config = ComposiusPayloadPluginHealth({
       checks: {
         probe(req) {
           received = req
@@ -128,7 +128,7 @@ describe('VWPayloadPluginHealth', () => {
   })
 
   test('disabled leaves the config untouched', () => {
-    const config = VWPayloadPluginHealth({ disabled: true })(baseConfig())
+    const config = ComposiusPayloadPluginHealth({ disabled: true })(baseConfig())
 
     expect(config.endpoints).toBeUndefined()
   })

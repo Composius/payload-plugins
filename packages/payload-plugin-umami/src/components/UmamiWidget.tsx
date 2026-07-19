@@ -3,7 +3,7 @@ import type { Access, PayloadRequest } from 'payload'
 // Imported through the package's own /client subpath (not a relative path) so
 // the client bundle — and its 'use client' directive — stays external to this
 // server-component bundle.
-import { UmamiDashboard } from '@vitrailweb/payload-plugin-umami/client'
+import { UmamiDashboard } from '@composius/payload-plugin-umami/client'
 import React from 'react'
 
 import type { UmamiDashboardProps } from '../types.js'

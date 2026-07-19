@@ -30,6 +30,6 @@ export default defineConfig([
     entry: { 'exports/rsc': 'src/exports/rsc.ts' },
     // The client components are imported via the package's own /client
     // subpath, which stays external — the rsc bundle contains no client code.
-    external: ['@vitrailweb/payload-plugin-umami/client'],
+    external: ['@composius/payload-plugin-umami/client'],
   },
 ])

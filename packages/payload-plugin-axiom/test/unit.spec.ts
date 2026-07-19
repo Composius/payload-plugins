@@ -4,7 +4,7 @@ import { PassThrough } from 'node:stream'
 import { levels } from 'pino'
 import { afterEach, describe, expect, test, vi } from 'vitest'
 
-import { VWPayloadPluginAxiom } from '../src/index.js'
+import { ComposiusPayloadPluginAxiom } from '../src/index.js'
 
 // The real transport would instantiate an Axiom ingest client.
 vi.mock('@axiomhq/pino', () => ({
@@ -37,9 +37,9 @@ afterEach(() => {
   vi.clearAllMocks()
 })
 
-describe('VWPayloadPluginAxiom', () => {
+describe('ComposiusPayloadPluginAxiom', () => {
   test('creates the axiom transport with the credentials', async () => {
-    await VWPayloadPluginAxiom({
+    await ComposiusPayloadPluginAxiom({
       ...credentials,
       edge: 'eu-central-1.aws.edge.axiom.co',
       edgeUrl: 'https://eu-central-1.aws.edge.axiom.co',
@@ -58,13 +58,13 @@ describe('VWPayloadPluginAxiom', () => {
   })
 
   test('omits the optional endpoint options when not provided', async () => {
-    await VWPayloadPluginAxiom(credentials)(baseConfig())
+    await ComposiusPayloadPluginAxiom(credentials)(baseConfig())
 
     expect(axiomTransport).toHaveBeenCalledExactlyOnceWith(credentials)
   })
 
   test('logs to the axiom stream and stdout by default', async () => {
-    const config = await VWPayloadPluginAxiom(credentials)(baseConfig())
+    const config = await ComposiusPayloadPluginAxiom(credentials)(baseConfig())
     const streams = getStreams(config)
 
     expect(streams).toHaveLength(2)
@@ -75,29 +75,29 @@ describe('VWPayloadPluginAxiom', () => {
   })
 
   test('console: false sends logs to Axiom only', async () => {
-    const config = await VWPayloadPluginAxiom({ ...credentials, console: false })(baseConfig())
+    const config = await ComposiusPayloadPluginAxiom({ ...credentials, console: false })(baseConfig())
 
     expect(getStreams(config)).toHaveLength(1)
   })
 
   test('console accepts a custom stream', async () => {
     const custom = new PassThrough()
-    const config = await VWPayloadPluginAxiom({ ...credentials, console: custom })(baseConfig())
+    const config = await ComposiusPayloadPluginAxiom({ ...credentials, console: custom })(baseConfig())
 
     expect(getStreams(config).map((entry) => entry.stream)).toContain(custom)
   })
 
   test('level defaults to info and applies to the logger and streams', async () => {
-    const defaulted = await VWPayloadPluginAxiom(credentials)(baseConfig())
+    const defaulted = await ComposiusPayloadPluginAxiom(credentials)(baseConfig())
     expect(getLogger(defaulted).options.level).toBe('info')
 
-    const config = await VWPayloadPluginAxiom({ ...credentials, level: 'warn' })(baseConfig())
+    const config = await ComposiusPayloadPluginAxiom({ ...credentials, level: 'warn' })(baseConfig())
     expect(getLogger(config).options.level).toBe('warn')
     expect(getStreams(config).every((entry) => entry.level === levels.values.warn)).toBe(true)
   })
 
   test('merges extra pino options without letting them override the level', async () => {
-    const config = await VWPayloadPluginAxiom({
+    const config = await ComposiusPayloadPluginAxiom({
       ...credentials,
       level: 'debug',
       loggerOptions: { level: 'trace', name: 'my-app' },
@@ -112,14 +112,14 @@ describe('VWPayloadPluginAxiom', () => {
     const config = baseConfig()
     config.logger = { options: { name: 'existing' } }
 
-    const result = await VWPayloadPluginAxiom(credentials)(config)
+    const result = await ComposiusPayloadPluginAxiom(credentials)(config)
     expect(getLogger(result).options.name).toBe('existing')
   })
 
   test('warns and leaves the logger untouched when credentials are missing', async () => {
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
 
-    const config = await VWPayloadPluginAxiom({ dataset: 'my-dataset', token: '' })(baseConfig())
+    const config = await ComposiusPayloadPluginAxiom({ dataset: 'my-dataset', token: '' })(baseConfig())
 
     expect(config.logger).toBeUndefined()
     expect(axiomTransport).not.toHaveBeenCalled()
@@ -128,7 +128,7 @@ describe('VWPayloadPluginAxiom', () => {
   })
 
   test('disabled leaves the config untouched', async () => {
-    const config = await VWPayloadPluginAxiom({ ...credentials, disabled: true })(baseConfig())
+    const config = await ComposiusPayloadPluginAxiom({ ...credentials, disabled: true })(baseConfig())
 
     expect(config.logger).toBeUndefined()
     expect(axiomTransport).not.toHaveBeenCalled()
@@ -139,7 +139,7 @@ describe('VWPayloadPluginAxiom', () => {
     const config = baseConfig()
     config.onInit = existingOnInit
 
-    const result = await VWPayloadPluginAxiom(credentials)(config)
+    const result = await ComposiusPayloadPluginAxiom(credentials)(config)
 
     const info = vi.fn()
     await result.onInit!({ logger: { info } } as never)

@@ -5,4 +5,4 @@ export {
   ChecklistButtonFeatureClient,
   OrderedListButtonFeatureClient,
   UnorderedListButtonFeatureClient,
-} from '@vitrailweb/payload-plugin-shared-components/client'
+} from '@composius/payload-plugin-shared-components/client'

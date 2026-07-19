@@ -9,7 +9,7 @@ export { buildPrefix, uniqueFilename } from './collections/Media.js'
 export { defaultImageSizes } from './defaults.js'
 export type { MediaAccess, MediaPrefix } from './types.js'
 
-export type VWPayloadPluginMediaConfig = {
+export type ComposiusPayloadPluginMediaConfig = {
   /**
    * Access control for the media collection, per operation.
    * Defaults: `read` allows anyone, `create`/`update`/`delete` require an
@@ -45,8 +45,8 @@ export type VWPayloadPluginMediaConfig = {
   staticDir?: string
 }
 
-export const VWPayloadPluginMedia =
-  (pluginOptions: VWPayloadPluginMediaConfig = {}) =>
+export const ComposiusPayloadPluginMedia =
+  (pluginOptions: ComposiusPayloadPluginMediaConfig = {}) =>
   (config: Config): Config => {
     if (!config.collections) {
       config.collections = []

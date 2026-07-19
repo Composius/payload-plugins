@@ -55,7 +55,7 @@ export const Categories = ({ access }: CategoriesOptions): CollectionConfig => (
       label: label((t) => t.categories.fields.breadcrumbs),
       admin: {
         components: {
-          Cell: '@vitrailweb/payload-plugin-articles/client#CategoryBreadcrumbsCell',
+          Cell: '@composius/payload-plugin-articles/client#CategoryBreadcrumbsCell',
         },
         readOnly: true,
       },

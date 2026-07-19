@@ -1,4 +1,4 @@
-import { VWPayloadPluginUmami } from '@vitrailweb/payload-plugin-umami'
+import { ComposiusPayloadPluginUmami } from '@composius/payload-plugin-umami'
 import path from 'path'
 import { fileURLToPath } from 'url'
 
@@ -10,7 +10,7 @@ const dirname = path.dirname(fileURLToPath(import.meta.url))
 export default buildDevConfig({
   dirname,
   plugins: [
-    VWPayloadPluginUmami({
+    ComposiusPayloadPluginUmami({
       websiteId: process.env.UMAMI_WEBSITE_ID || '',
       // Umami Cloud: pass an API key. Self-hosted: pass baseUrl + username/password.
       apiKey: process.env.UMAMI_API_KEY,

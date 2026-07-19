@@ -1,4 +1,4 @@
-# @vitrailweb/payload-plugin-umami
+# @composius/payload-plugin-umami
 
 A [Payload CMS](https://payloadcms.com) plugin that adds [Umami](https://umami.is)
 web-analytics to the admin dashboard: configurable **stat cards** (default:
@@ -34,12 +34,12 @@ pnpm add @payloadcms/ui payload react recharts
 
 ```ts
 import { buildConfig } from 'payload'
-import { VWPayloadPluginUmami } from '@vitrailweb/payload-plugin-umami'
+import { ComposiusPayloadPluginUmami } from '@composius/payload-plugin-umami'
 
 export default buildConfig({
   plugins: [
     // Umami Cloud
-    VWPayloadPluginUmami({
+    ComposiusPayloadPluginUmami({
       websiteId: process.env.UMAMI_WEBSITE_ID || '',
       apiKey: process.env.UMAMI_API_KEY || '',
     }),
@@ -52,7 +52,7 @@ For a **self-hosted** Umami instance, pass `baseUrl` + `username`/`password`
 instead of `apiKey`:
 
 ```ts
-VWPayloadPluginUmami({
+ComposiusPayloadPluginUmami({
   websiteId: process.env.UMAMI_WEBSITE_ID || '',
   baseUrl: process.env.UMAMI_BASE_URL || '', // e.g. https://umami.example.com
   username: process.env.UMAMI_USERNAME || '',
@@ -64,7 +64,7 @@ To restrict who sees the analytics, pass an `access` object (Payload `Access`
 functions, like other plugins — only `read` for now):
 
 ```ts
-VWPayloadPluginUmami({
+ComposiusPayloadPluginUmami({
   // ...
   access: {
     read: ({ req: { user } }) => user?.role === 'admin',
@@ -112,7 +112,7 @@ pnpm generate:importmap:umami                         # register the dashboard c
 pnpm dev:umami                                         # dev Payload app with this plugin
 pnpm vitest run packages/payload-plugin-umami/test     # unit tests
 pnpm vitest run dev/configs/umami                       # integration tests
-pnpm --filter @vitrailweb/payload-plugin-umami build   # build to dist/
+pnpm --filter @composius/payload-plugin-umami build   # build to dist/
 ```
 
 See the [root README](../../README.md) for the release flow.

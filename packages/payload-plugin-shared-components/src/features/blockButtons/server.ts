@@ -13,7 +13,7 @@ import {
  * toolbar items as buttons instead of inside the "text" dropdown.
  *
  * `clientModulePath` is the import-map path of the module re-exporting the
- * client features (e.g. `@vitrailweb/payload-plugin-articles/client`). It must
+ * client features (e.g. `@composius/payload-plugin-articles/client`). It must
  * be an export of the consuming plugin itself — not of this shared package —
  * so the host app can resolve it as a direct dependency.
  */

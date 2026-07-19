@@ -12,7 +12,7 @@ export type { UmamiAccess, UmamiRange, UmamiReport, UmamiStatId } from './types.
 /** Default `read` access: any authenticated user. */
 export const authenticated: Access = ({ req: { user } }) => Boolean(user)
 
-export type VWPayloadPluginUmamiConfig = {
+export type ComposiusPayloadPluginUmamiConfig = {
   /**
    * Access control for the analytics, per operation. Only `read` exists for
    * now. Default: `read` requires an authenticated user.
@@ -62,7 +62,7 @@ export type VWPayloadPluginUmamiConfig = {
   disabled?: boolean
 }
 
-const COMPONENT_PATH = '@vitrailweb/payload-plugin-umami/rsc'
+const COMPONENT_PATH = '@composius/payload-plugin-umami/rsc'
 const COMPONENT_EXPORT = 'UmamiWidget'
 export const WIDGET_SLUG = 'umami'
 
@@ -74,8 +74,8 @@ export const WIDGET_SLUG = 'umami'
  * built-in collections widget. Analytics are fetched server-side through a
  * proxy endpoint, so Umami credentials never reach the browser.
  */
-export const VWPayloadPluginUmami =
-  (pluginOptions: VWPayloadPluginUmamiConfig) =>
+export const ComposiusPayloadPluginUmami =
+  (pluginOptions: ComposiusPayloadPluginUmamiConfig) =>
   (config: Config): Config => {
     if (pluginOptions.disabled) {
       return config
@@ -88,7 +88,7 @@ export const VWPayloadPluginUmami =
     // CI). Degrade to no widgets instead of crashing the config build.
     if (!websiteId || !hasCredentials) {
       console.warn(
-        '[@vitrailweb/payload-plugin-umami] `websiteId` or credentials missing, analytics widgets are disabled.',
+        '[@composius/payload-plugin-umami] `websiteId` or credentials missing, analytics widgets are disabled.',
       )
       return config
     }

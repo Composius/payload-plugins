@@ -57,7 +57,7 @@ export const reportEndpoint = (
       } catch (error) {
         const status = error instanceof UmamiError ? error.status : 502
         req.payload.logger.error(
-          { err: error, plugin: '@vitrailweb/payload-plugin-umami' },
+          { err: error, plugin: '@composius/payload-plugin-umami' },
           'Failed to fetch Umami report',
         )
         return Response.json({ error: 'Failed to fetch Umami analytics' }, { status })
