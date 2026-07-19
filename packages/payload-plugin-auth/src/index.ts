@@ -1,11 +1,26 @@
 import type { Config } from 'payload'
 
-import { hasRole, hasRoleFieldLevel, hasRoleOrOwner } from './access.js'
+import {
+  hasRole,
+  hasRoleFieldLevel,
+  hasRoleOrOwner,
+  isAdmin,
+  isAdminOrHasRole,
+  isAuthenticatedOrPublished,
+  setAdminRole,
+} from './access.js'
 import { withUsersAuth } from './collections/Users.js'
 import { label } from './translations/index.js'
 import type { Role, UsersAccess, ComposiusPayloadPluginAuthConfig } from './types.js'
 
-export { hasRole, hasRoleFieldLevel, hasRoleOrOwner }
+export {
+  hasRole,
+  hasRoleFieldLevel,
+  hasRoleOrOwner,
+  isAdmin,
+  isAdminOrHasRole,
+  isAuthenticatedOrPublished,
+}
 export type { Role, UsersAccess, ComposiusPayloadPluginAuthConfig }
 
 const defaultRoles: Role[] = [
@@ -36,12 +51,14 @@ export const ComposiusPayloadPluginAuth =
       )
     }
 
-    const admin = hasRole(adminRole)
+    // Keep the exported isAdmin/isAdminOrHasRole helpers in sync with the option.
+    setAdminRole(adminRole)
+
     const adminOrSelf = hasRoleOrOwner([adminRole], 'id')
 
     const access = {
-      create: pluginOptions.access?.create ?? admin,
-      delete: pluginOptions.access?.delete ?? admin,
+      create: pluginOptions.access?.create ?? isAdmin,
+      delete: pluginOptions.access?.delete ?? isAdmin,
       read: pluginOptions.access?.read ?? adminOrSelf,
       update: pluginOptions.access?.update ?? adminOrSelf,
     }
@@ -50,9 +67,7 @@ export const ComposiusPayloadPluginAuth =
       config.collections = []
     }
 
-    const existingIndex = config.collections.findIndex(
-      (collection) => collection.slug === slug,
-    )
+    const existingIndex = config.collections.findIndex((collection) => collection.slug === slug)
     const users = withUsersAuth(
       existingIndex === -1 ? undefined : config.collections[existingIndex],
       { access, adminRole, defaultRole, roles, slug },

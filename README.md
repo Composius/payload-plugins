@@ -55,7 +55,7 @@ pnpm generate:importmap:pages
 4. Add `dev:<name>` and `generate:types:<name>` scripts to the root `package.json`, plus `workspace:*` devDependency on the new package.
 5. Add the short name to the `package` choices in `.github/workflows/publish.yml`.
 6. Add the code and commit.
-7. For publishing for the first time, login to npm `npm login` and run `pnpm --filter @composius/payload-plugin-<name> publish --access public --no-git-checks`.
+7. For publishing for the first time, login to npm `npm login` and run `pnpm --filter @composius/payload-plugin-<name> publish --no-git-checks`.
 8. Go to npmjs.com and in the packages of the account, go to Settings and add a Trusted Publisher.
 9. Continue with the next section, as local publish is not trusted. And for local testing in another project run `npm logout` first.
 

@@ -2,7 +2,15 @@ import type { Access, CollectionConfig, Config, SelectField } from 'payload'
 
 import { describe, expect, test } from 'vitest'
 
-import { hasRole, hasRoleFieldLevel, hasRoleOrOwner, ComposiusPayloadPluginAuth } from '../src/index.js'
+import {
+  ComposiusPayloadPluginAuth,
+  hasRole,
+  hasRoleFieldLevel,
+  hasRoleOrOwner,
+  isAdmin,
+  isAdminOrHasRole,
+  isAuthenticatedOrPublished,
+} from '../src/index.js'
 
 const accessArgs = (user: unknown) => ({ req: { user } }) as Parameters<Access>[0]
 
@@ -50,6 +58,46 @@ describe('access helpers', () => {
     const adminOrSelf = hasRoleOrOwner(['admin'])
     expect(adminOrSelf(accessArgs({ id: 7, role: 'viewer' }))).toEqual({
       id: { equals: 7 },
+    })
+  })
+
+  test('isAdmin allows only the admin role', () => {
+    expect(isAdmin(accessArgs({ id: 1, role: 'admin' }))).toBe(true)
+    expect(isAdmin(accessArgs({ id: 1, role: 'editor' }))).toBe(false)
+    expect(isAdmin(accessArgs(null))).toBe(false)
+  })
+
+  test('isAdminOrHasRole allows the admin role plus the given roles', () => {
+    const adminOrEditor = isAdminOrHasRole('editor')
+    expect(adminOrEditor(accessArgs({ id: 1, role: 'admin' }))).toBe(true)
+    expect(adminOrEditor(accessArgs({ id: 1, role: 'editor' }))).toBe(true)
+    expect(adminOrEditor(accessArgs({ id: 1, role: 'viewer' }))).toBe(false)
+    expect(adminOrEditor(accessArgs(null))).toBe(false)
+  })
+
+  test('isAdmin and isAdminOrHasRole follow a custom adminRole option', () => {
+    ComposiusPayloadPluginAuth({
+      adminRole: 'owner',
+      defaultRole: 'member',
+      roles: [
+        { label: 'Owner', value: 'owner' },
+        { label: 'Member', value: 'member' },
+      ],
+    })(baseConfig())
+
+    expect(isAdmin(accessArgs({ id: 1, role: 'owner' }))).toBe(true)
+    expect(isAdmin(accessArgs({ id: 1, role: 'admin' }))).toBe(false)
+    expect(isAdminOrHasRole('member')(accessArgs({ id: 1, role: 'owner' }))).toBe(true)
+
+    // restore the default adminRole for the remaining tests
+    ComposiusPayloadPluginAuth()(baseConfig())
+    expect(isAdmin(accessArgs({ id: 1, role: 'admin' }))).toBe(true)
+  })
+
+  test('isAuthenticatedOrPublished allows users, and the public only published docs', () => {
+    expect(isAuthenticatedOrPublished(accessArgs({ id: 1, role: 'viewer' }))).toBe(true)
+    expect(isAuthenticatedOrPublished(accessArgs(null))).toEqual({
+      _status: { equals: 'published' },
     })
   })
 })
