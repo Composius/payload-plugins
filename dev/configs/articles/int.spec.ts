@@ -84,4 +84,34 @@ describe('Plugin integration tests', () => {
 
     expect(article.category).toMatchObject({ id: guides.id })
   })
+
+  test('plugin adds the authors collection', () => {
+    expect(payload.collections['authors']).toBeDefined()
+  })
+
+  test('editor defaults to the creating user and article links an author', async () => {
+    const user = await payload.create({
+      collection: 'users',
+      data: { email: 'editor@example.com', password: 'password123' },
+    })
+
+    const author = await payload.create({
+      collection: 'authors',
+      data: { name: 'Ada Lovelace', contact: 'ada@example.com' },
+    })
+
+    const article = await payload.create({
+      collection: 'articles',
+      data: {
+        slug: 'attributed-article',
+        title: 'Attributed Article',
+        author: author.id,
+      },
+      // Simulates an authenticated request so the editor default hook fires.
+      req: { user } as Parameters<typeof payload.create>[0]['req'],
+    })
+
+    expect(article.editor).toMatchObject({ id: user.id })
+    expect(article.author).toMatchObject({ id: author.id, name: 'Ada Lovelace' })
+  })
 })

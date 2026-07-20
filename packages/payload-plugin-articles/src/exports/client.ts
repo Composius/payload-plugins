@@ -1,5 +1,7 @@
+export { AuthorAvatar } from '../components/AuthorAvatar.js'
 export { CategoryFieldClient } from '../components/CategoryField.js'
 export { CategoryBreadcrumbsCell } from '../components/CategoryBreadcrumbsCell.js'
+export { EditorCell } from '../components/EditorCell.js'
 export {
   BlockquoteButtonFeatureClient,
   ChecklistButtonFeatureClient,

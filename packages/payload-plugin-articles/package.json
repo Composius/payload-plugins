@@ -29,6 +29,9 @@
   "files": [
     "dist"
   ],
+  "dependencies": {
+    "boring-avatars": "^2.0.4"
+  },
   "scripts": {
     "build": "tsup",
     "clean": "rimraf {dist,*.tsbuildinfo}"

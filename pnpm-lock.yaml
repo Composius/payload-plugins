@@ -130,6 +130,10 @@ importers:
         version: 4.0.18(@types/node@22.19.9)(happy-dom@20.10.6)(sass@1.77.4)(tsx@4.21.0)
 
   packages/payload-plugin-articles:
+    dependencies:
+      boring-avatars:
+        specifier: ^2.0.4
+        version: 2.0.4(react-dom@19.2.6(react@19.2.6))(react@19.2.6)
     devDependencies:
       '@composius/payload-plugin-shared-components':
         specifier: workspace:*
@@ -2737,6 +2741,12 @@ packages:
 
   body-scroll-lock@4.0.0-beta.0:
     resolution: {integrity: sha512-a7tP5+0Mw3YlUJcGAKUqIBkYYGlYxk2fnCasq/FUph1hadxlTRjF+gAcZksxANnaMnALjxEddmSi/H3OR8ugcQ==}
+
+  boring-avatars@2.0.4:
+    resolution: {integrity: sha512-xhZO/w/6aFmRfkaWohcl2NfyIy87gK5SBbys8kctZeTGF1Apjpv/10pfUuv+YEfVPkESU/h2Y6tt/Dwp+bIZPw==}
+    peerDependencies:
+      react: '>=18.0.0'
+      react-dom: '>=18.0.0'
 
   brace-expansion@1.1.16:
     resolution: {integrity: sha512-IDw48K2/2kRkg9LdJxurvq3lV3aBgq0REY89duEqFRthjlPdXHKMj7EnQOXVckxzgisinf3nHfrcE2FufFLXMw==}
@@ -8071,6 +8081,11 @@ snapshots:
   birecord@0.1.2: {}
 
   body-scroll-lock@4.0.0-beta.0: {}
+
+  boring-avatars@2.0.4(react-dom@19.2.6(react@19.2.6))(react@19.2.6):
+    dependencies:
+      react: 19.2.6
+      react-dom: 19.2.6(react@19.2.6)
 
   brace-expansion@1.1.16:
     dependencies:

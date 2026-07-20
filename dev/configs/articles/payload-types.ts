@@ -69,6 +69,7 @@ export interface Config {
   collections: {
     media: Media;
     categories: Category;
+    authors: Author;
     articles: Article;
     'payload-kv': PayloadKv;
     users: User;
@@ -80,6 +81,7 @@ export interface Config {
   collectionsSelect: {
     media: MediaSelect<false> | MediaSelect<true>;
     categories: CategoriesSelect<false> | CategoriesSelect<true>;
+    authors: AuthorsSelect<false> | AuthorsSelect<true>;
     articles: ArticlesSelect<false> | ArticlesSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     users: UsersSelect<false> | UsersSelect<true>;
@@ -166,6 +168,25 @@ export interface Category {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "authors".
+ */
+export interface Author {
+  id: number;
+  name: string;
+  /**
+   * Falls back to a generated avatar when left empty.
+   */
+  picture?: (number | null) | Media;
+  /**
+   * Email, website, or any way to reach the author.
+   */
+  contact?: string | null;
+  biography?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "articles".
  */
 export interface Article {
@@ -177,6 +198,7 @@ export interface Article {
   generateSlug?: boolean | null;
   slug: string;
   category?: (number | null) | Category;
+  author?: (number | null) | Author;
   coverImage?: (number | null) | Media;
   content?: {
     root: {
@@ -194,6 +216,7 @@ export interface Article {
     [k: string]: unknown;
   } | null;
   publishedAt?: string | null;
+  editor?: (number | null) | User;
   meta?: {
     title?: string | null;
     /**
@@ -205,23 +228,6 @@ export interface Article {
   updatedAt: string;
   createdAt: string;
   _status?: ('draft' | 'published') | null;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "payload-kv".
- */
-export interface PayloadKv {
-  id: number;
-  key: string;
-  data:
-    | {
-        [k: string]: unknown;
-      }
-    | unknown[]
-    | string
-    | number
-    | boolean
-    | null;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -250,6 +256,23 @@ export interface User {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "payload-kv".
+ */
+export interface PayloadKv {
+  id: number;
+  key: string;
+  data:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-locked-documents".
  */
 export interface PayloadLockedDocument {
@@ -262,6 +285,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'categories';
         value: number | Category;
+      } | null)
+    | ({
+        relationTo: 'authors';
+        value: number | Author;
       } | null)
     | ({
         relationTo: 'articles';
@@ -353,6 +380,18 @@ export interface CategoriesSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "authors_select".
+ */
+export interface AuthorsSelect<T extends boolean = true> {
+  name?: T;
+  picture?: T;
+  contact?: T;
+  biography?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "articles_select".
  */
 export interface ArticlesSelect<T extends boolean = true> {
@@ -360,9 +399,11 @@ export interface ArticlesSelect<T extends boolean = true> {
   generateSlug?: T;
   slug?: T;
   category?: T;
+  author?: T;
   coverImage?: T;
   content?: T;
   publishedAt?: T;
+  editor?: T;
   meta?:
     | T
     | {

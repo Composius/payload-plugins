@@ -18,9 +18,16 @@ export type ArticlesOptions = {
   access: Required<ArticlesAccess>
   articleUrl: (slug?: string | null) => string
   seo: false | ArticlesSeoGenerators
+  /** Slug of the users collection the `editor` field relates to. */
+  usersSlug: string
 }
 
-export const Articles = ({ access, articleUrl, seo }: ArticlesOptions): CollectionConfig => ({
+export const Articles = ({
+  access,
+  articleUrl,
+  seo,
+  usersSlug,
+}: ArticlesOptions): CollectionConfig => ({
   slug: 'articles',
   labels: {
     singular: label((t) => t.articles.singular),
@@ -28,7 +35,7 @@ export const Articles = ({ access, articleUrl, seo }: ArticlesOptions): Collecti
   },
   admin: {
     useAsTitle: 'title',
-    defaultColumns: ['title', 'category', '_status', 'publishedAt', 'updatedAt'],
+    defaultColumns: ['title', 'category', '_status', 'editor', 'updatedAt'],
     livePreview: {
       url: ({ data }) => articleUrl(data?.slug as string | undefined),
     },
@@ -66,6 +73,15 @@ export const Articles = ({ access, articleUrl, seo }: ArticlesOptions): Collecti
       },
     },
     {
+      name: 'author',
+      type: 'relationship',
+      label: label((t) => t.articles.fields.author),
+      relationTo: 'authors',
+      admin: {
+        position: 'sidebar',
+      },
+    },
+    {
       name: 'coverImage',
       type: 'upload',
       label: label((t) => t.articles.fields.coverImage),
@@ -97,6 +113,29 @@ export const Articles = ({ access, articleUrl, seo }: ArticlesOptions): Collecti
           ({ siblingData, value }) => {
             if (siblingData._status === 'published' && !value) {
               return new Date()
+            }
+            return value
+          },
+        ],
+      },
+    },
+    {
+      name: 'editor',
+      type: 'relationship',
+      label: label((t) => t.articles.fields.editor),
+      relationTo: usersSlug,
+      admin: {
+        position: 'sidebar',
+        components: {
+          Cell: '@composius/payload-plugin-articles/client#EditorCell',
+        },
+      },
+      hooks: {
+        beforeChange: [
+          ({ operation, req, value }) => {
+            // Default to the creating user; still editable afterwards.
+            if (operation === 'create' && value == null && req.user) {
+              return req.user.id
             }
             return value
           },

@@ -3,9 +3,11 @@ export const en = {
     plural: 'Articles',
     singular: 'Article',
     fields: {
+      author: 'Author',
       category: 'Category',
       content: 'Content',
       coverImage: 'Cover Image',
+      editor: 'Editor',
       publishedAt: 'Published At',
       seo: 'SEO',
       seoTitle: 'Title',
@@ -13,6 +15,19 @@ export const en = {
     },
     messages: {
       noCategories: 'No categories yet. Create one in the Categories collection first.',
+    },
+  },
+  authors: {
+    plural: 'Authors',
+    singular: 'Author',
+    fields: {
+      avatarPreview: 'Avatar',
+      biography: 'Biography',
+      contact: 'Contact',
+      contactDescription: 'Email, website, or any way to reach the author.',
+      name: 'Name',
+      picture: 'Picture',
+      pictureDescription: 'Falls back to a generated avatar when left empty.',
     },
   },
   categories: {

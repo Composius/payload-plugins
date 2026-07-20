@@ -9,6 +9,8 @@ import { seoPlugin } from '@payloadcms/plugin-seo'
 import { nestedDocsPlugin } from '@payloadcms/plugin-nested-docs'
 import type { ArticlesAccess } from './collections/Articles.js'
 import { Articles } from './collections/Articles.js'
+import type { AuthorsAccess } from './collections/Authors.js'
+import { Authors } from './collections/Authors.js'
 import type { CategoriesAccess } from './collections/Categories.js'
 import { Categories } from './collections/Categories.js'
 import {
@@ -29,6 +31,12 @@ export type ComposiusPayloadPluginArticlesConfig = {
    * `create`/`update`/`delete` require an authenticated user.
    */
   access?: ArticlesAccess
+  /**
+   * Access control for the authors collection, per operation.
+   * Defaults: `read` allows anyone, `create`/`update`/`delete` require an
+   * authenticated user.
+   */
+  authorsAccess?: AuthorsAccess
   /**
    * Access control for the categories collection, per operation.
    * Defaults: `read` allows anyone, `create`/`update`/`delete` require an
@@ -58,6 +66,11 @@ export type ComposiusPayloadPluginArticlesConfig = {
         generateTitle?: GenerateTitle
         generateURL?: GenerateURL
       }
+  /**
+   * Slug of the users collection the article `editor` field relates to.
+   * Defaults to `'users'`.
+   */
+  usersSlug?: string
 }
 
 export const ComposiusPayloadPluginArticles =
@@ -92,7 +105,18 @@ export const ComposiusPayloadPluginArticles =
       update: pluginOptions.categoriesAccess?.update ?? authenticated,
     }
 
+    const authorsAccess = {
+      create: pluginOptions.authorsAccess?.create ?? authenticated,
+      delete: pluginOptions.authorsAccess?.delete ?? authenticated,
+      read: pluginOptions.authorsAccess?.read ?? anyone,
+      update: pluginOptions.authorsAccess?.update ?? authenticated,
+    }
+
+    const usersSlug = pluginOptions.usersSlug ?? 'users'
+
     config.collections.push(Categories({ access: categoriesAccess }))
+
+    config.collections.push(Authors({ access: authorsAccess }))
 
     config.collections.push(
       Articles({
@@ -105,6 +129,7 @@ export const ComposiusPayloadPluginArticles =
               hasGenerateTitle: true,
             }
           : false,
+        usersSlug,
       }),
     )
 

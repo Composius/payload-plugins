@@ -40,6 +40,11 @@ const findArticles = (config: Config): CollectionConfig => findCollection(config
 
 const findCategories = (config: Config): CollectionConfig => findCollection(config, 'categories')
 
+const findAuthors = (config: Config): CollectionConfig => findCollection(config, 'authors')
+
+const findField = (collection: CollectionConfig, name: string): Field =>
+  collection.fields.find((field) => (field as { name?: string }).name === name) as Field
+
 afterEach(() => {
   vi.unstubAllEnvs()
 })
@@ -231,5 +236,71 @@ describe('ComposiusPayloadPluginArticles', () => {
 
     const preview = articles.admin?.preview as (data: Record<string, unknown>) => string
     expect(preview({ slug: 'my-article' })).toBe('https://custom.dev/my-article')
+  })
+
+  test('adds the authors collection with the expected fields', () => {
+    const config = ComposiusPayloadPluginArticles()(baseConfig())
+    const authors = findAuthors(config)
+
+    const fieldNames = authors.fields.map((field) => (field as { name?: string }).name)
+    expect(fieldNames).toEqual(
+      expect.arrayContaining(['name', 'picture', 'avatarPreview', 'contact', 'biography']),
+    )
+    expect(findField(authors, 'picture')).toMatchObject({ type: 'upload', relationTo: 'media' })
+  })
+
+  test('authors default to public read and authenticated writes', () => {
+    const config = ComposiusPayloadPluginArticles()(baseConfig())
+    const authors = findAuthors(config)
+
+    expect(authors.access?.read).toBe(anyone)
+    expect(authors.access?.create).toBe(authenticated)
+    expect(authors.access?.update).toBe(authenticated)
+    expect(authors.access?.delete).toBe(authenticated)
+  })
+
+  test('custom authorsAccess overrides replace only the provided operations', () => {
+    const read: Access = () => false
+    const config = ComposiusPayloadPluginArticles({ authorsAccess: { read } })(baseConfig())
+    const authors = findAuthors(config)
+
+    expect(authors.access?.read).toBe(read)
+    expect(authors.access?.create).toBe(authenticated)
+  })
+
+  test('articles get an editor relationship to users and an optional author', () => {
+    const config = ComposiusPayloadPluginArticles()(baseConfig())
+    const articles = findArticles(config)
+
+    expect(findField(articles, 'editor')).toMatchObject({
+      type: 'relationship',
+      relationTo: 'users',
+    })
+    expect(findField(articles, 'author')).toMatchObject({
+      type: 'relationship',
+      relationTo: 'authors',
+    })
+  })
+
+  test('editor relationship uses a custom usersSlug', () => {
+    const config = ComposiusPayloadPluginArticles({ usersSlug: 'staff' })(baseConfig())
+    const articles = findArticles(config)
+
+    expect(findField(articles, 'editor')).toMatchObject({ relationTo: 'staff' })
+  })
+
+  test('editor defaults to the creating user only on create when unset', () => {
+    const config = ComposiusPayloadPluginArticles()(baseConfig())
+    const articles = findArticles(config)
+    const editor = findField(articles, 'editor') as {
+      hooks: { beforeChange: ((args: Record<string, unknown>) => unknown)[] }
+    }
+    const hook = editor.hooks.beforeChange[0]
+
+    expect(hook({ operation: 'create', value: undefined, req: { user: { id: 7 } } })).toBe(7)
+    // Keeps an explicit choice, and never overrides on update.
+    expect(hook({ operation: 'create', value: 3, req: { user: { id: 7 } } })).toBe(3)
+    expect(hook({ operation: 'update', value: undefined, req: { user: { id: 7 } } })).toBe(undefined)
+    expect(hook({ operation: 'create', value: undefined, req: {} })).toBe(undefined)
   })
 })

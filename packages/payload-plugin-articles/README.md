@@ -1,6 +1,6 @@
 # @composius/payload-plugin-articles
 
-A [Payload CMS](https://payloadcms.com) plugin that adds an `articles` collection with drafts (autosave), live preview, and SEO fields from `@payloadcms/plugin-seo`, plus a nestable `categories` collection (breadcrumbs from `@payloadcms/plugin-nested-docs`) for organizing articles.
+A [Payload CMS](https://payloadcms.com) plugin that adds an `articles` collection with drafts (autosave), live preview, and SEO fields from `@payloadcms/plugin-seo`, plus a nestable `categories` collection (breadcrumbs from `@payloadcms/plugin-nested-docs`) and an `authors` collection for organizing and attributing articles.
 
 ## Collections
 
@@ -11,12 +11,36 @@ A [Payload CMS](https://payloadcms.com) plugin that adds an `articles` collectio
 | `title`       | `text`         | required, used as admin title             |
 | `slug`        | `text`         | auto-generated from title, unique         |
 | `category`    | `relationship` | relates to `categories`, rendered as a checkbox tree |
+| `editor`      | `relationship` | relates to `users`; defaults to the creating user, editable afterwards |
+| `author`      | `relationship` | optional, relates to `authors`            |
 | `coverImage`  | `upload`       | relates to `media`                        |
 | `content`     | `richText`     |                                           |
 | `publishedAt` | `date`         | auto-set on first publish                 |
 | `meta`        | `group`        | SEO title/description/image/preview       |
 
-> Requires a `media` upload collection in the host config.
+> Requires a `media` upload collection and a `users` auth collection in the host config.
+
+The `editor` defaults to the user who creates the article (via a `beforeChange`
+field hook) but can be reassigned to any existing user at any time. Point it at a
+different users collection with the `usersSlug` option. In the articles list, the
+`editor` column resolves the user's `name`, then the users collection's title
+field (`useAsTitle`), then their `email`. This pairs with
+[`@composius/payload-plugin-auth`](../payload-plugin-auth), whose `users`
+collection has a required `name` and `useAsTitle: 'name'`.
+
+### `authors`
+
+| Field         | Type       | Notes                                                        |
+| ------------- | ---------- | ------------------------------------------------------------ |
+| `name`        | `text`     | required, used as admin title                                |
+| `picture`     | `upload`   | optional, relates to `media`                                 |
+| `contact`     | `text`     | optional; email, website, or any other contact detail       |
+| `biography`   | `textarea` | optional                                                     |
+
+When no `picture` is set, the admin sidebar previews a deterministic
+[`boring-avatars`](https://github.com/boringdesigners/boring-avatars) "beam"
+avatar generated from the author name. A front-end can reproduce the same avatar
+from the name with the `boring-avatars` `<Avatar variant="beam" />` component.
 
 ### `categories`
 
@@ -77,6 +101,13 @@ ComposiusPayloadPluginArticles({
   // Categories access per operation. Defaults: read = anyone,
   // create/update/delete = authenticated.
   categoriesAccess: { read, create, update, delete },
+
+  // Authors access per operation. Defaults: read = anyone,
+  // create/update/delete = authenticated.
+  authorsAccess: { read, create, update, delete },
+
+  // Users collection the article `editor` field relates to. Default: 'users'.
+  usersSlug: 'users',
 
   // Front-end URL of an article, used for (live) preview and SEO.
   // Default: `${NEXT_PUBLIC_SERVER_URL}/articles/${slug}`
