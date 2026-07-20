@@ -97,7 +97,7 @@ All optional — defaults shown as comments:
 ```ts
 ComposiusPayloadPluginAuth({
   // Access per operation. Defaults: create/delete = admin role,
-  // read/update = admin role or the user themselves.
+  // read = is authenticated, update = admin role or the user themselves.
   access: { read, create, update, delete },
 
   // Role value with full access to the users collection and admin UI.

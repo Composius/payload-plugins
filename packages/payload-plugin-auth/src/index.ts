@@ -61,7 +61,7 @@ export const ComposiusPayloadPluginAuth =
     const access = {
       create: pluginOptions.access?.create ?? isAdmin,
       delete: pluginOptions.access?.delete ?? isAdmin,
-      read: pluginOptions.access?.read ?? adminOrSelf,
+      read: pluginOptions.access?.read ?? isAuthenticated,
       update: pluginOptions.access?.update ?? adminOrSelf,
     }
 
