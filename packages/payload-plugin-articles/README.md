@@ -109,6 +109,10 @@ ComposiusPayloadPluginArticles({
   // Users collection the article `editor` field relates to. Default: 'users'.
   usersSlug: 'users',
 
+  // Field-level access controlling who may change an article's `editor`.
+  // Default: any authenticated user.
+  editorUpdateAccess: ({ req: { user } }) => Boolean(user),
+
   // Front-end URL of an article, used for (live) preview and SEO.
   // Default: `${NEXT_PUBLIC_SERVER_URL}/articles/${slug}`
   articleUrl: (slug) => string,

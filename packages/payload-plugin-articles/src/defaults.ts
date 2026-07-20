@@ -1,6 +1,7 @@
 export {
   anyone,
   authenticated,
+  authenticatedField,
   authenticatedOrPublished,
   defaultGenerateDescription,
   defaultGenerateImage,

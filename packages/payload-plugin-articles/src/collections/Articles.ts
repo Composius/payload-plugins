@@ -1,4 +1,4 @@
-import type { Access, CollectionConfig } from 'payload'
+import type { Access, CollectionConfig, FieldAccess } from 'payload'
 import { slugField } from 'payload'
 import { lexicalEditor } from '@payloadcms/richtext-lexical'
 import type { SeoGenerators } from '@composius/payload-plugin-shared-components'
@@ -17,6 +17,8 @@ export type ArticlesSeoGenerators = SeoGenerators
 export type ArticlesOptions = {
   access: Required<ArticlesAccess>
   articleUrl: (slug?: string | null) => string
+  /** Field-level access controlling who may change the `editor` field. */
+  editorUpdateAccess: FieldAccess
   seo: false | ArticlesSeoGenerators
   /** Slug of the users collection the `editor` field relates to. */
   usersSlug: string
@@ -25,6 +27,7 @@ export type ArticlesOptions = {
 export const Articles = ({
   access,
   articleUrl,
+  editorUpdateAccess,
   seo,
   usersSlug,
 }: ArticlesOptions): CollectionConfig => ({
@@ -124,6 +127,9 @@ export const Articles = ({
       type: 'relationship',
       label: label((t) => t.articles.fields.editor),
       relationTo: usersSlug,
+      access: {
+        update: editorUpdateAccess,
+      },
       admin: {
         position: 'sidebar',
         components: {

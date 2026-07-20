@@ -1,10 +1,11 @@
-import type { Access, CollectionConfig, Config, Field } from 'payload'
+import type { Access, CollectionConfig, Config, Field, FieldAccess } from 'payload'
 
 import { afterEach, describe, expect, test, vi } from 'vitest'
 
 import {
   anyone,
   authenticated,
+  authenticatedField,
   authenticatedOrPublished,
   defaultArticleUrl,
   defaultGenerateDescription,
@@ -287,6 +288,26 @@ describe('ComposiusPayloadPluginArticles', () => {
     const articles = findArticles(config)
 
     expect(findField(articles, 'editor')).toMatchObject({ relationTo: 'staff' })
+  })
+
+  test('editor field update access defaults to any authenticated user', () => {
+    const config = ComposiusPayloadPluginArticles()(baseConfig())
+    const articles = findArticles(config)
+    const editor = findField(articles, 'editor') as { access?: { update?: FieldAccess } }
+
+    expect(editor.access?.update).toBe(authenticatedField)
+    const fieldAccessArgs = (user: unknown) => ({ req: { user } }) as Parameters<FieldAccess>[0]
+    expect(authenticatedField(fieldAccessArgs({ id: 1 }))).toBe(true)
+    expect(authenticatedField(fieldAccessArgs(null))).toBe(false)
+  })
+
+  test('custom editorUpdateAccess overrides the editor field update access', () => {
+    const editorUpdateAccess: FieldAccess = () => false
+    const config = ComposiusPayloadPluginArticles({ editorUpdateAccess })(baseConfig())
+    const articles = findArticles(config)
+    const editor = findField(articles, 'editor') as { access?: { update?: FieldAccess } }
+
+    expect(editor.access?.update).toBe(editorUpdateAccess)
   })
 
   test('editor defaults to the creating user only on create when unset', () => {

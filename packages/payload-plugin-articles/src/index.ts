@@ -1,4 +1,4 @@
-import type { Config } from 'payload'
+import type { Config, FieldAccess } from 'payload'
 import type {
   GenerateDescription,
   GenerateImage,
@@ -16,6 +16,7 @@ import { Categories } from './collections/Categories.js'
 import {
   anyone,
   authenticated,
+  authenticatedField,
   authenticatedOrPublished,
   defaultArticleUrl,
   defaultGenerateDescription,
@@ -49,6 +50,11 @@ export type ComposiusPayloadPluginArticlesConfig = {
    */
   articleUrl?: (slug?: string | null) => string
   disabled?: boolean
+  /**
+   * Field-level access controlling who may change an article's `editor`.
+   * Defaults to any authenticated user.
+   */
+  editorUpdateAccess?: FieldAccess
   /**
    * Adds an SEO `meta` group (title, description, image, preview) to the
    * articles collection, built from `@payloadcms/plugin-seo` fields.
@@ -113,6 +119,7 @@ export const ComposiusPayloadPluginArticles =
     }
 
     const usersSlug = pluginOptions.usersSlug ?? 'users'
+    const editorUpdateAccess = pluginOptions.editorUpdateAccess ?? authenticatedField
 
     config.collections.push(Categories({ access: categoriesAccess }))
 
@@ -122,6 +129,7 @@ export const ComposiusPayloadPluginArticles =
       Articles({
         access,
         articleUrl,
+        editorUpdateAccess,
         seo: seoEnabled
           ? {
               hasGenerateDescription: true,
