@@ -139,13 +139,14 @@ describe('ComposiusPayloadPluginAuth', () => {
     expect(role.access?.update?.(accessArgs({ id: 1, role: 'admin' }))).toBe(true)
   })
 
-  test('default access: admins manage, users read/update themselves', () => {
+  test('default access: admins manage, any authenticated user reads, users update themselves', () => {
     const config = ComposiusPayloadPluginAuth()(baseConfig())
     const users = findUsers(config)
 
     expect(users.access?.create?.(accessArgs({ id: 1, role: 'viewer' }))).toBe(false)
     expect(users.access?.delete?.(accessArgs({ id: 1, role: 'admin' }))).toBe(true)
-    expect(users.access?.read?.(accessArgs({ id: 5, role: 'editor' }))).toEqual({
+    expect(users.access?.read?.(accessArgs({ id: 5, role: 'editor' }))).toBe(true)
+    expect(users.access?.update?.(accessArgs({ id: 5, role: 'editor' }))).toEqual({
       id: { equals: 5 },
     })
     expect(users.access?.update?.(accessArgs({ id: 1, role: 'admin' }))).toBe(true)
