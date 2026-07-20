@@ -31,6 +31,9 @@ export const hasRoleFieldLevel =
     return role !== undefined && roles.includes(role)
   }
 
+/** Collection access allowing any authenticated user. */
+export const isAuthenticated: Access = ({ req: { user } }) => Boolean(user)
+
 /** Collection access allowing only users with the plugin's `adminRole` (default `'admin'`). */
 export const isAdmin: Access = ({ req: { user } }) => roleOf(user) === configuredAdminRole
 

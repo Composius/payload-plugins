@@ -6,6 +6,7 @@ import {
   hasRoleOrOwner,
   isAdmin,
   isAdminOrHasRole,
+  isAuthenticated,
   isAuthenticatedOrPublished,
   setAdminRole,
 } from './access.js'
@@ -19,6 +20,7 @@ export {
   hasRoleOrOwner,
   isAdmin,
   isAdminOrHasRole,
+  isAuthenticated,
   isAuthenticatedOrPublished,
 }
 export type { Role, UsersAccess, ComposiusPayloadPluginAuthConfig }

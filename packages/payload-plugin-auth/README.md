@@ -83,6 +83,7 @@ export default buildConfig({
   restricts the operation to documents whose `ownerField` equals the user's id. The
   default `'id'` gives "self" access on the users collection; pass a relationship field
   name (`'author'`, `'owner'`, …) for other collections.
+- `isAuthenticated` — allows any authenticated user.
 - `isAdmin` — allows only the plugin's `adminRole` (follows the option, default `'admin'`).
 - `isAdminOrHasRole(...roles)` — allows the plugin's `adminRole` or any of the given roles.
 - `isAuthenticatedOrPublished` — allows any authenticated user, and restricts the
