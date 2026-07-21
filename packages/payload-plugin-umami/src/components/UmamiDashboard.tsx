@@ -14,6 +14,7 @@ import type {
 import { en } from '../translations/en.js'
 import { fr } from '../translations/fr.js'
 import { DEFAULT_STATS, UMAMI_RANGES } from '../types.js'
+import { DashboardSkeleton } from './DashboardSkeleton.js'
 import { dashboardStyles } from './dashboardStyles.js'
 import { StatCard } from './StatCard.js'
 import { TopList } from './TopList.js'
@@ -73,6 +74,9 @@ export const UmamiDashboard = ({
       }
     }
   }, [i18n.language])
+  // Guards against unknown ids in the plugin config, and gives the loading
+  // skeleton the same card count the loaded grid will have.
+  const visibleStats = useMemo(() => stats.filter((id) => id in STAT_DEFS), [stats])
   const [range, setRange] = useState<UmamiRange>(defaultRange)
   const [report, setReport] = useState<UmamiReport>()
   const [status, setStatus] = useState<'error' | 'loading' | 'ready'>('loading')
@@ -130,22 +134,20 @@ export const UmamiDashboard = ({
       {status === 'error' ? (
         <p className="umami-message">{t.messages.error}</p>
       ) : status === 'loading' && !report ? (
-        <p className="umami-message">{t.messages.loading}</p>
+        <DashboardSkeleton label={t.messages.loading} statCount={visibleStats.length} />
       ) : report ? (
         <div className="umami-grid" style={{ opacity: status === 'loading' ? 0.6 : 1 }}>
-          {stats
-            .filter((id) => id in STAT_DEFS)
-            .map((id) => {
-              const def = STAT_DEFS[id]
-              return (
-                <StatCard
-                  format={def.format}
-                  key={id}
-                  label={t.stats[id]}
-                  value={def.value(def.period === 'prev' ? report.prevStats : report.stats)}
-                />
-              )
-            })}
+          {visibleStats.map((id) => {
+            const def = STAT_DEFS[id]
+            return (
+              <StatCard
+                format={def.format}
+                key={id}
+                label={t.stats[id]}
+                value={def.value(def.period === 'prev' ? report.prevStats : report.stats)}
+              />
+            )
+          })}
           <TrafficChart
             metricLabel={t.chartMetric}
             range={report.range}

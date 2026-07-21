@@ -5,6 +5,8 @@ import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxi
 
 import type { UmamiRange, UmamiSeries } from '../types.js'
 
+import { bucketGrid, floorToBucket, rangeToWindow } from '../range.js'
+
 export type TrafficChartProps = {
   series: UmamiSeries
   range: UmamiRange
@@ -23,10 +25,18 @@ type ChartMetric = 'views' | 'visitors'
 
 type Row = { t: number; views: number; visitors: number }
 
-const mergeSeries = (series: UmamiSeries): Row[] => {
-  const byTime = new Map<number, Row>()
+/**
+ * Umami only returns buckets that saw traffic, so the series is seeded with a
+ * zeroed row per bucket in the range — a quiet day still gets its tick on the
+ * axis instead of the chart closing the gap.
+ */
+const mergeSeries = (series: UmamiSeries, range: UmamiRange): Row[] => {
+  const unit = rangeToWindow(range).unit
+  const byTime = new Map<number, Row>(
+    bucketGrid(range).map((t) => [t, { t, views: 0, visitors: 0 }]),
+  )
   const ensure = (x: string): Row => {
-    const t = new Date(x).getTime()
+    const t = floorToBucket(new Date(x).getTime(), unit)
     let row = byTime.get(t)
     if (!row) {
       row = { t, views: 0, visitors: 0 }
@@ -54,7 +64,7 @@ export const TrafficChart = ({
   visitorsLabel,
 }: TrafficChartProps) => {
   const [metric, setMetric] = useState<ChartMetric>('views')
-  const data = useMemo(() => mergeSeries(series), [series])
+  const data = useMemo(() => mergeSeries(series, range), [series, range])
 
   const metricLabels: Record<ChartMetric, string> = {
     views: viewsLabel,
@@ -66,6 +76,24 @@ export const TrafficChart = ({
     return range === '24h'
       ? date.toLocaleTimeString(undefined, { hour: '2-digit' })
       : date.toLocaleDateString(undefined, { day: 'numeric', month: 'short' })
+  }
+
+  /**
+   * Fuller than the axis tick, since the tooltip has the room. Day-bucketed
+   * ranges leave the time out entirely — every bucket starts at midnight, so a
+   * time would only ever read "00:00" and suggest a precision the bucket
+   * doesn't have.
+   */
+  const formatTooltipLabel = (t: number) => {
+    const date = new Date(t)
+    return range === '24h'
+      ? date.toLocaleString()
+      : date.toLocaleDateString(undefined, {
+          day: 'numeric',
+          month: 'long',
+          weekday: 'short',
+          year: 'numeric',
+        })
   }
 
   return (
@@ -109,7 +137,7 @@ export const TrafficChart = ({
               color: 'var(--theme-text)',
             }}
             cursor={{ fill: 'var(--umami-grid)', opacity: 0.5 }}
-            labelFormatter={(t) => new Date(Number(t)).toLocaleString()}
+            labelFormatter={(t) => formatTooltipLabel(Number(t))}
           />
           <Bar
             dataKey={metric}

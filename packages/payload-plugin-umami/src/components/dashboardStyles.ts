@@ -69,6 +69,34 @@ html[data-theme='light'] .umami-dashboard {
 .umami-top__value { color: var(--theme-elevation-800); font-variant-numeric: tabular-nums; font-weight: 600; }
 .umami-empty { color: var(--theme-elevation-500); margin: 0.75rem 0 0; }
 .umami-message { color: var(--theme-elevation-600); padding: 1rem 0; }
+/*
+ * Loading placeholders. Each bar keeps the type metrics of the element it
+ * stands in for (it carries that element's class too) and just paints over
+ * the text, so the skeleton and the loaded dashboard are the same height.
+ */
+.umami-skeleton {
+  animation: umami-skeleton-pulse 1.4s ease-in-out infinite;
+  background: var(--theme-elevation-100);
+  border-radius: 4px;
+  color: transparent;
+  display: block;
+  max-width: 100%;
+  user-select: none;
+}
+.umami-skeleton--label { width: 5rem; }
+.umami-skeleton--value { width: 4.5rem; }
+.umami-skeleton--title { width: 7rem; }
+/* Matches the select it replaces: same box, but no border to double up on. */
+.umami-skeleton--select { border-color: transparent; width: 7rem; }
+/* The height ResponsiveContainer gives the chart in TrafficChart. */
+.umami-skeleton--chart { height: 280px; width: 100%; }
+@keyframes umami-skeleton-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.55; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .umami-skeleton { animation: none; }
+}
 /* Responds to the widget's own width (it can be resized in the dashboard). */
 @container (max-width: 900px) {
   .umami-grid { grid-template-columns: repeat(2, 1fr); }

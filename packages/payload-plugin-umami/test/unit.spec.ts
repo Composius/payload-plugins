@@ -93,7 +93,7 @@ describe('ComposiusPayloadPluginUmami', () => {
     const config = ComposiusPayloadPluginUmami(cloudCreds)(baseConfig())
 
     expect(JSON.stringify(umamiWidget(config))).toContain(
-      '"stats":["visitors","views","visitorsPrev","viewsPrev"]',
+      '"stats":["visitors","visitorsPrev","views","viewsPrev"]',
     )
   })
 

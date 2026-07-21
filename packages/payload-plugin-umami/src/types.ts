@@ -64,7 +64,7 @@ export type UmamiStatId =
   | 'visits'
   | 'visitsPrev'
 
-export const DEFAULT_STATS: UmamiStatId[] = ['visitors', 'views', 'visitorsPrev', 'viewsPrev']
+export const DEFAULT_STATS: UmamiStatId[] = ['visitors', 'visitorsPrev', 'views', 'viewsPrev']
 
 /** Props passed from the plugin to the dashboard client component. */
 export type UmamiDashboardProps = {

@@ -19,7 +19,7 @@ Email and password are added by Payload's auth. The collection also sets:
 - Cookies: `secure` in production only (plain-http localhost logins keep working in dev), `sameSite: 'Lax'`.
 - Brute-force protection: 5 max login attempts, 15 minutes lock time.
 - Admin UI: the collection is hidden from users without the admin role.
-- Access: `create`/`delete` admin only, `read`/`update` admin or the user themselves.
+- Access: `create`/`delete` admin only, `read` any authenticated user, `update` admin or the user themselves.
 
 ## Admin lockout protection
 
