@@ -33,7 +33,15 @@ export type ComposiusPayloadPluginArticlesConfig = {
    */
   access?: ArticlesAccess
   /**
+   * Adds an `authors` collection and an `author` relationship field on
+   * articles, for attributing articles to someone other than their `editor`.
+   * Disabled by default; pass `true` to enable it.
+   * @default false
+   */
+  authors?: boolean
+  /**
    * Access control for the authors collection, per operation.
+   * Only applies when `authors` is enabled.
    * Defaults: `read` allows anyone, `create`/`update`/`delete` require an
    * authenticated user.
    */
@@ -111,6 +119,8 @@ export const ComposiusPayloadPluginArticles =
       update: pluginOptions.categoriesAccess?.update ?? authenticated,
     }
 
+    const authorsEnabled = pluginOptions.authors === true
+
     const authorsAccess = {
       create: pluginOptions.authorsAccess?.create ?? authenticated,
       delete: pluginOptions.authorsAccess?.delete ?? authenticated,
@@ -123,12 +133,15 @@ export const ComposiusPayloadPluginArticles =
 
     config.collections.push(Categories({ access: categoriesAccess }))
 
-    config.collections.push(Authors({ access: authorsAccess }))
+    if (authorsEnabled) {
+      config.collections.push(Authors({ access: authorsAccess }))
+    }
 
     config.collections.push(
       Articles({
         access,
         articleUrl,
+        authors: authorsEnabled,
         editorUpdateAccess,
         seo: seoEnabled
           ? {

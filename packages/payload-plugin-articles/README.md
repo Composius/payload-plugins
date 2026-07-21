@@ -1,6 +1,6 @@
 # @composius/payload-plugin-articles
 
-A [Payload CMS](https://payloadcms.com) plugin that adds an `articles` collection with drafts (autosave), live preview, and SEO fields from `@payloadcms/plugin-seo`, plus a nestable `categories` collection (breadcrumbs from `@payloadcms/plugin-nested-docs`) and an `authors` collection for organizing and attributing articles.
+A [Payload CMS](https://payloadcms.com) plugin that adds an `articles` collection with drafts (autosave), live preview, and SEO fields from `@payloadcms/plugin-seo`, plus a nestable `categories` collection (breadcrumbs from `@payloadcms/plugin-nested-docs`) for organizing articles, and an opt-in `authors` collection for attributing them.
 
 ## Collections
 
@@ -12,7 +12,7 @@ A [Payload CMS](https://payloadcms.com) plugin that adds an `articles` collectio
 | `slug`        | `text`         | auto-generated from title, unique         |
 | `category`    | `relationship` | relates to `categories`, rendered as a checkbox tree |
 | `editor`      | `relationship` | relates to `users`; defaults to the creating user, editable afterwards |
-| `author`      | `relationship` | optional, relates to `authors`            |
+| `author`      | `relationship` | only with `authors: true`, relates to `authors` |
 | `coverImage`  | `upload`       | relates to `media`                        |
 | `content`     | `richText`     |                                           |
 | `publishedAt` | `date`         | auto-set on first publish                 |
@@ -29,6 +29,10 @@ field (`useAsTitle`), then their `email`. This pairs with
 collection has a required `name` and `useAsTitle: 'name'`.
 
 ### `authors`
+
+Opt-in — enable it with the `authors: true` option. When disabled (the default),
+neither the collection nor the `author` field on articles is registered, and
+articles are attributed through `editor` alone.
 
 | Field         | Type       | Notes                                                        |
 | ------------- | ---------- | ------------------------------------------------------------ |
@@ -102,8 +106,11 @@ ComposiusPayloadPluginArticles({
   // create/update/delete = authenticated.
   categoriesAccess: { read, create, update, delete },
 
-  // Authors access per operation. Defaults: read = anyone,
-  // create/update/delete = authenticated.
+  // Authors collection + `author` field on articles (default: false).
+  authors: false,
+
+  // Authors access per operation, when `authors` is enabled.
+  // Defaults: read = anyone, create/update/delete = authenticated.
   authorsAccess: { read, create, update, delete },
 
   // Users collection the article `editor` field relates to. Default: 'users'.

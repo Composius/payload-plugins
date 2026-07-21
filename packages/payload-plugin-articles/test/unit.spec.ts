@@ -239,8 +239,15 @@ describe('ComposiusPayloadPluginArticles', () => {
     expect(preview({ slug: 'my-article' })).toBe('https://custom.dev/my-article')
   })
 
-  test('adds the authors collection with the expected fields', () => {
+  test('authors are disabled by default', () => {
     const config = ComposiusPayloadPluginArticles()(baseConfig())
+
+    expect(config.collections?.some((collection) => collection.slug === 'authors')).toBe(false)
+    expect(findField(findArticles(config), 'author')).toBeUndefined()
+  })
+
+  test('authors: true adds the authors collection with the expected fields', () => {
+    const config = ComposiusPayloadPluginArticles({ authors: true })(baseConfig())
     const authors = findAuthors(config)
 
     const fieldNames = authors.fields.map((field) => (field as { name?: string }).name)
@@ -251,7 +258,7 @@ describe('ComposiusPayloadPluginArticles', () => {
   })
 
   test('authors default to public read and authenticated writes', () => {
-    const config = ComposiusPayloadPluginArticles()(baseConfig())
+    const config = ComposiusPayloadPluginArticles({ authors: true })(baseConfig())
     const authors = findAuthors(config)
 
     expect(authors.access?.read).toBe(anyone)
@@ -262,14 +269,16 @@ describe('ComposiusPayloadPluginArticles', () => {
 
   test('custom authorsAccess overrides replace only the provided operations', () => {
     const read: Access = () => false
-    const config = ComposiusPayloadPluginArticles({ authorsAccess: { read } })(baseConfig())
+    const config = ComposiusPayloadPluginArticles({ authors: true, authorsAccess: { read } })(
+      baseConfig(),
+    )
     const authors = findAuthors(config)
 
     expect(authors.access?.read).toBe(read)
     expect(authors.access?.create).toBe(authenticated)
   })
 
-  test('articles get an editor relationship to users and an optional author', () => {
+  test('articles get an editor relationship to users', () => {
     const config = ComposiusPayloadPluginArticles()(baseConfig())
     const articles = findArticles(config)
 
@@ -277,6 +286,12 @@ describe('ComposiusPayloadPluginArticles', () => {
       type: 'relationship',
       relationTo: 'users',
     })
+  })
+
+  test('authors: true adds the author relationship on articles', () => {
+    const config = ComposiusPayloadPluginArticles({ authors: true })(baseConfig())
+    const articles = findArticles(config)
+
     expect(findField(articles, 'author')).toMatchObject({
       type: 'relationship',
       relationTo: 'authors',

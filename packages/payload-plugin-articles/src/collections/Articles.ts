@@ -17,6 +17,8 @@ export type ArticlesSeoGenerators = SeoGenerators
 export type ArticlesOptions = {
   access: Required<ArticlesAccess>
   articleUrl: (slug?: string | null) => string
+  /** Adds the `author` relationship to the `authors` collection. */
+  authors: boolean
   /** Field-level access controlling who may change the `editor` field. */
   editorUpdateAccess: FieldAccess
   seo: false | ArticlesSeoGenerators
@@ -27,6 +29,7 @@ export type ArticlesOptions = {
 export const Articles = ({
   access,
   articleUrl,
+  authors,
   editorUpdateAccess,
   seo,
   usersSlug,
@@ -75,15 +78,19 @@ export const Articles = ({
         },
       },
     },
-    {
-      name: 'author',
-      type: 'relationship',
-      label: label((t) => t.articles.fields.author),
-      relationTo: 'authors',
-      admin: {
-        position: 'sidebar',
-      },
-    },
+    ...(authors
+      ? ([
+          {
+            name: 'author',
+            type: 'relationship',
+            label: label((t) => t.articles.fields.author),
+            relationTo: 'authors',
+            admin: {
+              position: 'sidebar',
+            },
+          },
+        ] as const)
+      : []),
     {
       name: 'coverImage',
       type: 'upload',

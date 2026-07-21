@@ -9,6 +9,6 @@ const dirname = path.dirname(fileURLToPath(import.meta.url))
 
 export default buildDevConfig({
   dirname,
-  plugins: [ComposiusPayloadPluginArticles()],
+  plugins: [ComposiusPayloadPluginArticles({ authors: true })],
   seed,
 })
