@@ -1,6 +1,6 @@
 {
   "name": "@composius/payload-plugin-umami",
-  "version": "0.3.1",
+  "version": "1.0.0",
   "description": "Payload plugin that adds Umami web-analytics widgets to the admin dashboard",
   "license": "MIT",
   "author": {
