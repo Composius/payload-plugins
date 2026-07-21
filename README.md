@@ -4,7 +4,7 @@ pnpm monorepo of [Payload CMS](https://payloadcms.com) plugins.
 
 | Package                                                              | Version | Description                        |
 | -------------------------------------------------------------------- | ------- | ---------------------------------- |
-| [@composius/payload-plugin-articles](packages/payload-plugin-articles) | 1.4.0 | Articles and categories collections with drafts, live preview, and SEO |
+| [@composius/payload-plugin-articles](packages/payload-plugin-articles) | 1.5.0 | Articles and categories collections with drafts, live preview, and SEO |
 | [@composius/payload-plugin-auth](packages/payload-plugin-auth)         | 1.0.3 | Users auth collection with configurable roles and role-based access helpers |
 | [@composius/payload-plugin-axiom](packages/payload-plugin-axiom)       | 0.2.1 | Axiom plugin                       |
 | [@composius/payload-plugin-custom-panel](packages/payload-plugin-custom-panel) | 0.1.2 | Configurable panel (site title, message, link buttons) above the admin dashboard |

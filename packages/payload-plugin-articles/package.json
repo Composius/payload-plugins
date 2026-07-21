@@ -1,6 +1,6 @@
 {
   "name": "@composius/payload-plugin-articles",
-  "version": "1.4.0",
+  "version": "1.5.0",
   "description": "Payload plugin that adds an Articles collection",
   "license": "MIT",
   "author": {
