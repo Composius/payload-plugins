@@ -66,7 +66,7 @@ describe('Plugin integration tests', () => {
     ).rejects.toThrow()
   })
 
-  test('non-admins only read themselves', async () => {
+  test('non-admins read every user, not just themselves', async () => {
     const editor = await findByEmail('editor@payloadcms.com')
 
     const { docs } = await payload.find({
@@ -75,8 +75,17 @@ describe('Plugin integration tests', () => {
       user: editor,
     })
 
-    expect(docs).toHaveLength(1)
-    expect(docs[0].email).toBe('editor@payloadcms.com')
+    // Default read access is isAuthenticated, so an editor sees other users
+    // too — unlike update, which stays admin-or-self.
+    const emails = docs.map((doc) => doc.email)
+    expect(emails).toContain('editor@payloadcms.com')
+    expect(emails).toContain(devUser.email)
+  })
+
+  test('logged-out visitors cannot read users', async () => {
+    await expect(
+      payload.find({ collection: 'users', overrideAccess: false, user: null }),
+    ).rejects.toThrow()
   })
 
   test('non-admins can update their profile but not their role', async () => {
