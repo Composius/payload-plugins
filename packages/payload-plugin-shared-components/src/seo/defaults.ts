@@ -5,7 +5,7 @@ import type {
   GenerateURL,
 } from '@payloadcms/plugin-seo/types'
 
-export const SEO_DESCRIPTION_MAX_LENGTH = 160
+export const SEO_DESCRIPTION_MAX_LENGTH = 150
 
 /** Collects the plain text of a lexical richText value, for the default meta description. */
 const richTextToPlainText = (content: unknown): string => {
@@ -29,8 +29,13 @@ const richTextToPlainText = (content: unknown): string => {
   return texts.join(' ').replace(/\s+/g, ' ').trim()
 }
 
-export const defaultGenerateDescription: GenerateDescription = ({ doc }) =>
-  richTextToPlainText(doc?.content).slice(0, SEO_DESCRIPTION_MAX_LENGTH)
+export const defaultGenerateDescription: GenerateDescription = ({ doc }) => {
+  const text = richTextToPlainText(doc?.content)
+  if (text.length <= SEO_DESCRIPTION_MAX_LENGTH) {
+    return text
+  }
+  return `${text.slice(0, SEO_DESCRIPTION_MAX_LENGTH - 3).trimEnd()}...`
+}
 
 export const defaultGenerateImage: GenerateImage = ({ doc }) =>
   (typeof doc?.coverImage === 'object' ? doc?.coverImage?.id : doc?.coverImage) ?? ''

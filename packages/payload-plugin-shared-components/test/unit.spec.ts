@@ -60,9 +60,16 @@ describe('SEO generate defaults', () => {
     )
   })
 
-  test('generateDescription truncates to the SEO limit', () => {
+  test('generateDescription truncates to the SEO limit with an ellipsis', () => {
     const doc = { content: richText('a'.repeat(500)) }
-    expect(defaultGenerateDescription(generateArgs(doc))).toHaveLength(SEO_DESCRIPTION_MAX_LENGTH)
+    const description = defaultGenerateDescription(generateArgs(doc)) as string
+    expect(description).toHaveLength(SEO_DESCRIPTION_MAX_LENGTH)
+    expect(description.endsWith('...')).toBe(true)
+  })
+
+  test('generateDescription does not add an ellipsis when within the limit', () => {
+    const doc = { content: richText('Short description.') }
+    expect(defaultGenerateDescription(generateArgs(doc))).toBe('Short description.')
   })
 
   test('generateDescription returns an empty string for missing content', () => {

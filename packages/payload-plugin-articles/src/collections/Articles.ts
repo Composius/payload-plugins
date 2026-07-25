@@ -35,13 +35,14 @@ export const Articles = ({
   usersSlug,
 }: ArticlesOptions): CollectionConfig => ({
   slug: 'articles',
+  defaultSort: '-publishedAt',
   labels: {
     singular: label((t) => t.articles.singular),
     plural: label((t) => t.articles.plural),
   },
   admin: {
     useAsTitle: 'title',
-    defaultColumns: ['title', 'category', '_status', 'editor', 'updatedAt'],
+    defaultColumns: ['title', 'category', '_status', 'editor', 'publishedAt', 'updatedAt'],
     livePreview: {
       url: ({ data }) => articleUrl(data?.slug as string | undefined),
     },
