@@ -36,6 +36,7 @@ export const fr: Translation = {
     plural: 'Catégories',
     singular: 'Catégorie',
     fields: {
+      articleCount: 'Articles',
       breadcrumbs: "Fil d'Ariane",
       description: 'Description',
       name: 'Nom',

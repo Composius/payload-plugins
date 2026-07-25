@@ -27,7 +27,7 @@ export const Categories = ({ access }: CategoriesOptions): CollectionConfig => (
   },
   admin: {
     useAsTitle: 'name',
-    defaultColumns: ['name', 'breadcrumbs', 'parent', 'updatedAt'],
+    defaultColumns: ['name', 'breadcrumbs', 'parent', 'articleCount', 'updatedAt'],
   },
   access: {
     read: access.read,
@@ -50,6 +50,16 @@ export const Categories = ({ access }: CategoriesOptions): CollectionConfig => (
       name: 'description',
       type: 'textarea',
       label: label((t) => t.categories.fields.description),
+    },
+    {
+      name: 'articleCount',
+      type: 'ui',
+      label: label((t) => t.categories.fields.articleCount),
+      admin: {
+        components: {
+          Cell: '@composius/payload-plugin-articles/client#CategoryArticleCountCell',
+        },
+      },
     },
     createBreadcrumbsField('categories', {
       label: label((t) => t.categories.fields.breadcrumbs),

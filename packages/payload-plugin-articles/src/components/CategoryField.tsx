@@ -77,7 +77,11 @@ const CategoryBranch = ({
  * child categories indented under their parent. Selection is exclusive:
  * checking a category unchecks the previous one, checking it again clears it.
  */
-export const CategoryFieldClient: RelationshipFieldClientComponent = ({ field, path, readOnly }) => {
+export const CategoryFieldClient: RelationshipFieldClientComponent = ({
+  field,
+  path,
+  readOnly,
+}) => {
   const { config } = useConfig()
   const { i18n } = useTranslation()
   const { setValue, value } = useField<CategoryId | null>({ path })
@@ -139,15 +143,17 @@ export const CategoryFieldClient: RelationshipFieldClientComponent = ({ field, p
           {noCategoriesMessage}
         </p>
       ) : (
-        <CategoryBranch
-          childrenByParent={childrenByParent}
-          depth={0}
-          onToggle={onToggle}
-          parent={null}
-          path={path}
-          readOnly={readOnly}
-          value={selected}
-        />
+        <div style={{ maxHeight: 300, overflowY: 'auto' }}>
+          <CategoryBranch
+            childrenByParent={childrenByParent}
+            depth={0}
+            onToggle={onToggle}
+            parent={null}
+            path={path}
+            readOnly={readOnly}
+            value={selected}
+          />
+        </div>
       )}
     </div>
   )

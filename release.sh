@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-log() { echo "==> $*"; }
+log() { echo "\n==> $*"; }
 
 if [ -n "$(git status --porcelain)" ]; then
   echo "Working tree is not clean — commit or stash your changes before releasing:" >&2

@@ -1,4 +1,5 @@
 import { SlugField as SlugField_2b8867833a34864a02ddf429b0728a40 } from '@payloadcms/next/client'
+import { CategoryArticleCountCell as CategoryArticleCountCell_1381e1bcaa7cd205c361ad7b0dfeea20 } from '@composius/payload-plugin-articles/client'
 import { CategoryBreadcrumbsCell as CategoryBreadcrumbsCell_1381e1bcaa7cd205c361ad7b0dfeea20 } from '@composius/payload-plugin-articles/client'
 import { AuthorAvatar as AuthorAvatar_1381e1bcaa7cd205c361ad7b0dfeea20 } from '@composius/payload-plugin-articles/client'
 import { CategoryFieldClient as CategoryFieldClient_1381e1bcaa7cd205c361ad7b0dfeea20 } from '@composius/payload-plugin-articles/client'
@@ -38,6 +39,7 @@ import { CollectionCards as CollectionCards_f9c02e79a4aed9a3924487c0cd4cafb1 } f
 /** @type import('payload').ImportMap */
 export const importMap = {
   "@payloadcms/next/client#SlugField": SlugField_2b8867833a34864a02ddf429b0728a40,
+  "@composius/payload-plugin-articles/client#CategoryArticleCountCell": CategoryArticleCountCell_1381e1bcaa7cd205c361ad7b0dfeea20,
   "@composius/payload-plugin-articles/client#CategoryBreadcrumbsCell": CategoryBreadcrumbsCell_1381e1bcaa7cd205c361ad7b0dfeea20,
   "@composius/payload-plugin-articles/client#AuthorAvatar": AuthorAvatar_1381e1bcaa7cd205c361ad7b0dfeea20,
   "@composius/payload-plugin-articles/client#CategoryFieldClient": CategoryFieldClient_1381e1bcaa7cd205c361ad7b0dfeea20,

@@ -84,9 +84,7 @@ describe('SEO generate defaults', () => {
 
   test('generateDescription flattens rich text into plain text', () => {
     const doc = { content: richText('First paragraph.', 'Second paragraph.') }
-    expect(defaultGenerateDescription(generateArgs(doc))).toBe(
-      'First paragraph. Second paragraph.',
-    )
+    expect(defaultGenerateDescription(generateArgs(doc))).toBe('First paragraph. Second paragraph.')
   })
 
   test('generateDescription truncates to the SEO limit', () => {
@@ -139,6 +137,20 @@ describe('ComposiusPayloadPluginArticles', () => {
     expect(fieldNames).toContain('breadcrumbs')
   })
 
+  test('categories list view gets an article count column', () => {
+    const config = ComposiusPayloadPluginArticles()(baseConfig())
+    const categories = findCategories(config)
+
+    expect(categories.admin?.defaultColumns).toContain('articleCount')
+    const articleCount = categories.fields.find(
+      (field) => (field as { name?: string }).name === 'articleCount',
+    )
+    expect(articleCount).toMatchObject({ type: 'ui' })
+    expect(
+      (articleCount as { admin?: { components?: { Cell?: unknown } } }).admin?.components?.Cell,
+    ).toBe('@composius/payload-plugin-articles/client#CategoryArticleCountCell')
+  })
+
   test('articles get a single category relationship to categories', () => {
     const config = ComposiusPayloadPluginArticles()(baseConfig())
     const articles = findArticles(config)
@@ -151,9 +163,9 @@ describe('ComposiusPayloadPluginArticles', () => {
       relationTo: 'categories',
     })
     expect((category as { hasMany?: boolean }).hasMany).toBeUndefined()
-    expect((category as { admin?: { components?: { Field?: unknown } } }).admin?.components?.Field).toBe(
-      '@composius/payload-plugin-articles/client#CategoryFieldClient',
-    )
+    expect(
+      (category as { admin?: { components?: { Field?: unknown } } }).admin?.components?.Field,
+    ).toBe('@composius/payload-plugin-articles/client#CategoryFieldClient')
   })
 
   test('nested docs plugin wires breadcrumbs hooks and parent filterOptions', () => {
@@ -336,7 +348,9 @@ describe('ComposiusPayloadPluginArticles', () => {
     expect(hook({ operation: 'create', value: undefined, req: { user: { id: 7 } } })).toBe(7)
     // Keeps an explicit choice, and never overrides on update.
     expect(hook({ operation: 'create', value: 3, req: { user: { id: 7 } } })).toBe(3)
-    expect(hook({ operation: 'update', value: undefined, req: { user: { id: 7 } } })).toBe(undefined)
+    expect(hook({ operation: 'update', value: undefined, req: { user: { id: 7 } } })).toBe(
+      undefined,
+    )
     expect(hook({ operation: 'create', value: undefined, req: {} })).toBe(undefined)
   })
 })

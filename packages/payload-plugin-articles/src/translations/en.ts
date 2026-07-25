@@ -34,6 +34,7 @@ export const en = {
     plural: 'Categories',
     singular: 'Category',
     fields: {
+      articleCount: 'Articles',
       breadcrumbs: 'Breadcrumbs',
       description: 'Description',
       name: 'Name',
