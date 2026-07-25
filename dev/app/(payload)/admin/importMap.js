@@ -18,6 +18,7 @@ import { importMap as axiom } from './importMaps/axiom.js'
 import { importMap as customPanel } from './importMaps/custom-panel.js'
 import { importMap as health } from './importMaps/health.js'
 import { importMap as homeNav } from './importMaps/home-nav.js'
+import { importMap as importWordpress } from './importMaps/import-wordpress.js'
 import { importMap as media } from './importMaps/media.js'
 import { importMap as menus } from './importMaps/menus.js'
 import { importMap as pages } from './importMaps/pages.js'
@@ -30,6 +31,7 @@ const importMaps = {
   'custom-panel': customPanel,
   health,
   'home-nav': homeNav,
+  'import-wordpress': importWordpress,
   media,
   menus,
   pages,

@@ -153,14 +153,32 @@ Then register the suite in the `loaders` map of `dev/payload.config.ts`:
 '<name>': () => import('./configs/<name>/config.js'),
 ```
 
+Also register the suite in the per-suite import-map aggregator
+`dev/app/(payload)/admin/importMap.js` — add the import and the map entry
+(alphabetically):
+
+```ts
+import { importMap as <camelName> } from './importMaps/<name>.js'
+// …then inside the importMaps object:
+'<name>': <camelName>,
+```
+
+This is required for **every** suite, not just ones with admin UI components:
+the aggregator returns `importMaps[DEV_SUITE] ?? {}`, and the admin dashboard
+always renders built-in components (e.g. `CollectionCards`). A suite missing
+from the aggregator (or without a generated `importMaps/<name>.js`) fails at
+runtime with `getFromImportMap: PayloadComponent not found in importMap`. The
+`importMaps/<name>.js` file is created by `generate:importmap:<name>` in Step 5.
+
 ## Step 3 — root package.json
 
 Add, keeping each script group alphabetized:
 
 - `"dev:<name>": "cross-env DEV_SUITE=<name> next dev dev --turbo"`
 - `"generate:types:<name>": "cross-env DEV_SUITE=<name> pnpm payload generate:types"`
-- Only if the plugin has admin UI components:
-  `"generate:importmap:<name>": "cross-env DEV_SUITE=<name> pnpm payload generate:importmap"`
+- `"generate:importmap:<name>": "cross-env DEV_SUITE=<name> pnpm payload generate:importmap"`
+  — add this for **every** suite (see Step 2: even non-UI suites need a
+  generated import map for the built-in admin components).
 - Append `&& tsc --noEmit -p dev/configs/<name>` to the `typecheck` script.
 - devDependencies: `"@composius/payload-plugin-<name>": "workspace:*"`
   (sorted with the other `@composius/*` entries).
@@ -187,7 +205,7 @@ Then run `pnpm install` to link the workspace package.
 ```bash
 pnpm install
 pnpm generate:types:<name>            # writes dev/configs/<name>/payload-types.ts
-pnpm generate:importmap:<name>        # only if the plugin has UI components
+pnpm generate:importmap:<name>        # every suite — writes dev/app/(payload)/admin/importMaps/<name>.js
 pnpm test:unit                        # vitest run packages
 pnpm vitest run dev/configs/<name>    # just the new suite's int tests
 pnpm typecheck
@@ -208,9 +226,17 @@ automatically and already gitignored (`/dev/configs/*/*.db`).
   `int.spec.ts` — per-suite generated types conflict in one program. That's
   why each suite has its own tsconfig and its own entry in the root
   `typecheck` script. Don't "fix" the exclusion.
-- `buildDevConfig` sets `ROOT_DIR` and the import-map `baseDir` to `dev/`
-  so all suites share `dev/app/(payload)/admin/importMap.js`. New UI
-  plugins must regenerate that shared file (`generate:importmap:<name>`).
+- `buildDevConfig` sets `ROOT_DIR` and the import-map `baseDir` to `dev/`, and
+  points `admin.importMap.importMapFile` at a **per-suite** file
+  `dev/app/(payload)/admin/importMaps/<name>.js`. The hand-written aggregator
+  `dev/app/(payload)/admin/importMap.js` picks the right one per `DEV_SUITE`
+  (returning `{}` for an unknown suite). **Every** suite therefore needs both
+  its generated `importMaps/<name>.js` (via `generate:importmap:<name>`) and an
+  entry in that aggregator — even plugins with no admin components of their own,
+  because the dashboard always renders built-ins like `CollectionCards`. Missing
+  either one fails at runtime with `PayloadComponent not found in importMap`.
+  (This replaces the old one-shared-file behavior; don't generate into
+  `importMap.js` directly.)
 - tsup drops the `"use client"` directive when bundling — client entries
   need `banner: { js: "'use client'" }` (see
   `packages/payload-plugin-umami/tsup.config.ts`).

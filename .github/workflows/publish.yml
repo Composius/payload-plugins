@@ -23,6 +23,7 @@ on:
           - custom-panel
           - health
           - home-nav
+          - import-wordpress
 
 jobs:
   publish:

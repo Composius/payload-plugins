@@ -14,6 +14,7 @@ const loaders: Record<string, () => Promise<{ default: Promise<SanitizedConfig> 
   'custom-panel': () => import('./configs/custom-panel/config.js'),
   health: () => import('./configs/health/config.js'),
   'home-nav': () => import('./configs/home-nav/config.js'),
+  'import-wordpress': () => import('./configs/import-wordpress/config.js'),
   media: () => import('./configs/media/config.js'),
   menus: () => import('./configs/menus/config.js'),
   pages: () => import('./configs/pages/config.js'),
