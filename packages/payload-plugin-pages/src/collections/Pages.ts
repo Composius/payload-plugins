@@ -34,6 +34,7 @@ export const Pages = ({ access, pageUrl, seo }: PagesOptions): CollectionConfig 
     },
     preview: (data) => pageUrl(data?.slug as string | undefined),
   },
+  defaultSort: '-publishedAt',
   access: {
     read: access.read,
     create: access.create,

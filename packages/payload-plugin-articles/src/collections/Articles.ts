@@ -35,7 +35,6 @@ export const Articles = ({
   usersSlug,
 }: ArticlesOptions): CollectionConfig => ({
   slug: 'articles',
-  defaultSort: '-publishedAt',
   labels: {
     singular: label((t) => t.articles.singular),
     plural: label((t) => t.articles.plural),
@@ -48,6 +47,7 @@ export const Articles = ({
     },
     preview: (data) => articleUrl(data?.slug as string | undefined),
   },
+  defaultSort: '-publishedAt',
   access: {
     read: access.read,
     create: access.create,
