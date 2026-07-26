@@ -1,6 +1,6 @@
 {
   "name": "@composius/payload-plugin-custom-panel",
-  "version": "0.1.2",
+  "version": "1.0.0",
   "description": "Payload plugin that adds a configurable panel (site title, welcome message, link buttons) above the admin dashboard",
   "license": "MIT",
   "author": {
