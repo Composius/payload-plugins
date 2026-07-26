@@ -1,4 +1,4 @@
-import type { Access, FieldAccess } from 'payload'
+import type { Access, ClientUser, FieldAccess } from 'payload'
 
 const roleOf = (user: unknown): string | undefined => {
   const role = (user as { role?: unknown } | null | undefined)?.role
@@ -37,13 +37,6 @@ export const isAuthenticated: Access = ({ req: { user } }) => Boolean(user)
 /** Collection access allowing only users with the plugin's `adminRole` (default `'admin'`). */
 export const isAdmin: Access = ({ req: { user } }) => roleOf(user) === configuredAdminRole
 
-/**
- * Plain boolean utility (not an `Access` function): returns `true` when the
- * given user has the plugin's `adminRole`. Takes the user itself, so it can be
- * used inside hooks, field conditions or custom access functions.
- */
-export const isAdminBoolean = (user: unknown): boolean => roleOf(user) === configuredAdminRole
-
 /** Collection access allowing the plugin's `adminRole` or any of the given roles. */
 export const isAdminOrHasRole =
   (...roles: string[]): Access =>
@@ -52,16 +45,24 @@ export const isAdminOrHasRole =
     return role !== undefined && (role === configuredAdminRole || roles.includes(role))
   }
 
+/** Signature Payload calls for `admin.hidden` on collections and globals. */
+type AdminHidden = (args: { user: ClientUser }) => boolean
+
 /**
- * Plain boolean variant of {@link isAdminOrHasRole} (not an `Access` function):
- * returns `true` when the given user has the plugin's `adminRole` or any of the
- * given roles. Takes the user itself, so it can be used inside hooks, field
- * conditions or custom access functions.
+ * `admin.hidden` for collections/globals: hides the entity from the admin nav
+ * and routes for everyone but the plugin's `adminRole`. Pass it by reference
+ * (`hidden: hiddenUnlessAdmin`) — negating a function reference is always
+ * `false`, so there is nothing to invert at the call site.
  */
-export const isAdminOrHasRoleBoolean = (user: unknown, ...roles: string[]): boolean => {
-  const role = roleOf(user)
-  return role !== undefined && (role === configuredAdminRole || roles.includes(role))
-}
+export const hiddenUnlessAdmin: AdminHidden = ({ user }) => roleOf(user) !== configuredAdminRole
+
+/** {@link hiddenUnlessAdmin}, also keeping the entity visible to the given roles. */
+export const hiddenUnlessAdminOrHasRole =
+  (...roles: string[]): AdminHidden =>
+  ({ user }) => {
+    const role = roleOf(user)
+    return role === undefined || (role !== configuredAdminRole && !roles.includes(role))
+  }
 
 /**
  * Collection access allowing authenticated users to see everything, and the

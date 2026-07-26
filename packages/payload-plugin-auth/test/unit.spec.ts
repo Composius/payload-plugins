@@ -7,14 +7,16 @@ import {
   hasRole,
   hasRoleFieldLevel,
   hasRoleOrOwner,
+  hiddenUnlessAdmin,
+  hiddenUnlessAdminOrHasRole,
   isAdmin,
-  isAdminBoolean,
   isAdminOrHasRole,
-  isAdminOrHasRoleBoolean,
   isAuthenticatedOrPublished,
 } from '../src/index.js'
 
 const accessArgs = (user: unknown) => ({ req: { user } }) as Parameters<Access>[0]
+
+const hiddenArgs = (user: unknown) => ({ user }) as Parameters<typeof hiddenUnlessAdmin>[0]
 
 const baseConfig = (): Config => ({ collections: [] }) as unknown as Config
 
@@ -69,11 +71,20 @@ describe('access helpers', () => {
     expect(isAdmin(accessArgs(null))).toBe(false)
   })
 
-  test('isAdminBoolean returns true only for the admin role', () => {
-    expect(isAdminBoolean({ id: 1, role: 'admin' })).toBe(true)
-    expect(isAdminBoolean({ id: 1, role: 'editor' })).toBe(false)
-    expect(isAdminBoolean({ id: 1 })).toBe(false)
-    expect(isAdminBoolean(null)).toBe(false)
+  test('hiddenUnlessAdmin hides the entity from everyone but the admin role', () => {
+    expect(hiddenUnlessAdmin(hiddenArgs({ id: 1, role: 'admin' }))).toBe(false)
+    expect(hiddenUnlessAdmin(hiddenArgs({ id: 1, role: 'editor' }))).toBe(true)
+    expect(hiddenUnlessAdmin(hiddenArgs({ id: 1 }))).toBe(true)
+    expect(hiddenUnlessAdmin(hiddenArgs(null))).toBe(true)
+  })
+
+  test('hiddenUnlessAdminOrHasRole also keeps the entity visible to the given roles', () => {
+    const unlessEditor = hiddenUnlessAdminOrHasRole('editor')
+    expect(unlessEditor(hiddenArgs({ id: 1, role: 'admin' }))).toBe(false)
+    expect(unlessEditor(hiddenArgs({ id: 1, role: 'editor' }))).toBe(false)
+    expect(unlessEditor(hiddenArgs({ id: 1, role: 'viewer' }))).toBe(true)
+    expect(unlessEditor(hiddenArgs({ id: 1 }))).toBe(true)
+    expect(unlessEditor(hiddenArgs(null))).toBe(true)
   })
 
   test('isAdminOrHasRole allows the admin role plus the given roles', () => {
@@ -82,15 +93,6 @@ describe('access helpers', () => {
     expect(adminOrEditor(accessArgs({ id: 1, role: 'editor' }))).toBe(true)
     expect(adminOrEditor(accessArgs({ id: 1, role: 'viewer' }))).toBe(false)
     expect(adminOrEditor(accessArgs(null))).toBe(false)
-  })
-
-  test('isAdminOrHasRoleBoolean returns true for the admin role plus the given roles', () => {
-    expect(isAdminOrHasRoleBoolean({ id: 1, role: 'admin' }, 'editor')).toBe(true)
-    expect(isAdminOrHasRoleBoolean({ id: 1, role: 'editor' }, 'editor')).toBe(true)
-    expect(isAdminOrHasRoleBoolean({ id: 1, role: 'viewer' }, 'editor')).toBe(false)
-    expect(isAdminOrHasRoleBoolean({ id: 1, role: 'viewer' })).toBe(false)
-    expect(isAdminOrHasRoleBoolean({ id: 1 }, 'editor')).toBe(false)
-    expect(isAdminOrHasRoleBoolean(null, 'editor')).toBe(false)
   })
 
   test('isAdmin and isAdminOrHasRole follow a custom adminRole option', () => {

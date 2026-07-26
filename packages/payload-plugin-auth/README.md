@@ -89,12 +89,22 @@ export default buildConfig({
 - `isAuthenticatedOrPublished` — allows any authenticated user, and restricts the
   public to published documents (`_status: 'published'`); for collections with
   drafts enabled.
-- `isAdminBoolean(user)` — plain boolean utility (not access): `true` when the
-  given user has the plugin's `adminRole`. Takes the user itself, for use in
-  hooks, field conditions or custom access functions — e.g.
-  `condition: (_, __, { user }) => isAdminBoolean(user)`.
-- `isAdminOrHasRoleBoolean(user, ...roles)` — the same, for the plugin's
-  `adminRole` or any of the given roles.
+- `hiddenUnlessAdmin` — for `admin.hidden` on a collection or global: hides it
+  from the admin nav and routes for everyone but the plugin's `adminRole`. Pass
+  it by reference, like the access helpers.
+- `hiddenUnlessAdminOrHasRole(...roles)` — the same, but also keeps the entity
+  visible to the given roles.
+
+```ts
+{
+  slug: 'settings',
+  admin: {
+    hidden: hiddenUnlessAdmin,
+    // or: hidden: hiddenUnlessAdminOrHasRole('editor'),
+  },
+  // ...
+}
+```
 
 ## Options
 
