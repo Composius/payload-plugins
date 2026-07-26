@@ -11,7 +11,7 @@ pnpm monorepo of [Payload CMS](https://payloadcms.com) plugins.
 | [@composius/payload-plugin-health](packages/payload-plugin-health)     | 1.0.0 | Health check endpoint with optional custom checks |
 | [@composius/payload-plugin-home-nav](packages/payload-plugin-home-nav) | 1.0.0 | Translated "Home" label next to the admin navbar icon and a Home link at the top of the nav sidebar |
 | [@composius/payload-plugin-import-wordpress](packages/payload-plugin-import-wordpress) | 1.0.0 | Import WordPress posts, categories, authors and images into Payload (idempotent, resumable, with a link/redirect report) |
-| [@composius/payload-plugin-media](packages/payload-plugin-media)       | 0.1.1 | Configurable media uploads collection (access, unique filenames, storage prefix, image sizes) |
+| [@composius/payload-plugin-media](packages/payload-plugin-media)       | 1.0.0 | Configurable media uploads collection (access, unique filenames, storage prefix, image sizes) |
 | [@composius/payload-plugin-menus](packages/payload-plugin-menus)       | 0.3.3 | Menus collection                   |
 | [@composius/payload-plugin-pages](packages/payload-plugin-pages)       | 1.0.0 | Pages collection with drafts, live preview, and SEO |
 | [@composius/payload-plugin-umami](packages/payload-plugin-umami)       | 1.0.0 | Umami widget |
