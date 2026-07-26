@@ -13,7 +13,7 @@ pnpm monorepo of [Payload CMS](https://payloadcms.com) plugins.
 | [@composius/payload-plugin-import-wordpress](packages/payload-plugin-import-wordpress) | 1.0.4 | Import WordPress posts, categories, authors and images into Payload (idempotent, resumable, with a link/redirect report) |
 | [@composius/payload-plugin-media](packages/payload-plugin-media)       | 1.0.0 | Configurable media uploads collection (access, unique filenames, storage prefix, image sizes) |
 | [@composius/payload-plugin-menus](packages/payload-plugin-menus)       | 1.1.0 | Menus collection                   |
-| [@composius/payload-plugin-pages](packages/payload-plugin-pages)       | 1.0.0 | Pages collection with drafts, live preview, and SEO |
+| [@composius/payload-plugin-pages](packages/payload-plugin-pages)       | 1.0.1 | Pages collection with drafts, live preview, and SEO |
 | [@composius/payload-plugin-redirections](packages/payload-plugin-redirections) | 0.1.0 | Redirections collection with exact, prefix and regex URL matching, plus a Next.js proxy helper |
 | [@composius/payload-plugin-umami](packages/payload-plugin-umami)       | 1.0.0 | Umami widget |
 | [@composius/payload-plugin-shared-components](packages/payload-plugin-shared-components) | 1.0.0 (private) | Private — editor features, SEO field, and access defaults inlined into the plugins at build time |
