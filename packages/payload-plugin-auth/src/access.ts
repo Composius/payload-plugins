@@ -37,6 +37,13 @@ export const isAuthenticated: Access = ({ req: { user } }) => Boolean(user)
 /** Collection access allowing only users with the plugin's `adminRole` (default `'admin'`). */
 export const isAdmin: Access = ({ req: { user } }) => roleOf(user) === configuredAdminRole
 
+/**
+ * Plain boolean utility (not an `Access` function): returns `true` when the
+ * given user has the plugin's `adminRole`. Takes the user itself, so it can be
+ * used inside hooks, field conditions or custom access functions.
+ */
+export const isAdminBoolean = (user: unknown): boolean => roleOf(user) === configuredAdminRole
+
 /** Collection access allowing the plugin's `adminRole` or any of the given roles. */
 export const isAdminOrHasRole =
   (...roles: string[]): Access =>
@@ -44,6 +51,17 @@ export const isAdminOrHasRole =
     const role = roleOf(user)
     return role !== undefined && (role === configuredAdminRole || roles.includes(role))
   }
+
+/**
+ * Plain boolean variant of {@link isAdminOrHasRole} (not an `Access` function):
+ * returns `true` when the given user has the plugin's `adminRole` or any of the
+ * given roles. Takes the user itself, so it can be used inside hooks, field
+ * conditions or custom access functions.
+ */
+export const isAdminOrHasRoleBoolean = (user: unknown, ...roles: string[]): boolean => {
+  const role = roleOf(user)
+  return role !== undefined && (role === configuredAdminRole || roles.includes(role))
+}
 
 /**
  * Collection access allowing authenticated users to see everything, and the

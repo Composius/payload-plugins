@@ -8,7 +8,9 @@ import {
   hasRoleFieldLevel,
   hasRoleOrOwner,
   isAdmin,
+  isAdminBoolean,
   isAdminOrHasRole,
+  isAdminOrHasRoleBoolean,
   isAuthenticatedOrPublished,
 } from '../src/index.js'
 
@@ -67,12 +69,28 @@ describe('access helpers', () => {
     expect(isAdmin(accessArgs(null))).toBe(false)
   })
 
+  test('isAdminBoolean returns true only for the admin role', () => {
+    expect(isAdminBoolean({ id: 1, role: 'admin' })).toBe(true)
+    expect(isAdminBoolean({ id: 1, role: 'editor' })).toBe(false)
+    expect(isAdminBoolean({ id: 1 })).toBe(false)
+    expect(isAdminBoolean(null)).toBe(false)
+  })
+
   test('isAdminOrHasRole allows the admin role plus the given roles', () => {
     const adminOrEditor = isAdminOrHasRole('editor')
     expect(adminOrEditor(accessArgs({ id: 1, role: 'admin' }))).toBe(true)
     expect(adminOrEditor(accessArgs({ id: 1, role: 'editor' }))).toBe(true)
     expect(adminOrEditor(accessArgs({ id: 1, role: 'viewer' }))).toBe(false)
     expect(adminOrEditor(accessArgs(null))).toBe(false)
+  })
+
+  test('isAdminOrHasRoleBoolean returns true for the admin role plus the given roles', () => {
+    expect(isAdminOrHasRoleBoolean({ id: 1, role: 'admin' }, 'editor')).toBe(true)
+    expect(isAdminOrHasRoleBoolean({ id: 1, role: 'editor' }, 'editor')).toBe(true)
+    expect(isAdminOrHasRoleBoolean({ id: 1, role: 'viewer' }, 'editor')).toBe(false)
+    expect(isAdminOrHasRoleBoolean({ id: 1, role: 'viewer' })).toBe(false)
+    expect(isAdminOrHasRoleBoolean({ id: 1 }, 'editor')).toBe(false)
+    expect(isAdminOrHasRoleBoolean(null, 'editor')).toBe(false)
   })
 
   test('isAdmin and isAdminOrHasRole follow a custom adminRole option', () => {

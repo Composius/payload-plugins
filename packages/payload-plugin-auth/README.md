@@ -89,6 +89,12 @@ export default buildConfig({
 - `isAuthenticatedOrPublished` — allows any authenticated user, and restricts the
   public to published documents (`_status: 'published'`); for collections with
   drafts enabled.
+- `isAdminBoolean(user)` — plain boolean utility (not access): `true` when the
+  given user has the plugin's `adminRole`. Takes the user itself, for use in
+  hooks, field conditions or custom access functions — e.g.
+  `condition: (_, __, { user }) => isAdminBoolean(user)`.
+- `isAdminOrHasRoleBoolean(user, ...roles)` — the same, for the plugin's
+  `adminRole` or any of the given roles.
 
 ## Options
 
