@@ -131,12 +131,54 @@ curl /api/wp-import/status/<jobId>
 | `authorMapping`           | `{ strategy, defaultUserId, syntheticEmailDomain }` | `{ strategy: 'users', syntheticEmailDomain: 'imported.invalid' }` | `users` (default), `authors`, or `fixed`. WordPress's public REST API hides author emails, so `users` synthesizes `<author-slug>@<syntheticEmailDomain>`; set your own domain, or `false` to skip creating such users (falls back to `defaultUserId` and reports the author). |
 | `excerptToSeoDescription` | boolean                                          | `true`                           | Map the WordPress excerpt onto the article SEO `meta.description`.                           |
 | `firstImageAsCover`       | boolean                                          | `true`                           | When a post has no usable featured image, promote the first in-content image to the cover and remove it from the content. |
-| `redirects`               | boolean                                          | `true`                           | Create 301 redirects and apply `@payloadcms/plugin-redirects`.                              |
+| `redirects`               | boolean \| `{ manage, pluginOptions }`           | `true`                           | Create 301 redirects. The `redirects` collection is registered via `@payloadcms/plugin-redirects` unless your app already provides it (auto-detected) — see below. |
 | `fieldMap`                | article field overrides                          | `title`/`slug`/`content`/`coverImage`/`category`/`publishedAt` | Article field names the importer writes to.                    |
 | `autoRun`                 | boolean \| `{ cron, queue }`                     | `true`                           | Auto-process queued imports on a schedule (every minute on the `default` queue). Pass `{ cron, queue }` to customize, or `false` to run the jobs queue yourself. |
 | `dryRunPageLimit`         | number                                           | `1`                              | REST pages a dry run samples.                                                                |
 | `request`                 | `{ concurrency, timeoutMs, userAgent }`          | `{ concurrency: 5, timeoutMs: 30000 }` | HTTP tuning for WordPress fetches and image downloads.                                 |
 | `disabled`                | boolean                                          | `false`                          | Keep the collections (schema consistency) but skip endpoints, redirects and auto-run.       |
+
+### Using it alongside your own `redirectsPlugin`
+
+If your app already runs `@payloadcms/plugin-redirects`, this plugin **reuses
+that collection** — it detects an existing `redirects` collection and adds
+nothing, so your own `collections`/`overrides` win and imported posts still get
+their redirect documents.
+
+Detection only sees collections registered *before* this plugin, so list your
+`redirectsPlugin` first:
+
+```ts
+plugins: [
+  redirectsPlugin({ collections: ['pages', 'articles'] }),
+  ComposiusPayloadPluginImportWordpress(),
+]
+```
+
+If you'd rather keep it after this plugin, opt out explicitly to avoid
+`DuplicateCollection: Collection slug already in use: "redirects"`:
+
+```ts
+plugins: [
+  ComposiusPayloadPluginImportWordpress({ redirects: { manage: false } }),
+  redirectsPlugin({ collections: ['pages', 'articles'] }),
+]
+```
+
+When this plugin does register the collection, `redirects.pluginOptions` is
+forwarded to `redirectsPlugin` (`collections`, `overrides`, `redirectTypes`,
+`redirectTypeFieldOverride`):
+
+```ts
+ComposiusPayloadPluginImportWordpress({
+  redirects: {
+    pluginOptions: {
+      overrides: { admin: { group: 'SEO' } },
+      redirectTypes: ['301', '302'],
+    },
+  },
+})
+```
 
 ## Notes
 

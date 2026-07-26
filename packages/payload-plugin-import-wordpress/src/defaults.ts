@@ -50,7 +50,15 @@ export const resolveOptions = (
     category: pluginOptions.fieldMap?.category ?? 'category',
     publishedAt: pluginOptions.fieldMap?.publishedAt ?? 'publishedAt',
   },
-  redirects: pluginOptions.redirects ?? true,
+  redirects: {
+    enabled: pluginOptions.redirects !== false,
+    manage:
+      typeof pluginOptions.redirects === 'object' ? pluginOptions.redirects.manage : undefined,
+    pluginOptions:
+      (typeof pluginOptions.redirects === 'object'
+        ? pluginOptions.redirects.pluginOptions
+        : undefined) ?? {},
+  },
   request: {
     concurrency: pluginOptions.request?.concurrency ?? 5,
     timeoutMs: pluginOptions.request?.timeoutMs ?? 30000,

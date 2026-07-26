@@ -46,6 +46,38 @@ export type AuthorMapping = {
   syntheticEmailDomain?: false | string
 }
 
+/**
+ * Subset of `RedirectsPluginConfig` from `@payloadcms/plugin-redirects`,
+ * declared structurally so the type doesn't depend on that optional peer.
+ */
+export type RedirectsPluginOptions = {
+  collections?: string[]
+  overrides?: Record<string, unknown>
+  redirectTypeFieldOverride?: Record<string, unknown>
+  redirectTypes?: Array<'301' | '302' | '303' | '307' | '308'>
+}
+
+export type RedirectsConfig = {
+  /**
+   * Whether this plugin registers the `redirects` collection (via
+   * `@payloadcms/plugin-redirects`).
+   *
+   * By default this is auto-detected: if a `redirects` collection is already
+   * registered — because your app runs its own `redirectsPlugin` earlier in the
+   * `plugins` array — it is reused as-is and nothing is added. Set to `false`
+   * when your own `redirectsPlugin` is listed *after* this plugin, so the
+   * collection isn't registered twice (`DuplicateCollection`).
+   *
+   * Either way, imported posts still get their redirect documents.
+   */
+  manage?: boolean
+  /**
+   * Options forwarded to `redirectsPlugin` when this plugin registers the
+   * collection. `collections` defaults to the target articles collection.
+   */
+  pluginOptions?: RedirectsPluginOptions
+}
+
 export type AutoRunConfig = {
   /** Cron expression for the auto-run schedule. @default '* * * * *' (every minute) */
   cron?: string
@@ -103,11 +135,13 @@ export type ComposiusPayloadPluginImportWordpressConfig = {
    */
   firstImageAsCover?: boolean
   /**
-   * Create 301 redirects (via @payloadcms/plugin-redirects) from old WordPress
-   * permalinks to the new article URLs, and apply the redirects plugin.
+   * Create 301 redirects from old WordPress permalinks to the new article URLs.
+   * The `redirects` collection comes from `@payloadcms/plugin-redirects`, which
+   * this plugin applies unless your app already registers it (auto-detected).
+   * Pass an object to control that, or `false` to skip redirects entirely.
    * @default true
    */
-  redirects?: boolean
+  redirects?: boolean | RedirectsConfig
   /** Override the article field names the importer writes to. */
   fieldMap?: FieldMap
   /**
@@ -135,7 +169,12 @@ export type ResolvedOptions = {
   excerptToSeoDescription: boolean
   fieldMap: Required<FieldMap>
   firstImageAsCover: boolean
-  redirects: boolean
+  redirects: {
+    enabled: boolean
+    /** `undefined` = auto-detect whether a `redirects` collection already exists. */
+    manage?: boolean
+    pluginOptions: RedirectsPluginOptions
+  }
   request: Required<Omit<RequestOptions, 'userAgent'>> & Pick<RequestOptions, 'userAgent'>
 }
 

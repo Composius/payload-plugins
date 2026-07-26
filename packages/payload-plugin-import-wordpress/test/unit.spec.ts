@@ -353,7 +353,7 @@ describe('resolveOptions', () => {
     expect(options.authorMapping.syntheticEmailDomain).toBe('imported.invalid')
     expect(options.excerptToSeoDescription).toBe(true)
     expect(options.firstImageAsCover).toBe(true)
-    expect(options.redirects).toBe(true)
+    expect(options.redirects).toEqual({ enabled: true, manage: undefined, pluginOptions: {} })
     expect(options.dryRunPageLimit).toBe(1)
     expect(options.fieldMap.content).toBe('content')
     expect(options.access.read).toBe(authenticated)
@@ -371,7 +371,7 @@ describe('resolveOptions', () => {
       strategy: 'fixed',
       syntheticEmailDomain: false,
     })
-    expect(options.redirects).toBe(false)
+    expect(options.redirects.enabled).toBe(false)
   })
 })
 
@@ -392,6 +392,39 @@ describe('ComposiusPayloadPluginImportWordpress', () => {
   test('applies @payloadcms/plugin-redirects when redirects is enabled', async () => {
     const config = await ComposiusPayloadPluginImportWordpress({ redirects: true })(baseConfig())
     expect(findSlugs(config)).toContain('redirects')
+  })
+
+  test('reuses an existing redirects collection instead of registering a second one', async () => {
+    // Simulates an app whose own redirectsPlugin runs before this plugin.
+    const withRedirects = {
+      collections: [{ slug: 'redirects', fields: [{ name: 'from', type: 'text' }] }],
+    } as unknown as Config
+
+    const config = await ComposiusPayloadPluginImportWordpress()(withRedirects)
+    const redirects = config.collections?.filter((c) => c.slug === 'redirects')
+
+    expect(redirects).toHaveLength(1)
+    // The app's own collection is untouched (not replaced by the plugin's).
+    expect(redirects?.[0].fields).toHaveLength(1)
+  })
+
+  test('redirects.manage false leaves the collection to the app', async () => {
+    const config = await ComposiusPayloadPluginImportWordpress({
+      redirects: { manage: false },
+    })(baseConfig())
+
+    expect(findSlugs(config)).not.toContain('redirects')
+    // Redirect documents are still created during an import.
+    expect(resolveOptions({ redirects: { manage: false } }).redirects.enabled).toBe(true)
+  })
+
+  test('forwards pluginOptions to redirectsPlugin', async () => {
+    const config = await ComposiusPayloadPluginImportWordpress({
+      redirects: { pluginOptions: { overrides: { admin: { group: 'SEO' } } } },
+    })(baseConfig())
+
+    const redirects = config.collections?.find((c) => c.slug === 'redirects')
+    expect(redirects?.admin?.group).toBe('SEO')
   })
 
   test('adds an every-minute auto-run schedule by default', async () => {

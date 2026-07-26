@@ -401,7 +401,7 @@ export const runImport = async (payload: Payload, args: RunImportArgs): Promise<
         progress.importedPosts += 1
 
         // Redirect old permalink → new article.
-        if (options.redirects) {
+        if (options.redirects.enabled) {
           const made = await createRedirect(payload, {
             articleId: coerceId(articleId),
             articlesSlug: slugs.articles,

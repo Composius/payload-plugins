@@ -51,17 +51,35 @@ export const ComposiusPayloadPluginImportWordpress =
     // `disabled` check so the `redirects` collection — and the
     // `payload_locked_documents_rels.redirects_id` column that comes with it —
     // stay in the schema once an import is done and the plugin is switched off.
-    if (options.redirects) {
-      try {
-        const { redirectsPlugin } = await import('@payloadcms/plugin-redirects')
-        // The target collection(s) become the `to.reference` relationTo.
-        config = redirectsPlugin({
-          collections: [options.collections.articles],
-        })(config) as Config
-      } catch {
-        warnings.push(
-          '`redirects` is enabled but `@payloadcms/plugin-redirects` is not installed; redirects will be skipped.',
-        )
+    if (options.redirects.enabled) {
+      // Reuse a `redirects` collection the app already registers (its own
+      // `redirectsPlugin` listed earlier) instead of adding a second one, which
+      // would fail with `DuplicateCollection`. `manage: false` covers the case
+      // where the app's redirectsPlugin runs *after* this plugin.
+      const alreadyRegistered = config.collections.some(
+        (collection) => collection.slug === 'redirects',
+      )
+      const { manage } = options.redirects
+
+      if (alreadyRegistered) {
+        if (manage === true) {
+          warnings.push(
+            '`redirects.manage` is `true` but a `redirects` collection is already registered; reusing the existing one.',
+          )
+        }
+      } else if (manage !== false) {
+        try {
+          const { redirectsPlugin } = await import('@payloadcms/plugin-redirects')
+          config = redirectsPlugin({
+            // The target collection(s) become the `to.reference` relationTo.
+            collections: [options.collections.articles],
+            ...options.redirects.pluginOptions,
+          })(config) as Config
+        } catch {
+          warnings.push(
+            '`redirects` is enabled but `@payloadcms/plugin-redirects` is not installed; redirects will be skipped.',
+          )
+        }
       }
     }
 
