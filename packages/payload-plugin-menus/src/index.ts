@@ -1,4 +1,4 @@
-import type { CollectionSlug, Config } from 'payload'
+import type { CollectionAdminOptions, CollectionSlug, Config } from 'payload'
 
 import type { MenusAccess } from './collections/Menus.js'
 import { Menus } from './collections/Menus.js'
@@ -19,6 +19,13 @@ export type ComposiusPayloadPluginMenusConfig = {
    */
   collections?: CollectionSlug[]
   disabled?: boolean
+  /**
+   * Hides the menus collection from the admin nav and routes (default:
+   * `false`). Accepts a boolean or a `({ user }) => boolean` function, so it can
+   * be hidden per user. The collection stays registered, leaving the database
+   * schema and the REST/GraphQL API untouched.
+   */
+  hidden?: CollectionAdminOptions['hidden']
 }
 
 export const ComposiusPayloadPluginMenus =
@@ -35,7 +42,13 @@ export const ComposiusPayloadPluginMenus =
       update: pluginOptions.access?.update ?? authenticated,
     }
 
-    config.collections.push(Menus({ access, collections: pluginOptions.collections ?? [] }))
+    config.collections.push(
+      Menus({
+        access,
+        collections: pluginOptions.collections ?? [],
+        hidden: pluginOptions.hidden ?? false,
+      }),
+    )
 
     /**
      * If the plugin is disabled, we still want to keep added collections/fields so the database schema is consistent which is important for migrations.

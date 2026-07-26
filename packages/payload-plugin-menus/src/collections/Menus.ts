@@ -1,6 +1,7 @@
 import type {
   Access,
   Block,
+  CollectionAdminOptions,
   CollectionConfig,
   CollectionSlug,
   Field,
@@ -19,6 +20,11 @@ export type MenusAccess = {
 export type MenusOptions = {
   access: Required<MenusAccess>
   collections: CollectionSlug[]
+  /**
+   * Excludes the collection from the admin nav and routes. The collection stays
+   * registered, so the database schema and the API are unchanged.
+   */
+  hidden: CollectionAdminOptions['hidden']
 }
 
 const newTab: Field = {
@@ -107,7 +113,7 @@ const resolveDocTitle = async (
   return String((relatedDoc as unknown as Record<string, unknown>)?.[useAsTitle] ?? '')
 }
 
-export const Menus = ({ access, collections }: MenusOptions): CollectionConfig => ({
+export const Menus = ({ access, collections, hidden }: MenusOptions): CollectionConfig => ({
   slug: 'menus',
   labels: {
     singular: label((t) => t.menus.singular),
@@ -116,6 +122,7 @@ export const Menus = ({ access, collections }: MenusOptions): CollectionConfig =
   admin: {
     useAsTitle: 'name',
     defaultColumns: ['name', 'linksCount', 'updatedAt'],
+    hidden,
   },
   access: {
     read: access.read,

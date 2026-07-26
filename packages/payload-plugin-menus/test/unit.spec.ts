@@ -3,6 +3,8 @@ import type { Access, Block, BlocksField, CollectionConfig, Config } from 'paylo
 import { describe, expect, test } from 'vitest'
 
 import { anyone, authenticated } from '../src/defaults.js'
+import type { ComposiusPayloadPluginMenusConfig } from '../src/index.js'
+
 import { ComposiusPayloadPluginMenus } from '../src/index.js'
 
 const accessArgs = (user: unknown) => ({ req: { user } }) as Parameters<Access>[0]
@@ -88,6 +90,30 @@ describe('ComposiusPayloadPluginMenus', () => {
 
     expect(menus.access?.create).toBe(create)
     expect(menus.access?.read).toBe(anyone)
+  })
+
+  test('collection is visible in the admin UI by default', () => {
+    const config = ComposiusPayloadPluginMenus()(baseConfig())
+
+    expect(findMenus(config).admin?.hidden).toBe(false)
+  })
+
+  test('hidden accepts a boolean', () => {
+    const config = ComposiusPayloadPluginMenus({ hidden: true })(baseConfig())
+
+    expect(findMenus(config).admin?.hidden).toBe(true)
+  })
+
+  test('hidden accepts a per-user function', () => {
+    const hidden = ({ user }: { user: unknown }) =>
+      (user as { role?: string } | null)?.role !== 'admin'
+    const config = ComposiusPayloadPluginMenus({
+      hidden: hidden as ComposiusPayloadPluginMenusConfig['hidden'],
+    })(baseConfig())
+
+    const configured = findMenus(config).admin?.hidden as (args: { user: unknown }) => boolean
+    expect(configured({ user: { role: 'admin' } })).toBe(false)
+    expect(configured({ user: { role: 'viewer' } })).toBe(true)
   })
 
   test('disabled still registers the collection for schema consistency', () => {

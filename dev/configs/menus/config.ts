@@ -12,6 +12,7 @@ export default buildDevConfig({
   plugins: [
     ComposiusPayloadPluginMenus({
       collections: ['users'],
+      // hidden: true,
     }),
   ],
   seed,

@@ -67,6 +67,11 @@ ComposiusPayloadPluginMenus({
 
   // Keeps the collection schema but disables runtime behavior (default: false).
   disabled: false,
+
+  // Hides the collection from the admin nav and routes (default: false).
+  // Accepts a boolean or ({ user }) => boolean to hide it per user. The
+  // collection stays registered, so the schema and the API are unchanged.
+  hidden: false,
 })
 ```
 
