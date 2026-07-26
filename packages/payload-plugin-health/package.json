@@ -1,6 +1,6 @@
 {
   "name": "@composius/payload-plugin-health",
-  "version": "0.1.1",
+  "version": "1.0.0",
   "description": "Health check endpoint with optional custom checks",
   "license": "MIT",
   "author": {

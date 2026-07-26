@@ -8,7 +8,7 @@ pnpm monorepo of [Payload CMS](https://payloadcms.com) plugins.
 | [@composius/payload-plugin-auth](packages/payload-plugin-auth)         | 1.0.3 | Users auth collection with configurable roles and role-based access helpers |
 | [@composius/payload-plugin-axiom](packages/payload-plugin-axiom)       | 1.0.0 | Axiom plugin                       |
 | [@composius/payload-plugin-custom-panel](packages/payload-plugin-custom-panel) | 1.0.0 | Configurable panel (site title, message, link buttons) above the admin dashboard |
-| [@composius/payload-plugin-health](packages/payload-plugin-health)     | 0.1.1 | Health check endpoint with optional custom checks |
+| [@composius/payload-plugin-health](packages/payload-plugin-health)     | 1.0.0 | Health check endpoint with optional custom checks |
 | [@composius/payload-plugin-home-nav](packages/payload-plugin-home-nav) | 0.1.2 | Translated "Home" label next to the admin navbar icon and a Home link at the top of the nav sidebar |
 | [@composius/payload-plugin-import-wordpress](packages/payload-plugin-import-wordpress) | 0.1.1 | Import WordPress posts, categories, authors and images into Payload (idempotent, resumable, with a link/redirect report) |
 | [@composius/payload-plugin-media](packages/payload-plugin-media)       | 0.1.1 | Configurable media uploads collection (access, unique filenames, storage prefix, image sizes) |
