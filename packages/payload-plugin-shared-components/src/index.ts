@@ -15,3 +15,4 @@ export {
 } from './seo/defaults.js'
 export type { SeoFieldOptions, SeoGenerators } from './seo/field.js'
 export { seoField } from './seo/field.js'
+export { slugify, slugifyValue } from './slug/slugify.js'

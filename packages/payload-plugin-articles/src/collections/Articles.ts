@@ -2,7 +2,11 @@ import type { Access, CollectionConfig, FieldAccess } from 'payload'
 import { slugField } from 'payload'
 import { lexicalEditor } from '@payloadcms/richtext-lexical'
 import type { SeoGenerators } from '@composius/payload-plugin-shared-components'
-import { contentEditorFeatures, seoField } from '@composius/payload-plugin-shared-components'
+import {
+  contentEditorFeatures,
+  seoField,
+  slugify,
+} from '@composius/payload-plugin-shared-components'
 import { label } from '../translations/index.js'
 
 export type ArticlesAccess = {
@@ -66,7 +70,7 @@ export const Articles = ({
       label: label((t) => t.articles.fields.title),
       required: true,
     },
-    slugField(),
+    slugField({ slugify }),
     {
       name: 'category',
       type: 'relationship',

@@ -13,6 +13,8 @@ import {
   defaultGenerateURL,
   SEO_DESCRIPTION_MAX_LENGTH,
   seoField,
+  slugify,
+  slugifyValue,
 } from '../src/index.js'
 
 const accessArgs = (user: unknown) => ({ req: { user } }) as Parameters<Access>[0]
@@ -105,6 +107,33 @@ describe('seoField', () => {
       admin: { position: 'sidebar' },
       label: { en: 'SEO' },
     })
+  })
+})
+
+describe('slugify', () => {
+  test('keeps the letter when removing diacritics', () => {
+    expect(slugifyValue('nouveautés')).toBe('nouveautes')
+    expect(slugifyValue('Crème Brûlée')).toBe('creme-brulee')
+    expect(slugifyValue('Über Straße')).toBe('uber-strasse')
+    expect(slugifyValue('København møde')).toBe('kobenhavn-mode')
+    expect(slugifyValue('Łódź żółw')).toBe('lodz-zolw')
+  })
+
+  test('lowercases, joins words with dashes and drops punctuation', () => {
+    expect(slugifyValue('  Hello  World! ')).toBe('hello-world')
+    expect(slugifyValue('Español: ¿Qué?')).toBe('espanol-que')
+    expect(slugifyValue('my_snake_case')).toBe('my_snake_case')
+  })
+
+  test('passes empty values through', () => {
+    expect(slugifyValue('')).toBe('')
+    expect(slugifyValue(undefined)).toBeUndefined()
+  })
+
+  test('slugifies the value handed over by the slug field', () => {
+    const args = { valueToSlugify: 'Nouveautés' } as Parameters<typeof slugify>[0]
+    expect(slugify(args)).toBe('nouveautes')
+    expect(slugify({ ...args, valueToSlugify: 42 })).toBeUndefined()
   })
 })
 

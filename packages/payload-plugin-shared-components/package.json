@@ -32,6 +32,7 @@
     "@payloadcms/richtext-lexical": "3.84.1",
     "@types/react": "19.2.14",
     "payload": "3.84.1",
+    "slugify": "^1.6.9",
     "typescript": "5.7.3"
   },
   "peerDependencies": {

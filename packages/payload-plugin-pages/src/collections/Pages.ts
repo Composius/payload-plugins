@@ -2,7 +2,11 @@ import type { Access, CollectionConfig } from 'payload'
 import { slugField } from 'payload'
 import { lexicalEditor } from '@payloadcms/richtext-lexical'
 import type { SeoGenerators } from '@composius/payload-plugin-shared-components'
-import { contentEditorFeatures, seoField } from '@composius/payload-plugin-shared-components'
+import {
+  contentEditorFeatures,
+  seoField,
+  slugify,
+} from '@composius/payload-plugin-shared-components'
 import { label } from '../translations/index.js'
 
 export type PagesAccess = {
@@ -53,7 +57,7 @@ export const Pages = ({ access, pageUrl, seo }: PagesOptions): CollectionConfig 
       label: label((t) => t.fields.title),
       required: true,
     },
-    slugField(),
+    slugField({ slugify }),
     {
       name: 'coverImage',
       type: 'upload',

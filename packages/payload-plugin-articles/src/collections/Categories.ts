@@ -1,6 +1,7 @@
 import type { Access, CollectionConfig } from 'payload'
 import { slugField } from 'payload'
 import { createBreadcrumbsField, createParentField } from '@payloadcms/plugin-nested-docs'
+import { slugify } from '@composius/payload-plugin-shared-components'
 import { label } from '../translations/index.js'
 
 export type CategoriesAccess = {
@@ -42,7 +43,7 @@ export const Categories = ({ access }: CategoriesOptions): CollectionConfig => (
       label: label((t) => t.categories.fields.name),
       required: true,
     },
-    slugField({ useAsSlug: 'name' }),
+    slugField({ slugify, useAsSlug: 'name' }),
     createParentField('categories', {
       label: label((t) => t.categories.fields.parent),
     }),
