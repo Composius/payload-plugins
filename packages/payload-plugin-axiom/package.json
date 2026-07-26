@@ -1,6 +1,6 @@
 {
   "name": "@composius/payload-plugin-axiom",
-  "version": "0.2.1",
+  "version": "1.0.0",
   "description": "Payload plugin that sends the Payload logger output to Axiom",
   "license": "MIT",
   "author": {
