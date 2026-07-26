@@ -421,6 +421,22 @@ describe('ComposiusPayloadPluginImportWordpress', () => {
     expect(config.endpoints ?? []).toHaveLength(0)
   })
 
+  test('disabled hides the jobs collection and stops queueing imports', async () => {
+    const enabled = await ComposiusPayloadPluginImportWordpress()(baseConfig())
+    const disabled = await ComposiusPayloadPluginImportWordpress({ disabled: true })(baseConfig())
+
+    const jobsOf = (config: Config) =>
+      config.collections?.find((c) => c.slug === 'wp-import-jobs')!
+
+    expect(jobsOf(enabled).admin?.hidden).toBe(false)
+    expect(jobsOf(enabled).hooks?.afterChange).toHaveLength(1)
+
+    // Hidden from the nav (which also hides the "WordPress import" group), and
+    // creating a job no longer queues an import.
+    expect(jobsOf(disabled).admin?.hidden).toBe(true)
+    expect(jobsOf(disabled).hooks?.afterChange ?? []).toHaveLength(0)
+  })
+
   test('disabled keeps the redirects collection so the schema is unchanged', async () => {
     // Turning the plugin off after an import must not drop `redirects` (and the
     // payload_locked_documents_rels.redirects_id column) from the schema.

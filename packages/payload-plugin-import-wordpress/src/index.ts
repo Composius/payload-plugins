@@ -33,8 +33,10 @@ export const ComposiusPayloadPluginImportWordpress =
     const warnings: string[] = []
 
     // Always register collections so the database schema stays consistent for
-    // migrations, even when the plugin is disabled.
-    config.collections.push(ImportJobs({ access: options.access }))
+    // migrations, even when the plugin is disabled — they are hidden from the
+    // admin UI and stop queueing imports instead.
+    const disabled = pluginOptions.disabled === true
+    config.collections.push(ImportJobs({ access: options.access, disabled }))
     config.collections.push(ImportRecords({ access: options.access }))
 
     // Register the import task so queued jobs can run (schema/queue consistency).
@@ -65,7 +67,7 @@ export const ComposiusPayloadPluginImportWordpress =
 
     // Everything below only affects runtime behavior, never the schema, so it
     // is skipped when the plugin is disabled.
-    if (!pluginOptions.disabled) {
+    if (!disabled) {
       // Endpoints for programmatic triggering / polling.
       config.endpoints = [
         ...(config.endpoints ?? []),

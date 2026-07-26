@@ -24,6 +24,9 @@ export default buildDevConfig({
       // Auto-process queued imports during interactive dev, but not under test
       // (int tests run the queue explicitly and must not leave a timer running).
       autoRun: process.env.NODE_ENV === 'test' ? false : true,
+      // The int tests need it enabled to run imports.
+      // Switch to true the last parameter to test disabling.
+      disabled: process.env.NODE_ENV === 'test' ? false : false,
     }),
   ],
   seed,

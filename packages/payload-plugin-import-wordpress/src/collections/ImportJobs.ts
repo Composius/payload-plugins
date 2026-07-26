@@ -7,6 +7,12 @@ import { label } from '../translations/index.js'
 
 export type ImportJobsOptions = {
   access: Required<ImportAccess>
+  /**
+   * When the plugin is disabled the collection stays registered (so the
+   * database schema is unchanged) but is hidden from the admin UI and no
+   * longer queues imports.
+   */
+  disabled: boolean
 }
 
 /** Queues the import task for a job document (task-slug not in generated types → loose cast). */
@@ -24,7 +30,7 @@ const queueImport = async (req: PayloadRequest, jobId: number | string): Promise
  * run (via the jobs queue); the task writes `status`, `progress` and `report`
  * back onto the same document. Toggling `resume` re-queues a stopped run.
  */
-export const ImportJobs = ({ access }: ImportJobsOptions): CollectionConfig => ({
+export const ImportJobs = ({ access, disabled }: ImportJobsOptions): CollectionConfig => ({
   slug: 'wp-import-jobs',
   labels: {
     singular: label((t) => t.jobs.singular),
@@ -34,6 +40,9 @@ export const ImportJobs = ({ access }: ImportJobsOptions): CollectionConfig => (
     useAsTitle: 'sourceUrl',
     defaultColumns: ['sourceUrl', 'status', 'dryRun', 'updatedAt'],
     group: 'WordPress import',
+    // Hidden (with its nav group) once the plugin is disabled, while the
+    // collection itself stays registered so the schema is unchanged.
+    hidden: disabled,
   },
   access: {
     read: access.read,
@@ -41,35 +50,38 @@ export const ImportJobs = ({ access }: ImportJobsOptions): CollectionConfig => (
     update: access.update,
     delete: access.delete,
   },
-  hooks: {
-    afterChange: [
-      async ({ context, doc, operation, req }) => {
-        // Updates coming from the importer itself must not re-queue the job.
-        if (context?.wpImport) {
-          return doc
-        }
+  // A disabled plugin must not start imports, so the queueing hook is omitted.
+  hooks: disabled
+    ? {}
+    : {
+        afterChange: [
+          async ({ context, doc, operation, req }) => {
+            // Updates coming from the importer itself must not re-queue the job.
+            if (context?.wpImport) {
+              return doc
+            }
 
-        if (operation === 'create') {
-          await queueImport(req, doc.id as number | string)
-          return doc
-        }
+            if (operation === 'create') {
+              await queueImport(req, doc.id as number | string)
+              return doc
+            }
 
-        // A user toggled "resume" on an existing job → re-queue and clear the flag.
-        if (operation === 'update' && doc.resume) {
-          await req.payload.update({
-            collection: 'wp-import-jobs',
-            id: doc.id as number | string,
-            data: { resume: false, status: 'queued' },
-            context: { wpImport: true },
-            req,
-          })
-          await queueImport(req, doc.id as number | string)
-        }
+            // A user toggled "resume" on an existing job → re-queue and clear the flag.
+            if (operation === 'update' && doc.resume) {
+              await req.payload.update({
+                collection: 'wp-import-jobs',
+                id: doc.id as number | string,
+                data: { resume: false, status: 'queued' },
+                context: { wpImport: true },
+                req,
+              })
+              await queueImport(req, doc.id as number | string)
+            }
 
-        return doc
+            return doc
+          },
+        ],
       },
-    ],
-  },
   fields: [
     // Unnamed tabs keep their fields at the top level of the document data —
     // one tab per import step, so each step's outcome reads in its own tab.
