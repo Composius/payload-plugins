@@ -86,9 +86,9 @@ pnpm add @composius/payload-plugin-import-wordpress @payloadcms/richtext-lexical
 ```
 
 You also need a target content collection with a rich text field (e.g. the
-`articles` collection from `@composius/payload-plugin-articles`), a `media`
-uploads collection, and the Payload **jobs queue** enabled to run (see
-`autoRun` below).
+`articles` collection from `@composius/payload-plugin-articles`) and a `media`
+uploads collection. Imports run on the Payload **jobs queue**, which this
+plugin schedules for you by default (see `autoRun`).
 
 ## Usage
 
@@ -103,10 +103,7 @@ export default buildConfig({
   plugins: [
     ComposiusPayloadPluginMedia(),
     ComposiusPayloadPluginArticles({ authors: true }),
-    ComposiusPayloadPluginImportWordpress({
-      // Auto-process queued imports so creating a job runs it.
-      autoRun: true,
-    }),
+    ComposiusPayloadPluginImportWordpress(),
   ],
 })
 ```
@@ -136,7 +133,7 @@ curl /api/wp-import/status/<jobId>
 | `firstImageAsCover`       | boolean                                          | `true`                           | When a post has no usable featured image, promote the first in-content image to the cover and remove it from the content. |
 | `redirects`               | boolean                                          | `true`                           | Create 301 redirects and apply `@payloadcms/plugin-redirects`.                              |
 | `fieldMap`                | article field overrides                          | `title`/`slug`/`content`/`coverImage`/`category`/`publishedAt` | Article field names the importer writes to.                    |
-| `autoRun`                 | boolean \| `{ cron, queue }`                     | `false`                          | Auto-process queued imports on a schedule (`true` = every minute).                           |
+| `autoRun`                 | boolean \| `{ cron, queue }`                     | `true`                           | Auto-process queued imports on a schedule (every minute on the `default` queue). Pass `{ cron, queue }` to customize, or `false` to run the jobs queue yourself. |
 | `dryRunPageLimit`         | number                                           | `1`                              | REST pages a dry run samples.                                                                |
 | `request`                 | `{ concurrency, timeoutMs, userAgent }`          | `{ concurrency: 5, timeoutMs: 30000 }` | HTTP tuning for WordPress fetches and image downloads.                                 |
 | `disabled`                | boolean                                          | `false`                          | Keep the collections (schema consistency) but skip endpoints, redirects and auto-run.       |

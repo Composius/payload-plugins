@@ -55,7 +55,7 @@ export const ComposiusPayloadPluginImportWordpress =
     ]
 
     // Optional auto-run schedule so creating a job runs it without an external worker.
-    if (pluginOptions.autoRun) {
+    if (pluginOptions.autoRun !== false) {
       const schedule = typeof pluginOptions.autoRun === 'object' ? pluginOptions.autoRun : {}
       const entry = { cron: schedule.cron ?? '* * * * *', queue: schedule.queue ?? 'default' }
       const existing = config.jobs.autoRun

@@ -111,9 +111,10 @@ export type ComposiusPayloadPluginImportWordpressConfig = {
   /** Override the article field names the importer writes to. */
   fieldMap?: FieldMap
   /**
-   * Automatically process queued imports on a schedule so creating a job runs it
-   * without an external worker. Pass `true` for an every-minute schedule or a
-   * cron/queue config. @default false (the host app runs the jobs queue).
+   * Automatically process queued imports on a schedule so creating a job runs
+   * it without an external worker. Pass a cron/queue config to customize the
+   * schedule, or `false` to disable it and run the jobs queue yourself.
+   * @default true (an every-minute schedule on the `default` queue)
    */
   autoRun?: AutoRunConfig | boolean
   /** Number of REST pages a dry run samples. @default 1 */

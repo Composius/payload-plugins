@@ -394,12 +394,25 @@ describe('ComposiusPayloadPluginImportWordpress', () => {
     expect(findSlugs(config)).toContain('redirects')
   })
 
-  test('adds an auto-run schedule when requested', async () => {
-    const config = await ComposiusPayloadPluginImportWordpress({ autoRun: true, redirects: false })(
-      baseConfig(),
-    )
-    expect(Array.isArray(config.jobs?.autoRun)).toBe(true)
-    expect((config.jobs?.autoRun as Array<{ cron: string }>)[0].cron).toBe('* * * * *')
+  test('adds an every-minute auto-run schedule by default', async () => {
+    const config = await ComposiusPayloadPluginImportWordpress({ redirects: false })(baseConfig())
+    expect(config.jobs?.autoRun).toEqual([{ cron: '* * * * *', queue: 'default' }])
+  })
+
+  test('auto-run schedule can be customized', async () => {
+    const config = await ComposiusPayloadPluginImportWordpress({
+      autoRun: { cron: '*/5 * * * *', queue: 'imports' },
+      redirects: false,
+    })(baseConfig())
+    expect(config.jobs?.autoRun).toEqual([{ cron: '*/5 * * * *', queue: 'imports' }])
+  })
+
+  test('autoRun: false leaves the jobs queue to the host app', async () => {
+    const config = await ComposiusPayloadPluginImportWordpress({
+      autoRun: false,
+      redirects: false,
+    })(baseConfig())
+    expect(config.jobs?.autoRun).toBeUndefined()
   })
 
   test('disabled still registers collections but skips endpoints', async () => {
