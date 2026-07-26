@@ -73,7 +73,7 @@ export interface Config {
     articles: Article;
     'wp-import-jobs': WpImportJob;
     'wp-import-records': WpImportRecord;
-    redirects: Redirect;
+    redirections: Redirection;
     'payload-kv': PayloadKv;
     users: User;
     'payload-jobs': PayloadJob;
@@ -89,7 +89,7 @@ export interface Config {
     articles: ArticlesSelect<false> | ArticlesSelect<true>;
     'wp-import-jobs': WpImportJobsSelect<false> | WpImportJobsSelect<true>;
     'wp-import-records': WpImportRecordsSelect<false> | WpImportRecordsSelect<true>;
-    redirects: RedirectsSelect<false> | RedirectsSelect<true>;
+    redirections: RedirectionsSelect<false> | RedirectionsSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     users: UsersSelect<false> | UsersSelect<true>;
     'payload-jobs': PayloadJobsSelect<false> | PayloadJobsSelect<true>;
@@ -443,19 +443,29 @@ export interface WpImportRecord {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "redirects".
+ * via the `definition` "redirections".
  */
-export interface Redirect {
+export interface Redirection {
   id: number;
+  /**
+   * The path to match, starting with a slash — or a regular expression when the match type is Regex.
+   */
   from: string;
-  to?: {
-    type?: ('reference' | 'custom') | null;
-    reference?: {
-      relationTo: 'articles';
-      value: number | Article;
-    } | null;
-    url?: string | null;
-  };
+  matchType: 'exact' | 'prefix' | 'regex';
+  /**
+   * An absolute URL (https://…) or a path starting with a slash. Regex rules can use $1, $2 and $& to reuse captured groups.
+   */
+  to: string;
+  status: '301' | '302' | '307' | '308';
+  /**
+   * Forwards the query string of the incoming request, unless the destination already has one.
+   */
+  preserveQuery?: boolean | null;
+  enabled?: boolean | null;
+  /**
+   * Higher values are evaluated first. Rules with the same priority run oldest first.
+   */
+  priority?: number | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -600,8 +610,8 @@ export interface PayloadLockedDocument {
         value: number | WpImportRecord;
       } | null)
     | ({
-        relationTo: 'redirects';
-        value: number | Redirect;
+        relationTo: 'redirections';
+        value: number | Redirection;
       } | null)
     | ({
         relationTo: 'users';
@@ -829,17 +839,16 @@ export interface WpImportRecordsSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "redirects_select".
+ * via the `definition` "redirections_select".
  */
-export interface RedirectsSelect<T extends boolean = true> {
+export interface RedirectionsSelect<T extends boolean = true> {
   from?: T;
-  to?:
-    | T
-    | {
-        type?: T;
-        reference?: T;
-        url?: T;
-      };
+  matchType?: T;
+  to?: T;
+  status?: T;
+  preserveQuery?: T;
+  enabled?: T;
+  priority?: T;
   updatedAt?: T;
   createdAt?: T;
 }

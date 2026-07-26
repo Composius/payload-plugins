@@ -3,8 +3,9 @@
 Imports WordPress posts into Payload via the WordPress REST API: content,
 categories, authors, featured images and in-content images. Images are fetched
 at their original size (and resized by your media collection), uploaded only
-once even when reused across posts, and internal links are rewritten (with 301
-redirects created for the rest). Imports run on the Payload jobs queue and are
+once even when reused across posts, and internal links are rewritten (with
+redirection rules created for the rest — one prefix rule per permalink folder
+rather than one per post). Imports run on the Payload jobs queue and are
 **idempotent and resumable**, writing a full report onto each job document.
 
 By default it targets the collections from
@@ -67,8 +68,9 @@ the job document — delete the job (or clear the field) once the import is done
 - **SEO meta** (when the target collection has a `meta` group) — `meta.title`
   from the post title, `meta.image` from the cover image, and
   `meta.description` from the excerpt (see `excerptToSeoDescription`).
-- **Links** — internal links to imported posts are rewritten; every other old
-  permalink gets a 301 redirect; anything unresolvable is listed in the report.
+- **Links** — internal links to imported posts are rewritten; the old permalinks
+  are covered by redirection rules (one **prefix** rule per permalink folder
+  where possible); anything unresolvable is listed in the report.
 
 ## Requirements
 
@@ -78,11 +80,11 @@ This plugin expects the following to be installed and configured in your project
 - `@payloadcms/richtext-lexical` (`^3.84.1`) — the target content field's editor.
 - `@payloadcms/ui` (`^3.84.1`) and `react` (`^19.0.0`) — the masked
   application-password input in the admin form.
-- `@payloadcms/plugin-redirects` (`^3.84.1`) — required only when `redirects`
-  is enabled (the default); optional otherwise.
+- `@composius/payload-plugin-redirections` (`^1.0.0`) — required only when
+  `redirections` is enabled (the default); optional otherwise.
 
 ```bash
-pnpm add @composius/payload-plugin-import-wordpress @payloadcms/richtext-lexical @payloadcms/ui react @payloadcms/plugin-redirects
+pnpm add @composius/payload-plugin-import-wordpress @payloadcms/richtext-lexical @payloadcms/ui react @composius/payload-plugin-redirections
 ```
 
 You also need a target content collection with a rich text field (e.g. the
@@ -131,51 +133,69 @@ curl /api/wp-import/status/<jobId>
 | `authorMapping`           | `{ strategy, defaultUserId, syntheticEmailDomain }` | `{ strategy: 'users', syntheticEmailDomain: 'imported.invalid' }` | `users` (default), `authors`, or `fixed`. WordPress's public REST API hides author emails, so `users` synthesizes `<author-slug>@<syntheticEmailDomain>`; set your own domain, or `false` to skip creating such users (falls back to `defaultUserId` and reports the author). |
 | `excerptToSeoDescription` | boolean                                          | `true`                           | Map the WordPress excerpt onto the article SEO `meta.description`.                           |
 | `firstImageAsCover`       | boolean                                          | `true`                           | When a post has no usable featured image, promote the first in-content image to the cover and remove it from the content. |
-| `redirects`               | boolean \| `{ manage, pluginOptions }`           | `true`                           | Create 301 redirects. The `redirects` collection is registered via `@payloadcms/plugin-redirects` unless your app already provides it (auto-detected) — see below. |
+| `redirections`            | boolean \| `{ manage, pluginOptions, slug, status, strategy }` | `true`             | Create redirection rules, preferring one **prefix** rule per permalink folder. The collection comes from `@composius/payload-plugin-redirections` unless your app already provides it (auto-detected) — see below. |
 | `fieldMap`                | article field overrides                          | `title`/`slug`/`content`/`coverImage`/`category`/`publishedAt` | Article field names the importer writes to.                    |
 | `autoRun`                 | boolean \| `{ cron, queue }`                     | `true`                           | Auto-process queued imports on a schedule (every minute on the `default` queue). Pass `{ cron, queue }` to customize, or `false` to run the jobs queue yourself. |
 | `dryRunPageLimit`         | number                                           | `1`                              | REST pages a dry run samples.                                                                |
 | `request`                 | `{ concurrency, timeoutMs, userAgent }`          | `{ concurrency: 5, timeoutMs: 30000 }` | HTTP tuning for WordPress fetches and image downloads.                                 |
-| `disabled`                | boolean                                          | `false`                          | Keep the collections (schema consistency) but skip endpoints, redirects and auto-run.       |
+| `disabled`                | boolean                                          | `false`                          | Keep the collections (schema consistency) but skip endpoints, the redirections plugin and auto-run.       |
 
-### Using it alongside your own `redirectsPlugin`
+### Redirections: prefix rules, not one per post
 
-If your app already runs `@payloadcms/plugin-redirects`, this plugin **reuses
-that collection** — it detects an existing `redirects` collection and adds
-nothing, so your own `collections`/`overrides` win and imported posts still get
-their redirect documents.
+Redirection rules come from
+[`@composius/payload-plugin-redirections`](../payload-plugin-redirections),
+whose `prefix` match type appends the leftover path segments to its
+destination. So a whole blog collapses into **one rule**:
 
-Detection only sees collections registered *before* this plugin, so list your
-`redirectsPlugin` first:
+| WordPress permalinks           | Rule created                    | Result                        |
+| ------------------------------ | ------------------------------- | ----------------------------- |
+| `/blog/hello`, `/blog/world`, … | `/blog` → `/articles` (prefix)  | `/blog/hello` → `/articles/hello` |
+| `/2021/06/a`, `/2021/06/b`      | `/2021/06` → `/articles` (prefix) | one rule per year/month     |
+
+Two cases fall back to an **exact** rule, because a prefix rule would be wrong:
+
+- the slug changed during the import (the folder mapping no longer holds);
+- the permalink sits at the site root (`/hello`) — a prefix rule on `/` would
+  swallow every URL on the site.
+
+Set `redirections.strategy: 'exact'` for one rule per post instead, and
+`redirections.status` (default `'301'`) to change the HTTP status.
+
+### Using it alongside your own redirections plugin
+
+If your app already runs `ComposiusPayloadPluginRedirections`, this plugin
+**reuses that collection** — it detects it and adds nothing, so your own options
+win and imported posts still get their rules.
+
+Detection only sees collections registered *before* this plugin, so list yours
+first:
 
 ```ts
 plugins: [
-  redirectsPlugin({ collections: ['pages', 'articles'] }),
+  ComposiusPayloadPluginRedirections({ hidden: false }),
   ComposiusPayloadPluginImportWordpress(),
 ]
 ```
 
 If you'd rather keep it after this plugin, opt out explicitly to avoid
-`DuplicateCollection: Collection slug already in use: "redirects"`:
+`DuplicateCollection: Collection slug already in use: "redirections"`:
 
 ```ts
 plugins: [
-  ComposiusPayloadPluginImportWordpress({ redirects: { manage: false } }),
-  redirectsPlugin({ collections: ['pages', 'articles'] }),
+  ComposiusPayloadPluginImportWordpress({ redirections: { manage: false } }),
+  ComposiusPayloadPluginRedirections(),
 ]
 ```
 
-When this plugin does register the collection, `redirects.pluginOptions` is
-forwarded to `redirectsPlugin` (`collections`, `overrides`, `redirectTypes`,
-`redirectTypeFieldOverride`):
+When this plugin does register the collection, `redirections.pluginOptions` is
+forwarded to it (`access`, `endpoint`, `hidden`, `slug`):
 
 ```ts
 ComposiusPayloadPluginImportWordpress({
-  redirects: {
-    pluginOptions: {
-      overrides: { admin: { group: 'SEO' } },
-      redirectTypes: ['301', '302'],
-    },
+  redirections: {
+    pluginOptions: { hidden: true },
+    slug: 'redirections',
+    status: '308',
   },
 })
 ```

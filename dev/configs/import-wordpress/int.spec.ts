@@ -36,14 +36,14 @@ const posts = [
       rendered:
         '<p>Hello</p><figure><img src="' +
         SHARED +
-        '"/></figure><p>See <a href="https://site.com/second-post/">second</a>, ' +
+        '"/></figure><p>See <a href="https://site.com/blog/second-post/">second</a>, ' +
         '<a href="https://external.com/x">ext</a> and ' +
         '<a href="https://site.com/nonexistent/">missing</a>.</p>',
     },
     date_gmt: '2021-06-01T10:00:00',
     excerpt: { rendered: '<p>First&rsquo;s excerpt&hellip;</p>' },
     featured_media: 99,
-    link: 'https://site.com/first-post/',
+    link: 'https://site.com/blog/first-post/',
     slug: 'first-post',
     status: 'publish',
     title: { rendered: 'First &amp; Post' },
@@ -58,12 +58,12 @@ const posts = [
       rendered:
         '<img src="' +
         SHARED +
-        '"/><p>World</p><p>Back to <a href="https://site.com/first-post/">first</a>.</p>',
+        '"/><p>World</p><p>Back to <a href="https://site.com/blog/first-post/">first</a>.</p>',
     },
     date_gmt: '2021-06-02T10:00:00',
     excerpt: { rendered: '<p>Second excerpt</p>' },
     featured_media: 0,
-    link: 'https://site.com/second-post/',
+    link: 'https://site.com/blog/second-post/',
     slug: 'second-post',
     status: 'publish',
     title: { rendered: 'Second Post' },
@@ -147,7 +147,7 @@ describe('WordPress import', () => {
   test('registers the import collections and task', () => {
     expect(payload.collections['wp-import-jobs']).toBeDefined()
     expect(payload.collections['wp-import-records']).toBeDefined()
-    expect(payload.collections['redirects']).toBeDefined()
+    expect(payload.collections['redirections']).toBeDefined()
   })
 
   test('dry run reports a plan but writes nothing', async () => {
@@ -182,8 +182,16 @@ describe('WordPress import', () => {
     // Featured + shared content image → 2 unique media (deduped across posts).
     expect((await count('media')).totalDocs).toBe(2)
 
-    // Redirects from both old permalinks.
-    expect((await count('redirects')).totalDocs).toBe(2)
+    // Both posts live under /blog, so a single prefix rule covers them —
+    // the resolver appends the leftover segment (/blog/x → /articles/x).
+    const redirections = await payload.find({ collection: 'redirections', depth: 0 })
+    expect(redirections.totalDocs).toBe(1)
+    expect(redirections.docs[0]).toMatchObject({
+      from: '/blog',
+      matchType: 'prefix',
+      status: '301',
+      to: '/articles',
+    })
 
     // Author mapped into users (jane) + the seeded dev user.
     const users = await payload.find({ collection: 'users', depth: 0 })
@@ -284,6 +292,17 @@ describe('WordPress import', () => {
       imported: Array<{ run?: number; slug?: string }>
     }
     expect(imported).toHaveLength(2)
+    // site3's permalinks sit at the root (`/post-20`), where a prefix rule
+    // would swallow the whole site — so each gets an exact rule instead.
+    const rootRules = await payload.find({
+      collection: 'redirections',
+      where: { from: { like: '/post-2' } },
+      depth: 0,
+    })
+    expect(rootRules.totalDocs).toBe(2)
+    expect(rootRules.docs.every((d) => (d as { matchType?: string }).matchType === 'exact')).toBe(
+      true,
+    )
     expect(imported[0]).toMatchObject({ run: 1, slug: 'post-20' })
     expect(imported[1]).toMatchObject({ run: 2, slug: 'post-21' })
   })

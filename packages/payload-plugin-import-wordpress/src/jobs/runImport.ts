@@ -15,7 +15,12 @@ import { importImage } from '../lib/media.js'
 import { removeLeadingUploadNode, takeFirstUploadNode } from '../lib/lexical.js'
 import { createDoc, findDoc, findDocs, updateDoc } from '../lib/payloadOps.js'
 import { publishDate, selectPrimaryCategoryId } from '../lib/post.js'
-import { createRedirect } from '../lib/redirects.js'
+import {
+  createRedirectionRules,
+  deriveArticleBase,
+  planRedirectionRules,
+} from '../lib/redirections.js'
+import type { ImportedPermalink } from '../lib/redirections.js'
 import { emptyProgress, rehydrateReport } from '../lib/report.js'
 import { findDoneRecord, saveRecord } from '../lib/records.js'
 import { createWPClient } from '../lib/wpClient.js'
@@ -71,6 +76,7 @@ export const runImport = async (payload: Payload, args: RunImportArgs): Promise<
   const runs: RunSummary[] = [...previousRuns, runSummary]
   const site = hostOf(job.sourceUrl) ?? job.sourceUrl
   const imageCache = new Map<string, ImageImportResult>()
+  const importedPermalinks: ImportedPermalink[] = []
 
   // Per-step report slices, persisted onto the job's step tabs.
   const stepReports = (): Record<string, unknown> => ({
@@ -374,6 +380,7 @@ export const runImport = async (payload: Payload, args: RunImportArgs): Promise<
             title,
           })
           progress.importedPosts += 1
+          importedPermalinks.push({ path: permalinkPath, slug: post.slug ?? '' })
           continue
         }
 
@@ -399,24 +406,9 @@ export const runImport = async (payload: Payload, args: RunImportArgs): Promise<
           title,
         })
         progress.importedPosts += 1
-
-        // Redirect old permalink → new article.
-        if (options.redirects.enabled) {
-          const made = await createRedirect(payload, {
-            articleId: coerceId(articleId),
-            articlesSlug: slugs.articles,
-            from: permalinkPath,
-          })
-          if (made) {
-            progress.redirectsCreated += 1
-            report.links.push({
-              action: 'redirect',
-              from: permalinkPath,
-              run: runNumber,
-              to: options.articleUrl(post.slug),
-            })
-          }
-        }
+        // Redirection rules are derived from all of this run's permalinks at
+        // once, so posts sharing a folder collapse into a single prefix rule.
+        importedPermalinks.push({ path: permalinkPath, slug: post.slug ?? '' })
 
         if (progress.importedPosts % 5 === 0) {
           await updateJob({ progress, ...stepReports() })
@@ -435,6 +427,45 @@ export const runImport = async (payload: Payload, args: RunImportArgs): Promise<
             status: 'failed',
           }).catch(() => undefined)
         }
+      }
+    }
+
+    // ---- Redirections (one prefix rule per permalink folder where possible) ----
+    if (options.redirections.enabled && importedPermalinks.length > 0) {
+      progress.currentPhase = 'redirections'
+      const planned = planRedirectionRules({
+        articleBase: deriveArticleBase(options.articleUrl),
+        articleUrl: options.articleUrl,
+        permalinks: importedPermalinks,
+        strategy: options.redirections.strategy,
+      })
+
+      // A dry run reports the rules it would create without writing them.
+      const { created, errors } = dryRun
+        ? { created: planned, errors: [] }
+        : await createRedirectionRules(payload, {
+            rules: planned,
+            slug: options.redirections.slug,
+            status: options.redirections.status,
+          })
+
+      for (const rule of created) {
+        progress.redirectsCreated += 1
+        report.links.push({
+          action: 'redirect',
+          covers: rule.covers,
+          from: rule.from,
+          matchType: rule.matchType,
+          run: runNumber,
+          to: rule.to,
+        })
+      }
+      for (const failure of errors) {
+        report.errors.push({
+          message: `redirection rule ${failure.rule.from} → ${failure.rule.to}: ${failure.message}`,
+          run: runNumber,
+          scope: 'redirection',
+        })
       }
     }
 

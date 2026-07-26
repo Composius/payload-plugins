@@ -46,36 +46,52 @@ export type AuthorMapping = {
   syntheticEmailDomain?: false | string
 }
 
+export type RedirectionStatus = '301' | '302' | '307' | '308'
+
 /**
- * Subset of `RedirectsPluginConfig` from `@payloadcms/plugin-redirects`,
- * declared structurally so the type doesn't depend on that optional peer.
+ * Subset of `ComposiusPayloadPluginRedirectionsConfig`, declared structurally
+ * so the type doesn't depend on that optional peer.
  */
-export type RedirectsPluginOptions = {
-  collections?: string[]
-  overrides?: Record<string, unknown>
-  redirectTypeFieldOverride?: Record<string, unknown>
-  redirectTypes?: Array<'301' | '302' | '303' | '307' | '308'>
+export type RedirectionsPluginOptions = {
+  access?: Record<string, unknown>
+  endpoint?: false | Record<string, unknown>
+  hidden?: boolean | ((args: { user: unknown }) => boolean)
+  slug?: string
 }
 
-export type RedirectsConfig = {
+export type RedirectionsConfig = {
   /**
-   * Whether this plugin registers the `redirects` collection (via
-   * `@payloadcms/plugin-redirects`).
+   * Whether this plugin registers the redirections collection (via
+   * `@composius/payload-plugin-redirections`).
    *
-   * By default this is auto-detected: if a `redirects` collection is already
-   * registered — because your app runs its own `redirectsPlugin` earlier in the
+   * By default this is auto-detected: if the collection is already registered —
+   * because your app runs `ComposiusPayloadPluginRedirections` earlier in the
    * `plugins` array — it is reused as-is and nothing is added. Set to `false`
-   * when your own `redirectsPlugin` is listed *after* this plugin, so the
+   * when your own redirections plugin is listed *after* this plugin, so the
    * collection isn't registered twice (`DuplicateCollection`).
    *
-   * Either way, imported posts still get their redirect documents.
+   * Either way, imported posts still get their redirection rules.
    */
   manage?: boolean
   /**
-   * Options forwarded to `redirectsPlugin` when this plugin registers the
-   * collection. `collections` defaults to the target articles collection.
+   * Options forwarded to `ComposiusPayloadPluginRedirections` when this plugin
+   * registers the collection.
    */
-  pluginOptions?: RedirectsPluginOptions
+  pluginOptions?: RedirectionsPluginOptions
+  /** Slug of the redirections collection. @default 'redirections' */
+  slug?: string
+  /** HTTP status of the created rules. @default '301' */
+  status?: RedirectionStatus
+  /**
+   * How rules are generated from the imported permalinks:
+   * - `prefix` (default): one **prefix** rule per distinct permalink folder
+   *   (`/blog/<slug>` → a single `/blog` → `/articles` rule covering every post
+   *   under it), falling back to an exact rule for permalinks that don't fit
+   *   (a changed slug, or a permalink at the site root — a prefix rule on `/`
+   *   would swallow the whole site).
+   * - `exact`: one rule per imported post.
+   */
+  strategy?: 'exact' | 'prefix'
 }
 
 export type AutoRunConfig = {
@@ -135,13 +151,15 @@ export type ComposiusPayloadPluginImportWordpressConfig = {
    */
   firstImageAsCover?: boolean
   /**
-   * Create 301 redirects from old WordPress permalinks to the new article URLs.
-   * The `redirects` collection comes from `@payloadcms/plugin-redirects`, which
-   * this plugin applies unless your app already registers it (auto-detected).
-   * Pass an object to control that, or `false` to skip redirects entirely.
+   * Create redirection rules from the old WordPress permalinks to the new
+   * article URLs, preferring one **prefix** rule per permalink folder over one
+   * rule per post. The collection comes from
+   * `@composius/payload-plugin-redirections`, which this plugin applies unless
+   * your app already registers it (auto-detected). Pass an object to control
+   * that, or `false` to skip redirections entirely.
    * @default true
    */
-  redirects?: boolean | RedirectsConfig
+  redirections?: boolean | RedirectionsConfig
   /** Override the article field names the importer writes to. */
   fieldMap?: FieldMap
   /**
@@ -169,11 +187,14 @@ export type ResolvedOptions = {
   excerptToSeoDescription: boolean
   fieldMap: Required<FieldMap>
   firstImageAsCover: boolean
-  redirects: {
+  redirections: {
     enabled: boolean
-    /** `undefined` = auto-detect whether a `redirects` collection already exists. */
+    /** `undefined` = auto-detect whether the collection is already registered. */
     manage?: boolean
-    pluginOptions: RedirectsPluginOptions
+    pluginOptions: RedirectionsPluginOptions
+    slug: string
+    status: RedirectionStatus
+    strategy: 'exact' | 'prefix'
   }
   request: Required<Omit<RequestOptions, 'userAgent'>> & Pick<RequestOptions, 'userAgent'>
 }
@@ -193,7 +214,11 @@ export type LinkAction = 'redirect' | 'rewritten' | 'unresolved'
 
 export type LinkMapping = {
   action: LinkAction
+  /** For `redirect` entries: how many imported posts the rule covers. */
+  covers?: number
   from: string
+  /** For `redirect` entries: how the rule matches the incoming path. */
+  matchType?: 'exact' | 'prefix'
   post?: number
   /** Number of the job run that handled this link. */
   run?: number

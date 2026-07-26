@@ -15,6 +15,24 @@ export const JOBS_SLUG = 'wp-import-jobs'
 export const RECORDS_SLUG = 'wp-import-records'
 /** Job task slug registered on the Payload jobs queue. */
 export const TASK_SLUG = 'importWordpress'
+/** Default slug of `@composius/payload-plugin-redirections`' collection. */
+export const REDIRECTIONS_SLUG = 'redirections'
+
+/** Resolves the `redirections` option (boolean shorthand or object) with defaults. */
+const resolveRedirections = (
+  option: ComposiusPayloadPluginImportWordpressConfig['redirections'],
+): ResolvedOptions['redirections'] => {
+  const value = typeof option === 'object' ? option : {}
+
+  return {
+    enabled: option !== false,
+    manage: value.manage,
+    pluginOptions: value.pluginOptions ?? {},
+    slug: value.slug ?? value.pluginOptions?.slug ?? REDIRECTIONS_SLUG,
+    status: value.status ?? '301',
+    strategy: value.strategy ?? 'prefix',
+  }
+}
 
 /** Merges user options with defaults into a fully-resolved options object. */
 export const resolveOptions = (
@@ -50,15 +68,7 @@ export const resolveOptions = (
     category: pluginOptions.fieldMap?.category ?? 'category',
     publishedAt: pluginOptions.fieldMap?.publishedAt ?? 'publishedAt',
   },
-  redirects: {
-    enabled: pluginOptions.redirects !== false,
-    manage:
-      typeof pluginOptions.redirects === 'object' ? pluginOptions.redirects.manage : undefined,
-    pluginOptions:
-      (typeof pluginOptions.redirects === 'object'
-        ? pluginOptions.redirects.pluginOptions
-        : undefined) ?? {},
-  },
+  redirections: resolveRedirections(pluginOptions.redirections),
   request: {
     concurrency: pluginOptions.request?.concurrency ?? 5,
     timeoutMs: pluginOptions.request?.timeoutMs ?? 30000,

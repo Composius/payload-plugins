@@ -45,39 +45,41 @@ export const ComposiusPayloadPluginImportWordpress =
       tasks: [...(config.jobs?.tasks ?? []), importWordpressTask(options)],
     }
 
-    // Apply @payloadcms/plugin-redirects (optional peer) for internal-link
-    // redirects. Dynamically imported so hosts that disable redirects (or don't
-    // install the plugin) aren't forced to depend on it. Applied before the
-    // `disabled` check so the `redirects` collection — and the
-    // `payload_locked_documents_rels.redirects_id` column that comes with it —
-    // stay in the schema once an import is done and the plugin is switched off.
-    if (options.redirects.enabled) {
-      // Reuse a `redirects` collection the app already registers (its own
-      // `redirectsPlugin` listed earlier) instead of adding a second one, which
-      // would fail with `DuplicateCollection`. `manage: false` covers the case
-      // where the app's redirectsPlugin runs *after* this plugin.
+    // Apply @composius/payload-plugin-redirections (optional peer). Dynamically
+    // imported so hosts that disable redirections (or don't install the plugin)
+    // aren't forced to depend on it. Applied before the `disabled` check so the
+    // collection — and the `payload_locked_documents_rels` column that comes
+    // with it — stay in the schema once an import is done and the plugin is
+    // switched off.
+    if (options.redirections.enabled) {
+      // Reuse the collection when the app already registers it (its own
+      // `ComposiusPayloadPluginRedirections` listed earlier) instead of adding a
+      // second one, which would fail with `DuplicateCollection`.
+      // `manage: false` covers the case where the app's plugin runs *after*
+      // this one.
+      const { manage, slug } = options.redirections
       const alreadyRegistered = config.collections.some(
-        (collection) => collection.slug === 'redirects',
+        (collection) => collection.slug === slug,
       )
-      const { manage } = options.redirects
 
       if (alreadyRegistered) {
         if (manage === true) {
           warnings.push(
-            '`redirects.manage` is `true` but a `redirects` collection is already registered; reusing the existing one.',
+            `\`redirections.manage\` is \`true\` but a \`${slug}\` collection is already registered; reusing the existing one.`,
           )
         }
       } else if (manage !== false) {
         try {
-          const { redirectsPlugin } = await import('@payloadcms/plugin-redirects')
-          config = redirectsPlugin({
-            // The target collection(s) become the `to.reference` relationTo.
-            collections: [options.collections.articles],
-            ...options.redirects.pluginOptions,
-          })(config) as Config
+          const { ComposiusPayloadPluginRedirections } = await import(
+            '@composius/payload-plugin-redirections'
+          )
+          config = ComposiusPayloadPluginRedirections({
+            slug,
+            ...options.redirections.pluginOptions,
+          })(config)
         } catch {
           warnings.push(
-            '`redirects` is enabled but `@payloadcms/plugin-redirects` is not installed; redirects will be skipped.',
+            '`redirections` is enabled but `@composius/payload-plugin-redirections` is not installed; redirections will be skipped.',
           )
         }
       }

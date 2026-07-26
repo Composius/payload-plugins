@@ -18,6 +18,7 @@ import {
   takeFirstUploadNode,
 } from '../src/lib/lexical.js'
 import { publishDate, selectPrimaryCategoryId } from '../src/lib/post.js'
+import { deriveArticleBase, planRedirectionRules } from '../src/lib/redirections.js'
 import {
   decodeEntities,
   deriveOriginalImageUrl,
@@ -294,6 +295,92 @@ describe('resolveAuthor without email', () => {
   })
 })
 
+describe('redirection rule planning', () => {
+  const articleUrl = (slug?: null | string) => `/articles/${slug ?? ''}`
+  const plan = (permalinks: Array<{ path: string; slug: string }>, strategy: 'exact' | 'prefix' = 'prefix') =>
+    planRedirectionRules({
+      articleBase: deriveArticleBase(articleUrl),
+      articleUrl,
+      permalinks,
+      strategy,
+    })
+
+  test('deriveArticleBase strips the slug and its trailing slash', () => {
+    expect(deriveArticleBase(articleUrl)).toBe('/articles')
+    expect(deriveArticleBase((s) => `https://x.com/blog/${s}`)).toBe('https://x.com/blog')
+    // A builder that appends after the slug can't be a prefix destination.
+    expect(deriveArticleBase((s) => `/articles/${s}/index.html`)).toBe(null)
+  })
+
+  test('collapses posts sharing a folder into one prefix rule', () => {
+    const rules = plan([
+      { path: '/blog/hello', slug: 'hello' },
+      { path: '/blog/world', slug: 'world' },
+      { path: '/blog/deep/nested', slug: 'nested' },
+    ])
+
+    expect(rules).toEqual([
+      { covers: 2, from: '/blog', matchType: 'prefix', to: '/articles' },
+      { covers: 1, from: '/blog/deep', matchType: 'prefix', to: '/articles' },
+    ])
+  })
+
+  test('falls back to exact rules at the site root and for changed slugs', () => {
+    const rules = plan([
+      // Root permalink: a prefix rule on `/` would swallow the whole site.
+      { path: '/hello', slug: 'hello' },
+      // The slug changed during the import, so the folder mapping wouldn't hold.
+      { path: '/blog/old-name', slug: 'new-name' },
+    ])
+
+    expect(rules).toEqual([
+      { covers: 1, from: '/hello', matchType: 'exact', to: '/articles/hello' },
+      { covers: 1, from: '/blog/old-name', matchType: 'exact', to: '/articles/new-name' },
+    ])
+  })
+
+  test('the exact strategy emits one rule per post', () => {
+    const rules = plan(
+      [
+        { path: '/blog/hello', slug: 'hello' },
+        { path: '/blog/world', slug: 'world' },
+      ],
+      'exact',
+    )
+
+    expect(rules).toHaveLength(2)
+    expect(rules.every((r) => r.matchType === 'exact')).toBe(true)
+  })
+
+  test('date-based permalinks collapse per year/month folder', () => {
+    const rules = plan([
+      { path: '/2021/06/a', slug: 'a' },
+      { path: '/2021/06/b', slug: 'b' },
+      { path: '/2021/07/c', slug: 'c' },
+    ])
+
+    expect(rules).toEqual([
+      { covers: 2, from: '/2021/06', matchType: 'prefix', to: '/articles' },
+      { covers: 1, from: '/2021/07', matchType: 'prefix', to: '/articles' },
+    ])
+  })
+
+  test('skips rules that would point at themselves', () => {
+    // The permalink folder already is the destination.
+    expect(plan([{ path: '/articles/hello', slug: 'hello' }])).toEqual([])
+    // An exact rule whose source equals its destination.
+    expect(plan([{ path: '/articles/hello', slug: 'hello' }], 'exact')).toEqual([])
+  })
+
+  test('normalizes trailing slashes and duplicates', () => {
+    const rules = plan([
+      { path: '/blog/hello/', slug: 'hello' },
+      { path: '//blog//world/', slug: 'world' },
+    ])
+    expect(rules).toEqual([{ covers: 2, from: '/blog', matchType: 'prefix', to: '/articles' }])
+  })
+})
+
 describe('rehydrateReport', () => {
   test('keeps real-run entries, drops dry-run entries, and numbers the next run', async () => {
     const { rehydrateReport } = await import('../src/lib/report.js')
@@ -353,7 +440,14 @@ describe('resolveOptions', () => {
     expect(options.authorMapping.syntheticEmailDomain).toBe('imported.invalid')
     expect(options.excerptToSeoDescription).toBe(true)
     expect(options.firstImageAsCover).toBe(true)
-    expect(options.redirects).toEqual({ enabled: true, manage: undefined, pluginOptions: {} })
+    expect(options.redirections).toEqual({
+      enabled: true,
+      manage: undefined,
+      pluginOptions: {},
+      slug: 'redirections',
+      status: '301',
+      strategy: 'prefix',
+    })
     expect(options.dryRunPageLimit).toBe(1)
     expect(options.fieldMap.content).toBe('content')
     expect(options.access.read).toBe(authenticated)
@@ -363,7 +457,7 @@ describe('resolveOptions', () => {
     const options = resolveOptions({
       authorMapping: { defaultUserId: 9, strategy: 'fixed', syntheticEmailDomain: false },
       collections: { articles: 'posts' },
-      redirects: false,
+      redirections: false,
     })
     expect(options.collections.articles).toBe('posts')
     expect(options.authorMapping).toMatchObject({
@@ -371,7 +465,7 @@ describe('resolveOptions', () => {
       strategy: 'fixed',
       syntheticEmailDomain: false,
     })
-    expect(options.redirects.enabled).toBe(false)
+    expect(options.redirections.enabled).toBe(false)
   })
 })
 
@@ -380,7 +474,7 @@ describe('ComposiusPayloadPluginImportWordpress', () => {
     (config.collections ?? []).map((c) => c.slug)
 
   test('registers the import collections and the job task', async () => {
-    const config = await ComposiusPayloadPluginImportWordpress({ redirects: false })(baseConfig())
+    const config = await ComposiusPayloadPluginImportWordpress({ redirections: false })(baseConfig())
     expect(findSlugs(config)).toEqual(expect.arrayContaining(['wp-import-jobs', 'wp-import-records']))
     expect(config.jobs?.tasks?.some((t) => (t as { slug: string }).slug === 'importWordpress')).toBe(
       true,
@@ -389,53 +483,54 @@ describe('ComposiusPayloadPluginImportWordpress', () => {
     expect(config.endpoints?.some((e) => e.path === '/wp-import/status/:id')).toBe(true)
   })
 
-  test('applies @payloadcms/plugin-redirects when redirects is enabled', async () => {
-    const config = await ComposiusPayloadPluginImportWordpress({ redirects: true })(baseConfig())
-    expect(findSlugs(config)).toContain('redirects')
+  test('applies the redirections plugin when redirections are enabled', async () => {
+    const config = await ComposiusPayloadPluginImportWordpress({ redirections: true })(baseConfig())
+    expect(findSlugs(config)).toContain('redirections')
   })
 
-  test('reuses an existing redirects collection instead of registering a second one', async () => {
-    // Simulates an app whose own redirectsPlugin runs before this plugin.
-    const withRedirects = {
-      collections: [{ slug: 'redirects', fields: [{ name: 'from', type: 'text' }] }],
+  test('reuses an existing redirections collection instead of registering a second one', async () => {
+    // Simulates an app running ComposiusPayloadPluginRedirections before this plugin.
+    const withRedirections = {
+      collections: [{ slug: 'redirections', fields: [{ name: 'from', type: 'text' }] }],
     } as unknown as Config
 
-    const config = await ComposiusPayloadPluginImportWordpress()(withRedirects)
-    const redirects = config.collections?.filter((c) => c.slug === 'redirects')
+    const config = await ComposiusPayloadPluginImportWordpress()(withRedirections)
+    const redirections = config.collections?.filter((c) => c.slug === 'redirections')
 
-    expect(redirects).toHaveLength(1)
+    expect(redirections).toHaveLength(1)
     // The app's own collection is untouched (not replaced by the plugin's).
-    expect(redirects?.[0].fields).toHaveLength(1)
+    expect(redirections?.[0].fields).toHaveLength(1)
   })
 
-  test('redirects.manage false leaves the collection to the app', async () => {
+  test('redirections.manage false leaves the collection to the app', async () => {
     const config = await ComposiusPayloadPluginImportWordpress({
-      redirects: { manage: false },
+      redirections: { manage: false },
     })(baseConfig())
 
-    expect(findSlugs(config)).not.toContain('redirects')
-    // Redirect documents are still created during an import.
-    expect(resolveOptions({ redirects: { manage: false } }).redirects.enabled).toBe(true)
+    expect(findSlugs(config)).not.toContain('redirections')
+    // Redirection rules are still created during an import.
+    expect(resolveOptions({ redirections: { manage: false } }).redirections.enabled).toBe(true)
   })
 
-  test('forwards pluginOptions to redirectsPlugin', async () => {
+  test('forwards pluginOptions and a custom slug to the redirections plugin', async () => {
     const config = await ComposiusPayloadPluginImportWordpress({
-      redirects: { pluginOptions: { overrides: { admin: { group: 'SEO' } } } },
+      redirections: { pluginOptions: { hidden: true }, slug: 'wp-redirections' },
     })(baseConfig())
 
-    const redirects = config.collections?.find((c) => c.slug === 'redirects')
-    expect(redirects?.admin?.group).toBe('SEO')
+    const redirections = config.collections?.find((c) => c.slug === 'wp-redirections')
+    expect(redirections).toBeDefined()
+    expect(redirections?.admin?.hidden).toBe(true)
   })
 
   test('adds an every-minute auto-run schedule by default', async () => {
-    const config = await ComposiusPayloadPluginImportWordpress({ redirects: false })(baseConfig())
+    const config = await ComposiusPayloadPluginImportWordpress({ redirections: false })(baseConfig())
     expect(config.jobs?.autoRun).toEqual([{ cron: '* * * * *', queue: 'default' }])
   })
 
   test('auto-run schedule can be customized', async () => {
     const config = await ComposiusPayloadPluginImportWordpress({
       autoRun: { cron: '*/5 * * * *', queue: 'imports' },
-      redirects: false,
+      redirections: false,
     })(baseConfig())
     expect(config.jobs?.autoRun).toEqual([{ cron: '*/5 * * * *', queue: 'imports' }])
   })
@@ -443,7 +538,7 @@ describe('ComposiusPayloadPluginImportWordpress', () => {
   test('autoRun: false leaves the jobs queue to the host app', async () => {
     const config = await ComposiusPayloadPluginImportWordpress({
       autoRun: false,
-      redirects: false,
+      redirections: false,
     })(baseConfig())
     expect(config.jobs?.autoRun).toBeUndefined()
   })
@@ -470,20 +565,20 @@ describe('ComposiusPayloadPluginImportWordpress', () => {
     expect(jobsOf(disabled).hooks?.afterChange ?? []).toHaveLength(0)
   })
 
-  test('disabled keeps the redirects collection so the schema is unchanged', async () => {
-    // Turning the plugin off after an import must not drop `redirects` (and the
-    // payload_locked_documents_rels.redirects_id column) from the schema.
+  test('disabled keeps the redirections collection so the schema is unchanged', async () => {
+    // Turning the plugin off after an import must not drop `redirections` (and
+    // the payload_locked_documents_rels column) from the schema.
     const enabled = await ComposiusPayloadPluginImportWordpress()(baseConfig())
     const disabled = await ComposiusPayloadPluginImportWordpress({ disabled: true })(baseConfig())
 
-    expect(findSlugs(disabled)).toContain('redirects')
+    expect(findSlugs(disabled)).toContain('redirections')
     expect(findSlugs(disabled)).toEqual(findSlugs(enabled))
     // ...but no runtime behavior is registered.
     expect(disabled.jobs?.autoRun).toBeUndefined()
   })
 
   test('job form is organized into step tabs with credentials in configuration', async () => {
-    const config = await ComposiusPayloadPluginImportWordpress({ redirects: false })(baseConfig())
+    const config = await ComposiusPayloadPluginImportWordpress({ redirections: false })(baseConfig())
     const jobs = config.collections?.find((c) => c.slug === 'wp-import-jobs')
     const tabsField = jobs?.fields[0] as {
       tabs: Array<{ fields: unknown[]; label: Record<string, string> }>
@@ -521,7 +616,7 @@ describe('ComposiusPayloadPluginImportWordpress', () => {
   })
 
   test('default access requires an authenticated user', async () => {
-    const config = await ComposiusPayloadPluginImportWordpress({ redirects: false })(baseConfig())
+    const config = await ComposiusPayloadPluginImportWordpress({ redirections: false })(baseConfig())
     const jobs = config.collections?.find((c) => c.slug === 'wp-import-jobs')
     expect(jobs?.access?.read).toBe(authenticated)
     expect(jobs?.access?.create).toBe(authenticated)
