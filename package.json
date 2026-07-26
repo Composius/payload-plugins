@@ -25,6 +25,7 @@
     "dev:media": "cross-env DEV_SUITE=media next dev dev --turbo",
     "dev:menus": "cross-env DEV_SUITE=menus next dev dev --turbo",
     "dev:pages": "cross-env DEV_SUITE=pages next dev dev --turbo",
+    "dev:redirections": "cross-env DEV_SUITE=redirections next dev dev --turbo",
     "dev:umami": "cross-env DEV_SUITE=umami next dev dev --turbo",
     "generate:importmap": "pnpm run --sequential \"/^generate:importmap:/\"",
     "generate:importmap:articles": "cross-env DEV_SUITE=articles pnpm payload generate:importmap",
@@ -37,6 +38,7 @@
     "generate:importmap:media": "cross-env DEV_SUITE=media pnpm payload generate:importmap",
     "generate:importmap:menus": "cross-env DEV_SUITE=menus pnpm payload generate:importmap",
     "generate:importmap:pages": "cross-env DEV_SUITE=pages pnpm payload generate:importmap",
+    "generate:importmap:redirections": "cross-env DEV_SUITE=redirections pnpm payload generate:importmap",
     "generate:importmap:umami": "cross-env DEV_SUITE=umami pnpm payload generate:importmap",
     "generate:types:articles": "cross-env DEV_SUITE=articles pnpm payload generate:types",
     "generate:types:auth": "cross-env DEV_SUITE=auth pnpm payload generate:types",
@@ -48,6 +50,7 @@
     "generate:types:media": "cross-env DEV_SUITE=media pnpm payload generate:types",
     "generate:types:menus": "cross-env DEV_SUITE=menus pnpm payload generate:types",
     "generate:types:pages": "cross-env DEV_SUITE=pages pnpm payload generate:types",
+    "generate:types:redirections": "cross-env DEV_SUITE=redirections pnpm payload generate:types",
     "generate:types:umami": "cross-env DEV_SUITE=umami pnpm payload generate:types",
     "lint": "eslint",
     "lint:fix": "eslint packages dev --fix",
@@ -56,7 +59,7 @@
     "test:e2e": "playwright test",
     "test:int": "vitest run dev/configs",
     "test:unit": "vitest run packages",
-    "typecheck": "tsc --noEmit && tsc --noEmit -p dev/configs/articles && tsc --noEmit -p dev/configs/auth && tsc --noEmit -p dev/configs/axiom && tsc --noEmit -p dev/configs/custom-panel && tsc --noEmit -p dev/configs/health && tsc --noEmit -p dev/configs/home-nav && tsc --noEmit -p dev/configs/import-wordpress && tsc --noEmit -p dev/configs/media && tsc --noEmit -p dev/configs/menus && tsc --noEmit -p dev/configs/pages && tsc --noEmit -p dev/configs/umami"
+    "typecheck": "tsc --noEmit && tsc --noEmit -p dev/configs/articles && tsc --noEmit -p dev/configs/auth && tsc --noEmit -p dev/configs/axiom && tsc --noEmit -p dev/configs/custom-panel && tsc --noEmit -p dev/configs/health && tsc --noEmit -p dev/configs/home-nav && tsc --noEmit -p dev/configs/import-wordpress && tsc --noEmit -p dev/configs/media && tsc --noEmit -p dev/configs/menus && tsc --noEmit -p dev/configs/pages && tsc --noEmit -p dev/configs/redirections && tsc --noEmit -p dev/configs/umami"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3.2.0",
@@ -83,6 +86,7 @@
     "@composius/payload-plugin-media": "workspace:*",
     "@composius/payload-plugin-menus": "workspace:*",
     "@composius/payload-plugin-pages": "workspace:*",
+    "@composius/payload-plugin-redirections": "workspace:*",
     "@composius/payload-plugin-umami": "workspace:*",
     "cross-env": "^7.0.3",
     "eslint": "^9.23.0",

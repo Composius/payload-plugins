@@ -22,6 +22,7 @@ import { importMap as importWordpress } from './importMaps/import-wordpress.js'
 import { importMap as media } from './importMaps/media.js'
 import { importMap as menus } from './importMaps/menus.js'
 import { importMap as pages } from './importMaps/pages.js'
+import { importMap as redirections } from './importMaps/redirections.js'
 import { importMap as umami } from './importMaps/umami.js'
 
 const importMaps = {
@@ -35,6 +36,7 @@ const importMaps = {
   media,
   menus,
   pages,
+  redirections,
   umami,
 }
 

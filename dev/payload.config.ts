@@ -18,6 +18,7 @@ const loaders: Record<string, () => Promise<{ default: Promise<SanitizedConfig> 
   media: () => import('./configs/media/config.js'),
   menus: () => import('./configs/menus/config.js'),
   pages: () => import('./configs/pages/config.js'),
+  redirections: () => import('./configs/redirections/config.js'),
   umami: () => import('./configs/umami/config.js'),
 }
 
