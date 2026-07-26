@@ -421,6 +421,18 @@ describe('ComposiusPayloadPluginImportWordpress', () => {
     expect(config.endpoints ?? []).toHaveLength(0)
   })
 
+  test('disabled keeps the redirects collection so the schema is unchanged', async () => {
+    // Turning the plugin off after an import must not drop `redirects` (and the
+    // payload_locked_documents_rels.redirects_id column) from the schema.
+    const enabled = await ComposiusPayloadPluginImportWordpress()(baseConfig())
+    const disabled = await ComposiusPayloadPluginImportWordpress({ disabled: true })(baseConfig())
+
+    expect(findSlugs(disabled)).toContain('redirects')
+    expect(findSlugs(disabled)).toEqual(findSlugs(enabled))
+    // ...but no runtime behavior is registered.
+    expect(disabled.jobs?.autoRun).toBeUndefined()
+  })
+
   test('job form is organized into step tabs with credentials in configuration', async () => {
     const config = await ComposiusPayloadPluginImportWordpress({ redirects: false })(baseConfig())
     const jobs = config.collections?.find((c) => c.slug === 'wp-import-jobs')

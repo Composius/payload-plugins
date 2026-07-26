@@ -43,34 +43,12 @@ export const ComposiusPayloadPluginImportWordpress =
       tasks: [...(config.jobs?.tasks ?? []), importWordpressTask(options)],
     }
 
-    if (pluginOptions.disabled) {
-      return config
-    }
-
-    // Endpoints for programmatic triggering / polling.
-    config.endpoints = [
-      ...(config.endpoints ?? []),
-      startEndpoint(options.access),
-      statusEndpoint(options.access),
-    ]
-
-    // Optional auto-run schedule so creating a job runs it without an external worker.
-    if (pluginOptions.autoRun !== false) {
-      const schedule = typeof pluginOptions.autoRun === 'object' ? pluginOptions.autoRun : {}
-      const entry = { cron: schedule.cron ?? '* * * * *', queue: schedule.queue ?? 'default' }
-      const existing = config.jobs.autoRun
-      if (existing === undefined) {
-        config.jobs.autoRun = [entry]
-      } else if (Array.isArray(existing)) {
-        config.jobs.autoRun = [...existing, entry]
-      } else {
-        warnings.push('`jobs.autoRun` is a function; skipping the plugin auto-run schedule.')
-      }
-    }
-
     // Apply @payloadcms/plugin-redirects (optional peer) for internal-link
     // redirects. Dynamically imported so hosts that disable redirects (or don't
-    // install the plugin) aren't forced to depend on it.
+    // install the plugin) aren't forced to depend on it. Applied before the
+    // `disabled` check so the `redirects` collection — and the
+    // `payload_locked_documents_rels.redirects_id` column that comes with it —
+    // stay in the schema once an import is done and the plugin is switched off.
     if (options.redirects) {
       try {
         const { redirectsPlugin } = await import('@payloadcms/plugin-redirects')
@@ -82,6 +60,32 @@ export const ComposiusPayloadPluginImportWordpress =
         warnings.push(
           '`redirects` is enabled but `@payloadcms/plugin-redirects` is not installed; redirects will be skipped.',
         )
+      }
+    }
+
+    // Everything below only affects runtime behavior, never the schema, so it
+    // is skipped when the plugin is disabled.
+    if (!pluginOptions.disabled) {
+      // Endpoints for programmatic triggering / polling.
+      config.endpoints = [
+        ...(config.endpoints ?? []),
+        startEndpoint(options.access),
+        statusEndpoint(options.access),
+      ]
+
+      // Auto-run schedule so creating a job runs it without an external worker.
+      if (pluginOptions.autoRun !== false) {
+        const schedule = typeof pluginOptions.autoRun === 'object' ? pluginOptions.autoRun : {}
+        const entry = { cron: schedule.cron ?? '* * * * *', queue: schedule.queue ?? 'default' }
+        const jobs = (config.jobs ??= { tasks: [] })
+        const existing = jobs.autoRun
+        if (existing === undefined) {
+          jobs.autoRun = [entry]
+        } else if (Array.isArray(existing)) {
+          jobs.autoRun = [...existing, entry]
+        } else {
+          warnings.push('`jobs.autoRun` is a function; skipping the plugin auto-run schedule.')
+        }
       }
     }
 
