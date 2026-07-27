@@ -56,3 +56,6 @@ export const DEFAULT_RETRY_TTL = 10
 
 /** Next helper: milliseconds before the rules fetch is aborted. */
 export const DEFAULT_TIMEOUT = 2000
+
+/** Next helper: port the loopback fallback assumes when `PORT` is unset — Next's own default. */
+export const DEFAULT_PORT = '3000'

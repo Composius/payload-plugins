@@ -1,6 +1,7 @@
 import type { RedirectionRule, RedirectionRulesResponse } from '../types.js'
 
 import {
+  DEFAULT_PORT,
   DEFAULT_RETRY_TTL,
   DEFAULT_RULES_ENDPOINT,
   DEFAULT_STALE_TTL,
@@ -21,8 +22,10 @@ export type RedirectionRulesSource = {
   onError?: (error: unknown) => void
   /**
    * Base URL of the Payload app. Falls back to `NEXT_PUBLIC_PAYLOAD_URL`, then
-   * `PAYLOAD_URL`, then the origin of the incoming request — which covers the
-   * common case of Payload living in the same Next app.
+   * `PAYLOAD_URL`, then `http://127.0.0.1:$PORT` — the loopback address of this
+   * same process, which covers the common case of Payload living in the same
+   * Next app. Set it when Payload is somewhere else, or when the proxy runs
+   * away from the app (an edge runtime), where there is no shared loopback.
    */
   payloadURL?: string
   /**
@@ -71,8 +74,24 @@ const envURL = (): string | undefined => {
   return env?.NEXT_PUBLIC_PAYLOAD_URL ?? env?.PAYLOAD_URL
 }
 
+/**
+ * This process talking to itself. Deliberately not the origin of the incoming
+ * request: behind a TLS-terminating proxy that public origin is `https://`, and
+ * inside the network it resolves back to this same plain-HTTP listener, so the
+ * handshake fails with `ERR_SSL_WRONG_VERSION_NUMBER`. Loopback skips the round
+ * trip and the TLS entirely. `undefined` where there is no `process` to read a
+ * port from, since such a runtime has no loopback to the app either.
+ */
+const loopbackURL = (): string | undefined => {
+  if (typeof process === 'undefined') {
+    return undefined
+  }
+
+  return `http://127.0.0.1:${process.env.PORT ?? DEFAULT_PORT}`
+}
+
 const rulesURL = (source: RedirectionRulesSource, origin: string): string => {
-  const base = (source.payloadURL ?? envURL() ?? origin).replace(/\/$/, '')
+  const base = (source.payloadURL ?? envURL() ?? loopbackURL() ?? origin).replace(/\/$/, '')
 
   return `${base}${source.endpoint ?? DEFAULT_RULES_ENDPOINT}`
 }

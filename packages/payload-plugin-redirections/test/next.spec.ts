@@ -44,9 +44,15 @@ beforeEach(() => {
   clearRedirectionsCache()
   fetchMock = vi.fn(async () => okResponse())
   vi.stubGlobal('fetch', fetchMock)
+  // The base URL is read from the environment, so pin it rather than inherit
+  // whatever the machine running the suite happens to export.
+  vi.stubEnv('NEXT_PUBLIC_PAYLOAD_URL', undefined)
+  vi.stubEnv('PAYLOAD_URL', undefined)
+  vi.stubEnv('PORT', '4321')
 })
 
 afterEach(() => {
+  vi.unstubAllEnvs()
   vi.unstubAllGlobals()
   vi.useRealTimers()
   vi.restoreAllMocks()
@@ -71,10 +77,29 @@ describe('the rules cache', () => {
     expect(fetchMock).toHaveBeenCalledTimes(1)
   })
 
-  test('defaults to the request origin and the documented endpoint path', async () => {
+  test('defaults to this process on loopback and the documented endpoint path', async () => {
+    vi.stubEnv('PORT', '4321')
+
     await getRedirectionRules({}, 'https://example.com')
 
-    expect(fetchMock.mock.calls[0]![0]).toBe('https://example.com/api/redirections/rules')
+    expect(fetchMock.mock.calls[0]![0]).toBe('http://127.0.0.1:4321/api/redirections/rules')
+  })
+
+  test('assumes Next’s default port when PORT is unset', async () => {
+    vi.stubEnv('PORT', undefined)
+
+    await getRedirectionRules({}, 'https://example.com')
+
+    expect(fetchMock.mock.calls[0]![0]).toBe('http://127.0.0.1:3000/api/redirections/rules')
+  })
+
+  test('an env base URL wins over the loopback fallback', async () => {
+    vi.stubEnv('PORT', '4321')
+    vi.stubEnv('NEXT_PUBLIC_PAYLOAD_URL', 'https://cms.example.com')
+
+    await getRedirectionRules({}, 'https://example.com')
+
+    expect(fetchMock.mock.calls[0]![0]).toBe('https://cms.example.com/api/redirections/rules')
   })
 
   test('payloadURL and endpoint override the URL, trailing slash and all', async () => {

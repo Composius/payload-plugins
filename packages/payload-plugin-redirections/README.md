@@ -140,6 +140,15 @@ export const config = {
 }
 ```
 
+**Where the rules are fetched from.** `payloadURL`, else `NEXT_PUBLIC_PAYLOAD_URL` or
+`PAYLOAD_URL`, else `http://127.0.0.1:$PORT` (`PORT` defaulting to `3000`) — the app
+talking to itself, which is what "Payload lives in this same Next app" actually means.
+It is deliberately *not* the origin of the incoming request: behind a TLS-terminating
+proxy that origin is `https://your-host`, which resolves back inside the network to
+this same plain-HTTP listener and fails the handshake with
+`ERR_SSL_WRONG_VERSION_NUMBER`. Set `payloadURL` when Payload is a separate service, or
+when the proxy runs away from the app — on an edge runtime there is no shared loopback.
+
 To combine it with your own logic, use the returned function directly — it resolves to
 a `Response` on a match and `undefined` otherwise:
 
@@ -238,7 +247,7 @@ And the proxy helper:
 
 ```ts
 createRedirectionsProxy({
-  payloadURL: process.env.NEXT_PUBLIC_PAYLOAD_URL, // default: env, then request origin
+  payloadURL: process.env.NEXT_PUBLIC_PAYLOAD_URL, // default: env, then http://127.0.0.1:$PORT
   endpoint: '/api/redirections/rules',             // default
   ttl: 60,          // seconds the rules stay fresh
   staleTtl: 600,    // extra seconds a stale list is served while refreshes fail
