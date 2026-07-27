@@ -29,6 +29,23 @@ export type ComposiusPayloadPluginHomeNavConfig = {
    * @default true
    */
   navLink?: boolean
+  /**
+   * Show the app's version at the bottom of the nav sidebar, just above the
+   * logout button (appended to `admin.components.afterNavLinks`). Nothing is
+   * rendered when no version can be resolved.
+   * @default true
+   */
+  version?: boolean
+  /**
+   * The label shown in front of the version number, plain or per-language.
+   * Default: "Version" from the plugin's bundled translations.
+   */
+  versionLabel?: LocalizedText
+  /**
+   * The version to show. Default: the version of the nearest `package.json`
+   * found from the working directory, i.e. the host app's own version.
+   */
+  versionNumber?: string
   /** Leaves the config untouched. */
   disabled?: boolean
 }
@@ -48,7 +65,7 @@ export const ComposiusPayloadPluginHomeNav =
       return config
     }
 
-    const { href, label } = pluginOptions
+    const { href, label, versionLabel, versionNumber } = pluginOptions
 
     if (!config.admin) config.admin = {}
     if (!config.admin.components) config.admin.components = {}
@@ -105,6 +122,22 @@ export const ComposiusPayloadPluginHomeNav =
           },
         },
         ...(config.admin.components.beforeNavLinks ?? []),
+      ]
+    }
+
+    if (pluginOptions.version !== false) {
+      // Appended so the version stays at the bottom of the sidebar, directly
+      // above the `nav__controls` block that holds the logout button.
+      config.admin.components.afterNavLinks = [
+        ...(config.admin.components.afterNavLinks ?? []),
+        {
+          path: COMPONENT_PATH,
+          exportName: 'HomeNavVersion',
+          serverProps: {
+            versionLabel,
+            versionNumber,
+          },
+        },
       ]
     }
 

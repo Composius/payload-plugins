@@ -1,6 +1,6 @@
 {
   "name": "composius-payload-plugins",
-  "version": "0.0.0",
+  "version": "1.0.0",
   "private": true,
   "description": "Monorepo for Composius Payload plugins",
   "license": "MIT",

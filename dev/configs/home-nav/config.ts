@@ -9,6 +9,10 @@ const dirname = path.dirname(fileURLToPath(import.meta.url))
 
 export default buildDevConfig({
   dirname,
-  plugins: [ComposiusPayloadPluginHomeNav()],
+  plugins: [
+    ComposiusPayloadPluginHomeNav({
+      // versionNumber: '0.1.0',
+    }),
+  ],
   seed,
 })

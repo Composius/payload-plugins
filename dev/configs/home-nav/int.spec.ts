@@ -26,4 +26,13 @@ describe('Plugin integration tests', () => {
     expect(link).toBeDefined()
     expect(typeof link === 'object' && link.exportName).toBe('HomeNavLink')
   })
+
+  test('registers the version block after the nav links', () => {
+    const components = sanitized.admin?.components?.afterNavLinks ?? []
+    const block = components.find(
+      (c) => typeof c === 'object' && c.path === '@composius/payload-plugin-home-nav/rsc',
+    )
+    expect(block).toBeDefined()
+    expect(typeof block === 'object' && block.exportName).toBe('HomeNavVersion')
+  })
 })

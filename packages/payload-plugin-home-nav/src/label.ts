@@ -15,3 +15,12 @@ export const resolveHomeLabel = (
   label: LocalizedText | undefined,
   language: string,
 ): string => resolveLocalizedText(label, language) ?? (translations[language] ?? en).homeNav.home
+
+/**
+ * Resolves the label shown in front of the app version: the `versionLabel`
+ * plugin option when set, otherwise the plugin's bundled translations.
+ */
+export const resolveVersionLabel = (
+  label: LocalizedText | undefined,
+  language: string,
+): string => resolveLocalizedText(label, language) ?? (translations[language] ?? en).homeNav.version
