@@ -1,6 +1,6 @@
 {
   "name": "@composius/payload-plugin-redirections",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Redirections collection with exact, prefix and regex URL matching, plus a Next.js proxy helper",
   "license": "MIT",
   "author": {
