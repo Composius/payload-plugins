@@ -11,6 +11,9 @@
       ],
       "@composius/payload-plugin-shared-components/client": [
         "../payload-plugin-shared-components/src/exports/client.ts"
+      ],
+      "@composius/payload-plugin-shared-components/tags": [
+        "../payload-plugin-shared-components/src/revalidate/tags.ts"
       ]
     }
   },

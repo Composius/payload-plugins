@@ -1,4 +1,4 @@
-import type { Config, FieldAccess } from 'payload'
+import type { CollectionSlug, Config, FieldAccess } from 'payload'
 import type {
   GenerateDescription,
   GenerateImage,
@@ -7,6 +7,11 @@ import type {
 } from '@payloadcms/plugin-seo/types'
 import { seoPlugin } from '@payloadcms/plugin-seo'
 import { nestedDocsPlugin } from '@payloadcms/plugin-nested-docs'
+import type {
+  RevalidateEvent,
+  RevalidateOptions,
+  RevalidateProfile,
+} from '@composius/payload-plugin-shared-components'
 import type { ArticlesAccess } from './collections/Articles.js'
 import { Articles } from './collections/Articles.js'
 import type { AuthorsAccess } from './collections/Authors.js'
@@ -64,6 +69,17 @@ export type ComposiusPayloadPluginArticlesConfig = {
    */
   editorUpdateAccess?: FieldAccess
   /**
+   * Invalidates the Next.js cache tags of the articles, categories and authors
+   * collections whenever a document is saved or deleted, so a `'use cache'`
+   * front end picks the change up. The tags to claim with `cacheTag` are
+   * exported from `@composius/payload-plugin-articles/tags`.
+   *
+   * Enabled by default, and a no-op wherever Next.js is absent (a migration, a
+   * seeding script, a test run). Pass an object to tune the cache profile or
+   * add tags, or `false` to remove the hooks entirely.
+   */
+  revalidate?: false | RevalidateOptions
+  /**
    * Adds an SEO `meta` group (title, description, image, preview) to the
    * articles collection, built from `@payloadcms/plugin-seo` fields.
    * `true` (the default) enables it with built-in generate functions
@@ -84,7 +100,7 @@ export type ComposiusPayloadPluginArticlesConfig = {
    * Slug of the users collection the article `editor` field relates to.
    * Defaults to `'users'`.
    */
-  usersSlug?: string
+  usersSlug?: CollectionSlug
 }
 
 export const ComposiusPayloadPluginArticles =
@@ -131,10 +147,18 @@ export const ComposiusPayloadPluginArticles =
     const usersSlug = pluginOptions.usersSlug ?? 'users'
     const editorUpdateAccess = pluginOptions.editorUpdateAccess ?? authenticatedField
 
-    config.collections.push(Categories({ access: categoriesAccess }))
+    // A disabled plugin keeps its collections for schema consistency, but must
+    // not act on them: revalidating from a plugin that is meant to be off would
+    // be a side effect nobody asked for.
+    const revalidate =
+      pluginOptions.disabled || pluginOptions.revalidate === false
+        ? false
+        : (pluginOptions.revalidate ?? {})
+
+    config.collections.push(Categories({ access: categoriesAccess, revalidate }))
 
     if (authorsEnabled) {
-      config.collections.push(Authors({ access: authorsAccess }))
+      config.collections.push(Authors({ access: authorsAccess, revalidate }))
     }
 
     config.collections.push(
@@ -143,6 +167,7 @@ export const ComposiusPayloadPluginArticles =
         articleUrl,
         authors: authorsEnabled,
         editorUpdateAccess,
+        revalidate,
         seo: seoEnabled
           ? {
               hasGenerateDescription: true,
@@ -183,3 +208,15 @@ export const ComposiusPayloadPluginArticles =
 
     return config
   }
+
+export type { RevalidateEvent, RevalidateOptions, RevalidateProfile }
+export {
+  articleIdTag,
+  articleTag,
+  ARTICLES_TAG,
+  authorIdTag,
+  AUTHORS_TAG,
+  categoryIdTag,
+  categoryTag,
+  CATEGORIES_TAG,
+} from './tags.js'

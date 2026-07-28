@@ -114,4 +114,55 @@ describe('Plugin integration tests', () => {
     expect(article.editor).toMatchObject({ id: user.id })
     expect(article.author).toMatchObject({ id: author.id, name: 'Ada Lovelace' })
   })
+
+  // The revalidation hooks run inside the write's transaction, and there is no
+  // Next.js request scope here to revalidate against. Every write below must
+  // still go through: a cache that cannot be reached is not a failed write.
+  test('publishing, renaming and deleting survive without a Next.js runtime', async () => {
+    const article = await payload.create({
+      collection: 'articles',
+      data: { _status: 'published', slug: 'cached', title: 'Cached' },
+    })
+
+    const renamed = await payload.update({
+      collection: 'articles',
+      id: article.id,
+      data: { slug: 'cached-renamed' },
+    })
+    expect(renamed.slug).toBe('cached-renamed')
+
+    const unpublished = await payload.update({
+      collection: 'articles',
+      id: article.id,
+      data: { _status: 'draft' },
+    })
+    expect(unpublished._status).toBe('draft')
+
+    await payload.delete({ collection: 'articles', id: article.id })
+
+    const remaining = await payload.find({
+      collection: 'articles',
+      where: { slug: { equals: 'cached-renamed' } },
+    })
+    expect(remaining.totalDocs).toBe(0)
+  })
+
+  test('a category rename still saves and resaves its children', async () => {
+    const parent = await payload.create({
+      collection: 'categories',
+      data: { name: 'Cache', slug: 'cache' },
+    })
+    await payload.create({
+      collection: 'categories',
+      data: { name: 'Cache child', slug: 'cache-child', parent: parent.id },
+    })
+
+    const renamed = await payload.update({
+      collection: 'categories',
+      id: parent.id,
+      data: { slug: 'cache-renamed' },
+    })
+
+    expect(renamed.slug).toBe('cache-renamed')
+  })
 })

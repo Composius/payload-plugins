@@ -20,11 +20,14 @@ Do NOT invent structure. Copy the closest existing plugin and adapt:
 
 | New plugin is… | Copy from | Build tool |
 |---|---|---|
-| A collection (fields, hooks, access), no admin UI components | `packages/payload-plugin-menus` | tsup, single `index` entry |
+| A collection (fields, hooks, access), no admin UI components | `packages/payload-plugin-menus` | tsup, `index` + `exports/tags` entries |
 | Server-only integration (hooks/endpoints, no collection, no UI) | `packages/payload-plugin-axiom` | tsup, single `index` entry |
 | Admin UI, server components only (panels, nav/header slots — no state/effects of its own; interactive leaves like `Link`/`PayloadIcon` come from `@payloadcms/ui`) | `packages/payload-plugin-custom-panel` or `-home-nav` | tsup with `index` + `exports/rsc` entries, no client bundle, no banner |
 | Admin UI with own client components (state, hooks, charts) | `packages/payload-plugin-umami` | tsup with `index` + `exports/client` (+ `exports/rsc`) entries, `"use client"` banner on the client bundle |
 | Content collection with drafts/live-preview/SEO reusing shared editor features | `packages/payload-plugin-articles` or `-pages` | tsup, bundles `@composius/payload-plugin-shared-components` (private, never published) into its own dist |
+
+Any plugin adding a collection a front end renders also needs the cache
+revalidation wiring — see the subsection in Step 1.
 
 Read the template's `package.json`, `tsup.config.ts`, and
 `tsconfig.json` before writing anything.
@@ -45,6 +48,14 @@ src/translations/fr.ts
 test/unit.spec.ts
 ```
 
+Plus, when the plugin adds a collection a front end renders (see the cache
+revalidation subsection below):
+
+```
+src/tags.ts
+src/exports/tags.ts
+```
+
 ### package.json rules (copy template, then edit)
 
 - `"name": "@composius/payload-plugin-<name>"`, `"version": "0.1.0"`,
@@ -58,7 +69,8 @@ test/unit.spec.ts
   top-level `exports` and `publishConfig.exports`.
 - `"files": ["dist"]`, `peerDependencies` on `payload: "^3.84.1"`
   (plus `@payloadcms/ui`, `react`, etc. if UI). Match the exact versions
-  the template pins in `devDependencies`.
+  the template pins in `devDependencies`. A plugin doing cache revalidation
+  adds a `./tags` export and an optional `next` peer — see that subsection.
 - Keep the `engines` block from the template.
 
 ### src/index.ts
@@ -74,6 +86,96 @@ Plugin factory pattern (see `packages/payload-plugin-menus/src/index.ts`):
 - Access defaults: reuse the `anyone`/`authenticated` pattern
   (`packages/payload-plugin-menus/src/defaults.ts`) with a
   per-operation `access` option override.
+
+### Cache revalidation — collections a front end renders
+
+A plugin whose documents appear on a Next.js site must invalidate that site's
+cache tags when one is saved or deleted, or editors publish into a void. Do NOT
+write the hooks by hand — `@composius/payload-plugin-shared-components` owns
+them (`src/revalidate/`). Working examples: menus (no drafts), pages (drafts),
+articles (drafts + related collections).
+
+The target is a `cacheComponents` front end, so this is tag-only: `revalidateTag`
+and `cacheTag`, never `revalidatePath`.
+
+In the collection factory, spread `revalidateHooks` into `hooks` — it returns an
+`afterChange` and an `afterDelete`, or nothing when revalidation is off:
+
+```ts
+import { revalidateHooks } from '@composius/payload-plugin-shared-components'
+
+hooks: {
+  ...revalidateHooks({ collection: '<slug>', drafts: true, fields: ['slug'] }, revalidate),
+  // the collection's own hooks still go here — the spread only adds two keys
+}
+```
+
+- `drafts: true` **only** when the collection sets `versions.drafts`. It skips
+  draft-only saves, which autosave repeats every few seconds, and lets through
+  publishes and unpublishes.
+- `fields` lists what addresses one document on the front end besides its id —
+  `['slug']` usually, `['name']` for menus.
+- `related` names collections that embed this one, invalidated alongside it.
+  Categories and authors pass `related: ['articles']`, because an article
+  carries its category's and author's name. Don't wire the reverse: a page
+  listing a category's articles claims both tags itself.
+
+In `src/index.ts`, take the option and switch it off with the plugin — a
+disabled plugin keeps its schema but must not cause side effects:
+
+```ts
+import type { RevalidateOptions } from '@composius/payload-plugin-shared-components'
+
+revalidate?: false | RevalidateOptions
+
+const revalidate =
+  pluginOptions.disabled || pluginOptions.revalidate === false
+    ? false
+    : (pluginOptions.revalidate ?? {})
+```
+
+Re-export `RevalidateEvent`, `RevalidateOptions` and `RevalidateProfile` from
+`src/index.ts` — the shared package is private, so consumers have no other way
+to name the types of the option they are passing.
+
+Publish the tags the front end claims with `cacheTag` in `src/tags.ts`, built
+from the shared helpers so both sides can never drift:
+
+```ts
+import { collectionTag, fieldTag, idTag } from '@composius/payload-plugin-shared-components/tags'
+
+export const <PLURAL>_TAG = collectionTag('<slug>')
+export const <singular>Tag = (slug: string): string => fieldTag('<slug>', 'slug', slug)
+export const <singular>IdTag = (id: number | string): string => idTag('<slug>', id)
+```
+
+Re-export them from `src/exports/tags.ts` — a `/tags` entry point importing
+neither `payload` nor `next`, so page code builds a tag without loading the CMS
+— and from `src/index.ts` for convenience.
+
+Four things beyond the source have to line up:
+
+- **`package.json`** — `"./tags"` in BOTH `exports` and
+  `publishConfig.exports`; `"@composius/payload-plugin-shared-components":
+  "workspace:*"` and `next` (pinned like the template) in `devDependencies`;
+  and `next` as an **optional** peer, `"next": "^16.0.0"` in `peerDependencies`
+  plus `"peerDependenciesMeta": { "next": { "optional": true } }`. Optional
+  because the plugin works without Next — revalidation just becomes a no-op.
+- **`tsconfig.json`** — `paths` mapping both
+  `@composius/payload-plugin-shared-components` and its `/tags` subpath to the
+  shared source (copy menus'). tsup resolves the inlined types through it.
+- **`tsup.config.ts`** — an `exports/tags` entry, and `external: [/^next(\/|$)/]`
+  on every entry so esbuild does not follow the dynamic `next/cache.js` import
+  and bundle the framework into `dist/`. Verify after building:
+  `grep -c "next/dist" dist/index.js` must print `0`.
+- **`README.md`** — a "Cache revalidation" section: a `cacheTag` usage snippet,
+  a table of the exported tags, the profile trade-off, and the
+  `context.disableRevalidate` escape hatch. Copy the shape from
+  `packages/payload-plugin-pages/README.md`.
+
+Options worth documenting on the plugin's `revalidate` object, all optional:
+`profile` (`revalidateTag`'s second argument, default `{ expire: 0 }`), `tags`
+(extra tags per event), `onError`.
 
 ### Translations — `src/translations/`
 
@@ -105,6 +207,16 @@ minimal `Config`, then assert the collection exists, field names, admin
 settings (`useAsTitle`, `defaultColumns`), access defaults, option
 behavior, and the `disabled` schema-consistency rule.
 
+With revalidation, also assert the tag strings, that the hooks are registered
+by default, and that `revalidate: false` and `disabled: true` both remove them
+(menus' `describe('revalidation')` block). Assert on `afterDelete`, not
+`afterChange`: other plugins append their own `afterChange` hooks — on articles'
+categories, `nestedDocsPlugin` adds two — so its length is not a signal.
+
+The hook behavior itself (draft gate, renames, failure handling) is covered once
+in `packages/payload-plugin-shared-components/test/revalidate.spec.ts`, which
+mocks `next/cache.js`. Don't duplicate it per plugin.
+
 ### README.md
 
 Same shape as `packages/payload-plugin-menus/README.md`:
@@ -118,7 +230,9 @@ The Requirements section goes right before Usage and lists every
 installed in the project before using the plugin, followed by a
 `pnpm add …` command installing them all — see
 `packages/payload-plugin-menus/README.md` for the exact wording. Keep it
-in sync with `peerDependencies` in `package.json`.
+in sync with `peerDependencies` in `package.json`. Optional peers go in a
+sentence after the `pnpm add`, not in the list — `next` is only needed for
+cache revalidation and any Payload app already has it.
 
 ## Step 2 — dev suite: `dev/configs/<name>/`
 
@@ -270,8 +384,28 @@ automatically and already gitignored (`/dev/configs/*/*.db`).
   built-in ones, and always eyeball `pnpm dev:<name>` after touching an
   admin slot — tests and typecheck don't catch rendering issues.
 - `@composius/payload-plugin-shared-components` is private and must never
-  become a `dependency`/`peerDependency` of a published plugin — articles
-  and pages bundle it into their own `dist/` via tsup.
+  become a `dependency`/`peerDependency` of a published plugin — articles,
+  pages and menus bundle it into their own `dist/` via tsup. It stays a
+  `devDependency` plus a `tsconfig.json` `paths` mapping; that pairing is what
+  makes tsup inline the JS and the types instead of emitting an import of a
+  package nobody can install.
+- Bare `next/<subpath>` specifiers fail to typecheck under this repo's
+  `moduleResolution: nodenext` — Next ships no `exports` map, so TypeScript
+  resolves `next/cache` to a non-existent `next/cache/index.d.ts`. Add the
+  extension: `import('next/cache.js')` resolves to the same file for Node and
+  every bundler, and to its declarations for TypeScript. Leave a comment saying
+  why.
+- Revalidation must never fail a write. `afterChange` runs inside the write's
+  transaction, so a throw would roll the document back; `revalidateTag` throws
+  whenever it runs outside a Next.js request, which is routine (seeds,
+  migrations, `pnpm test:int`). The shared helper already swallows this and
+  logs at `debug` — don't add a `try`/`throw` of your own around it, and don't
+  raise the log level: a bulk import would flood the output.
+- `updateTag` is not usable from these hooks even though it would give
+  read-your-writes: it throws outside a Server Action, and Payload hooks run in
+  a route handler. That is why the default profile is `{ expire: 0 }` rather
+  than the `'max'` Next.js recommends — otherwise the editor who just hit
+  Publish is served the stale page.
 - Publishing itself is manual (`./release.sh <name> patch`) and is NOT part
   of scaffolding — first-time npm publish needs the Trusted Publisher setup
   described in the root README ("Adding a plugin", steps 7–9).

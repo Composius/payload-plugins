@@ -65,6 +65,87 @@ Categories are nestable: pick a `parent` and `@payloadcms/plugin-nested-docs` ke
 `breadcrumbs` (doc, label, url) up to date on save, including on all descendants.
 The parent picker excludes the category itself and its descendants.
 
+## Cache revalidation
+
+Publishing, unpublishing or deleting a document invalidates the Next.js cache
+tags of all three collections, so a front end built on `cacheComponents` picks
+the change up. Tag a `'use cache'` function with the matching tag and the admin
+panel does the rest:
+
+```ts
+// app/articles/[slug]/page.tsx
+import { cacheTag } from 'next/cache'
+import { articleTag, ARTICLES_TAG } from '@composius/payload-plugin-articles/tags'
+import { getPayload } from 'payload'
+import config from '@payload-config'
+
+const getArticle = async (slug: string) => {
+  'use cache'
+  cacheTag(articleTag(slug))
+
+  const payload = await getPayload({ config })
+  const { docs } = await payload.find({
+    collection: 'articles',
+    where: { slug: { equals: slug } },
+  })
+  return docs[0]
+}
+```
+
+The tags, all exported from `@composius/payload-plugin-articles/tags` — an entry
+point that imports neither `payload` nor `next`:
+
+| Tag                    | Covers                                                  |
+| ---------------------- | ------------------------------------------------------- |
+| `ARTICLES_TAG`         | every article — listings, archives, feeds, sitemaps      |
+| `articleTag(slug)`     | one article, the way a `/articles/[slug]` route does     |
+| `articleIdTag(id)`     | one article, by id                                       |
+| `CATEGORIES_TAG`       | every category                                           |
+| `categoryTag(slug)`    | one category, by slug                                    |
+| `categoryIdTag(id)`    | one category, by id                                      |
+| `AUTHORS_TAG`          | every author (only with `authors: true`)                 |
+| `authorIdTag(id)`      | one author, by id — authors have no slug                 |
+
+A save invalidates the collection tag and both tags of the document, plus the
+former slug when a document is renamed — a page that changes address leaves a
+cache entry behind at the old one.
+
+Articles carry the name of their category and author, so saving one of those
+invalidates `ARTICLES_TAG` too. The reverse is not true, and does not need to
+be: a page listing the articles of a category claims both tags itself.
+
+```ts
+const getCategoryArticles = async (slug: string) => {
+  'use cache'
+  // The category's own data, and the articles inside it.
+  cacheTag(categoryTag(slug), ARTICLES_TAG)
+  // ...
+}
+```
+
+Autosaved drafts are skipped: nothing about them is public. The hooks run when an
+article is published, when a published article is saved again, and when one is
+unpublished or deleted. Categories and authors have no drafts, so every save
+counts.
+
+By default the tags expire at once, so the first visitor after a save is served
+a fresh page. Pass `revalidate: { profile: 'max' }` for stale-while-revalidate
+instead: nobody waits, but the visitor right after a save — usually the editor
+checking their own work — sees the previous version.
+
+Revalidation is a no-op wherever Next.js is not running (a migration, a seeding
+script, a test run), and never fails a write. To skip it for one operation — a
+bulk import, say — set `context.disableRevalidate`:
+
+```ts
+await payload.update({
+  collection: 'articles',
+  id,
+  data,
+  context: { disableRevalidate: true },
+})
+```
+
 ## Requirements
 
 The following dependencies are required to be installed in your project before using this plugin:
@@ -79,6 +160,9 @@ The following dependencies are required to be installed in your project before u
 ```bash
 pnpm add @payloadcms/plugin-nested-docs @payloadcms/plugin-seo @payloadcms/richtext-lexical @payloadcms/ui payload react
 ```
+
+`next` (`^16.0.0`) is an optional peer dependency: it is only needed for cache
+revalidation, and any Payload app already running inside Next.js has it.
 
 ## Usage
 
@@ -127,6 +211,21 @@ ComposiusPayloadPluginArticles({
   // SEO meta group + generate endpoints. `true` (default) uses built-in
   // generate functions; pass an object to override any of them; `false` disables.
   seo: { generateTitle, generateDescription, generateImage, generateURL },
+
+  // Next.js cache invalidation on save and delete, for all three collections
+  // (default: enabled). Pass false to drop the hooks entirely.
+  revalidate: {
+    // revalidateTag's second argument: a cacheLife profile name, or an
+    // inline { expire } in seconds (default: { expire: 0 }).
+    profile: { expire: 0 },
+
+    // Extra tags to invalidate alongside the built-in ones. `collection` tells
+    // the three collections apart.
+    tags: ({ collection, doc, operation, previousDoc }) => ['sitemap'],
+
+    // Called instead of the default debug log when a revalidation fails.
+    onError: (error, event) => {},
+  },
 
   // Keeps the collection schema but disables runtime behavior (default: false).
   disabled: false,

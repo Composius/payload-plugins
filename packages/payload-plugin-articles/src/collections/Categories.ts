@@ -1,7 +1,8 @@
 import type { Access, CollectionConfig } from 'payload'
 import { slugField } from 'payload'
 import { createBreadcrumbsField, createParentField } from '@payloadcms/plugin-nested-docs'
-import { slugify } from '@composius/payload-plugin-shared-components'
+import type { RevalidateOptions } from '@composius/payload-plugin-shared-components'
+import { revalidateHooks, slugify } from '@composius/payload-plugin-shared-components'
 import { label } from '../translations/index.js'
 
 export type CategoriesAccess = {
@@ -13,6 +14,8 @@ export type CategoriesAccess = {
 
 export type CategoriesOptions = {
   access: Required<CategoriesAccess>
+  /** Next.js cache invalidation on save and delete. `false` turns it off. */
+  revalidate: false | RevalidateOptions
 }
 
 /**
@@ -20,7 +23,7 @@ export type CategoriesOptions = {
  * `nestedDocsPlugin`) so the schema stays consistent when the plugin is disabled.
  * `nestedDocsPlugin` detects them and only adds its hooks and parent filterOptions.
  */
-export const Categories = ({ access }: CategoriesOptions): CollectionConfig => ({
+export const Categories = ({ access, revalidate }: CategoriesOptions): CollectionConfig => ({
   slug: 'categories',
   labels: {
     singular: label((t) => t.categories.singular),
@@ -35,6 +38,14 @@ export const Categories = ({ access }: CategoriesOptions): CollectionConfig => (
     create: access.create,
     update: access.update,
     delete: access.delete,
+  },
+  hooks: {
+    // Articles carry their category's name, so renaming one changes every
+    // article page and listing that shows it.
+    ...revalidateHooks(
+      { collection: 'categories', fields: ['slug'], related: ['articles'] },
+      revalidate,
+    ),
   },
   fields: [
     {

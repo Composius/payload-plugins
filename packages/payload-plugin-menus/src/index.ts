@@ -1,4 +1,9 @@
 import type { CollectionAdminOptions, CollectionSlug, Config } from 'payload'
+import type {
+  RevalidateEvent,
+  RevalidateOptions,
+  RevalidateProfile,
+} from '@composius/payload-plugin-shared-components'
 
 import type { MenusAccess } from './collections/Menus.js'
 import { Menus } from './collections/Menus.js'
@@ -26,6 +31,17 @@ export type ComposiusPayloadPluginMenusConfig = {
    * schema and the REST/GraphQL API untouched.
    */
   hidden?: CollectionAdminOptions['hidden']
+  /**
+   * Invalidates the Next.js cache tags of the menus collection whenever a menu
+   * is saved or deleted, so a `'use cache'` front end picks the change up. The
+   * tags to claim with `cacheTag` are exported from
+   * `@composius/payload-plugin-menus/tags`.
+   *
+   * Enabled by default, and a no-op wherever Next.js is absent (a migration, a
+   * seeding script, a test run). Pass an object to tune the cache profile or
+   * add tags, or `false` to remove the hooks entirely.
+   */
+  revalidate?: false | RevalidateOptions
 }
 
 export const ComposiusPayloadPluginMenus =
@@ -42,11 +58,20 @@ export const ComposiusPayloadPluginMenus =
       update: pluginOptions.access?.update ?? authenticated,
     }
 
+    // A disabled plugin keeps its collection for schema consistency, but must
+    // not act on it: revalidating from a plugin that is meant to be off would
+    // be a side effect nobody asked for.
+    const revalidate =
+      pluginOptions.disabled || pluginOptions.revalidate === false
+        ? false
+        : (pluginOptions.revalidate ?? {})
+
     config.collections.push(
       Menus({
         access,
         collections: pluginOptions.collections ?? [],
         hidden: pluginOptions.hidden ?? false,
+        revalidate,
       }),
     )
 
@@ -59,3 +84,6 @@ export const ComposiusPayloadPluginMenus =
 
     return config
   }
+
+export type { RevalidateEvent, RevalidateOptions, RevalidateProfile }
+export { menuIdTag, menuTag, MENUS_TAG } from './tags.js'

@@ -5,7 +5,7 @@ import { describe, expect, test } from 'vitest'
 import { anyone, authenticated } from '../src/defaults.js'
 import type { ComposiusPayloadPluginMenusConfig } from '../src/index.js'
 
-import { ComposiusPayloadPluginMenus } from '../src/index.js'
+import { ComposiusPayloadPluginMenus, menuIdTag, menuTag, MENUS_TAG } from '../src/index.js'
 
 const accessArgs = (user: unknown) => ({ req: { user } }) as Parameters<Access>[0]
 
@@ -119,5 +119,43 @@ describe('ComposiusPayloadPluginMenus', () => {
   test('disabled still registers the collection for schema consistency', () => {
     const config = ComposiusPayloadPluginMenus({ disabled: true })(baseConfig())
     findMenus(config)
+  })
+})
+
+describe('cache tags', () => {
+  test('name the collection and the field addressing a document', () => {
+    expect(MENUS_TAG).toBe('menus')
+    expect(menuTag('Main')).toBe('menus:name:Main')
+    expect(menuIdTag(2)).toBe('menus:id:2')
+  })
+})
+
+describe('revalidation', () => {
+  test('menus revalidate on change and on delete by default', () => {
+    const menus = findMenus(ComposiusPayloadPluginMenus()(baseConfig()))
+
+    expect(menus.hooks?.afterChange).toHaveLength(1)
+    expect(menus.hooks?.afterDelete).toHaveLength(1)
+  })
+
+  test('the collection keeps its own hooks alongside the revalidation ones', () => {
+    const menus = findMenus(ComposiusPayloadPluginMenus()(baseConfig()))
+
+    expect(menus.hooks?.afterRead).toHaveLength(1)
+    expect(menus.hooks?.beforeChange).toHaveLength(1)
+  })
+
+  test('revalidate: false leaves the collection without revalidation hooks', () => {
+    const menus = findMenus(ComposiusPayloadPluginMenus({ revalidate: false })(baseConfig()))
+
+    expect(menus.hooks?.afterChange).toBeUndefined()
+    expect(menus.hooks?.afterDelete).toBeUndefined()
+    expect(menus.hooks?.afterRead).toHaveLength(1)
+  })
+
+  test('a disabled plugin keeps its collection but stops revalidating', () => {
+    const menus = findMenus(ComposiusPayloadPluginMenus({ disabled: true })(baseConfig()))
+
+    expect(menus.hooks?.afterChange).toBeUndefined()
   })
 })

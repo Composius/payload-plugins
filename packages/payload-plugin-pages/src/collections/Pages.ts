@@ -1,9 +1,13 @@
 import type { Access, CollectionConfig } from 'payload'
 import { slugField } from 'payload'
 import { lexicalEditor } from '@payloadcms/richtext-lexical'
-import type { SeoGenerators } from '@composius/payload-plugin-shared-components'
+import type {
+  RevalidateOptions,
+  SeoGenerators,
+} from '@composius/payload-plugin-shared-components'
 import {
   contentEditorFeatures,
+  revalidateHooks,
   seoField,
   slugify,
 } from '@composius/payload-plugin-shared-components'
@@ -21,10 +25,12 @@ export type PagesSeoGenerators = SeoGenerators
 export type PagesOptions = {
   access: Required<PagesAccess>
   pageUrl: (slug?: string | null) => string
+  /** Next.js cache invalidation on save and delete. `false` turns it off. */
+  revalidate: false | RevalidateOptions
   seo: false | PagesSeoGenerators
 }
 
-export const Pages = ({ access, pageUrl, seo }: PagesOptions): CollectionConfig => ({
+export const Pages = ({ access, pageUrl, revalidate, seo }: PagesOptions): CollectionConfig => ({
   slug: 'pages',
   labels: {
     singular: label((t) => t.pages.singular),
@@ -49,6 +55,9 @@ export const Pages = ({ access, pageUrl, seo }: PagesOptions): CollectionConfig 
     drafts: {
       autosave: true,
     },
+  },
+  hooks: {
+    ...revalidateHooks({ collection: 'pages', drafts: true, fields: ['slug'] }, revalidate),
   },
   fields: [
     {

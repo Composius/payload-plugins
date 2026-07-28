@@ -6,6 +6,11 @@ import type {
   GenerateURL,
 } from '@payloadcms/plugin-seo/types'
 import { seoPlugin } from '@payloadcms/plugin-seo'
+import type {
+  RevalidateEvent,
+  RevalidateOptions,
+  RevalidateProfile,
+} from '@composius/payload-plugin-shared-components'
 import type { PagesAccess } from './collections/Pages.js'
 import { Pages } from './collections/Pages.js'
 import {
@@ -31,6 +36,17 @@ export type ComposiusPayloadPluginPagesConfig = {
    * Defaults to `${NEXT_PUBLIC_SERVER_URL || 'http://localhost:3000'}/${slug}`.
    */
   pageUrl?: (slug?: string | null) => string
+  /**
+   * Invalidates the Next.js cache tags of the pages collection whenever a page
+   * is saved or deleted, so a `'use cache'` front end picks the change up. The
+   * tags to claim with `cacheTag` are exported from
+   * `@composius/payload-plugin-pages/tags`.
+   *
+   * Enabled by default, and a no-op wherever Next.js is absent (a migration, a
+   * seeding script, a test run). Pass an object to tune the cache profile or
+   * add tags, or `false` to remove the hooks entirely.
+   */
+  revalidate?: false | RevalidateOptions
   /**
    * Adds an SEO `meta` group (title, description, image, preview) to the
    * pages collection, built from `@payloadcms/plugin-seo` fields.
@@ -75,10 +91,19 @@ export const ComposiusPayloadPluginPages =
     const generateTitle: GenerateTitle = seoOverrides.generateTitle ?? defaultGenerateTitle
     const generateURL: GenerateURL = seoOverrides.generateURL ?? defaultGenerateURL(pageUrl)
 
+    // A disabled plugin keeps its collection for schema consistency, but must
+    // not act on it: revalidating from a plugin that is meant to be off would
+    // be a side effect nobody asked for.
+    const revalidate =
+      pluginOptions.disabled || pluginOptions.revalidate === false
+        ? false
+        : (pluginOptions.revalidate ?? {})
+
     config.collections.push(
       Pages({
         access,
         pageUrl,
+        revalidate,
         seo: seoEnabled
           ? {
               hasGenerateDescription: true,
@@ -110,3 +135,6 @@ export const ComposiusPayloadPluginPages =
 
     return config
   }
+
+export type { RevalidateEvent, RevalidateOptions, RevalidateProfile }
+export { pageIdTag, pageTag, PAGES_TAG } from './tags.js'

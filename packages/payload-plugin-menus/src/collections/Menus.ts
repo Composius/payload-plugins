@@ -7,7 +7,9 @@ import type {
   Field,
   PayloadRequest,
 } from 'payload'
+import type { RevalidateOptions } from '@composius/payload-plugin-shared-components'
 
+import { revalidateHooks } from '@composius/payload-plugin-shared-components'
 import { label } from '../translations/index.js'
 
 export type MenusAccess = {
@@ -25,6 +27,8 @@ export type MenusOptions = {
    * registered, so the database schema and the API are unchanged.
    */
   hidden: CollectionAdminOptions['hidden']
+  /** Next.js cache invalidation on save and delete. `false` turns it off. */
+  revalidate: false | RevalidateOptions
 }
 
 const newTab: Field = {
@@ -113,7 +117,12 @@ const resolveDocTitle = async (
   return String((relatedDoc as unknown as Record<string, unknown>)?.[useAsTitle] ?? '')
 }
 
-export const Menus = ({ access, collections, hidden }: MenusOptions): CollectionConfig => ({
+export const Menus = ({
+  access,
+  collections,
+  hidden,
+  revalidate,
+}: MenusOptions): CollectionConfig => ({
   slug: 'menus',
   labels: {
     singular: label((t) => t.menus.singular),
@@ -131,6 +140,7 @@ export const Menus = ({ access, collections, hidden }: MenusOptions): Collection
     delete: access.delete,
   },
   hooks: {
+    ...revalidateHooks({ collection: 'menus', fields: ['name'] }, revalidate),
     afterRead: [
       async ({ doc, req }) => {
         if (!Array.isArray(doc?.links)) {

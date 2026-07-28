@@ -1,9 +1,13 @@
-import type { Access, CollectionConfig, FieldAccess } from 'payload'
+import type { Access, CollectionConfig, CollectionSlug, FieldAccess } from 'payload'
 import { slugField } from 'payload'
 import { lexicalEditor } from '@payloadcms/richtext-lexical'
-import type { SeoGenerators } from '@composius/payload-plugin-shared-components'
+import type {
+  RevalidateOptions,
+  SeoGenerators,
+} from '@composius/payload-plugin-shared-components'
 import {
   contentEditorFeatures,
+  revalidateHooks,
   seoField,
   slugify,
 } from '@composius/payload-plugin-shared-components'
@@ -25,9 +29,16 @@ export type ArticlesOptions = {
   authors: boolean
   /** Field-level access controlling who may change the `editor` field. */
   editorUpdateAccess: FieldAccess
+  /** Next.js cache invalidation on save and delete. `false` turns it off. */
+  revalidate: false | RevalidateOptions
   seo: false | ArticlesSeoGenerators
-  /** Slug of the users collection the `editor` field relates to. */
-  usersSlug: string
+  /**
+   * Slug of the users collection the `editor` field relates to. Typed as
+   * `CollectionSlug` rather than `string`: once a host app generates its types,
+   * that widens to a union of its actual slugs, and a plain `string` is no
+   * longer assignable to the `relationTo` of a relationship field.
+   */
+  usersSlug: CollectionSlug
 }
 
 export const Articles = ({
@@ -35,6 +46,7 @@ export const Articles = ({
   articleUrl,
   authors,
   editorUpdateAccess,
+  revalidate,
   seo,
   usersSlug,
 }: ArticlesOptions): CollectionConfig => ({
@@ -62,6 +74,9 @@ export const Articles = ({
     drafts: {
       autosave: true,
     },
+  },
+  hooks: {
+    ...revalidateHooks({ collection: 'articles', drafts: true, fields: ['slug'] }, revalidate),
   },
   fields: [
     {

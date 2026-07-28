@@ -3,7 +3,7 @@ import type { Access, CollectionConfig, Config, Field } from 'payload'
 import { afterEach, describe, expect, test, vi } from 'vitest'
 
 import { authenticatedOrPublished, defaultPageUrl } from '../src/defaults.js'
-import { ComposiusPayloadPluginPages } from '../src/index.js'
+import { ComposiusPayloadPluginPages, pageIdTag, pageTag, PAGES_TAG } from '../src/index.js'
 
 const baseConfig = (): Config => ({ collections: [] }) as unknown as Config
 
@@ -82,5 +82,35 @@ describe('ComposiusPayloadPluginPages', () => {
 
     const preview = pages.admin?.preview as (data: Record<string, unknown>) => string
     expect(preview({ slug: 'my-page' })).toBe('https://custom.dev/my-page')
+  })
+})
+
+describe('cache tags', () => {
+  test('name the collection and the field addressing a document', () => {
+    expect(PAGES_TAG).toBe('pages')
+    expect(pageTag('about')).toBe('pages:slug:about')
+    expect(pageIdTag(4)).toBe('pages:id:4')
+  })
+})
+
+describe('revalidation', () => {
+  test('pages revalidate on change and on delete by default', () => {
+    const pages = findPages(ComposiusPayloadPluginPages()(baseConfig()))
+
+    expect(pages.hooks?.afterChange).toHaveLength(1)
+    expect(pages.hooks?.afterDelete).toHaveLength(1)
+  })
+
+  test('revalidate: false leaves the collection without hooks', () => {
+    const pages = findPages(ComposiusPayloadPluginPages({ revalidate: false })(baseConfig()))
+
+    expect(pages.hooks?.afterChange).toBeUndefined()
+    expect(pages.hooks?.afterDelete).toBeUndefined()
+  })
+
+  test('a disabled plugin keeps its collection but stops revalidating', () => {
+    const pages = findPages(ComposiusPayloadPluginPages({ disabled: true })(baseConfig()))
+
+    expect(pages.hooks?.afterChange).toBeUndefined()
   })
 })

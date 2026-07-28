@@ -174,4 +174,29 @@ describe('Plugin integration tests', () => {
     const updated = await payload.findByID({ collection: 'menus', id: menu.id })
     expect(updated.links?.[0]?.title).toBe('echo-renamed@example.com')
   })
+
+  // The revalidation hooks run inside the write's transaction, and there is no
+  // Next.js request scope here to revalidate against. Every write below must
+  // still go through: a cache that cannot be reached is not a failed write.
+  test('saving and deleting survive without a Next.js runtime', async () => {
+    const menu = await payload.create({
+      collection: 'menus',
+      data: { name: 'Cached menu' },
+    })
+
+    const renamed = await payload.update({
+      collection: 'menus',
+      id: menu.id,
+      data: { name: 'Cached menu renamed' },
+    })
+    expect(renamed.name).toBe('Cached menu renamed')
+
+    await payload.delete({ collection: 'menus', id: menu.id })
+
+    const remaining = await payload.find({
+      collection: 'menus',
+      where: { name: { equals: 'Cached menu renamed' } },
+    })
+    expect(remaining.totalDocs).toBe(0)
+  })
 })

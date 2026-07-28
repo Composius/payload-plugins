@@ -1,4 +1,6 @@
 import type { Access, CollectionConfig } from 'payload'
+import type { RevalidateOptions } from '@composius/payload-plugin-shared-components'
+import { revalidateHooks } from '@composius/payload-plugin-shared-components'
 import { label } from '../translations/index.js'
 
 export type AuthorsAccess = {
@@ -10,9 +12,11 @@ export type AuthorsAccess = {
 
 export type AuthorsOptions = {
   access: Required<AuthorsAccess>
+  /** Next.js cache invalidation on save and delete. `false` turns it off. */
+  revalidate: false | RevalidateOptions
 }
 
-export const Authors = ({ access }: AuthorsOptions): CollectionConfig => ({
+export const Authors = ({ access, revalidate }: AuthorsOptions): CollectionConfig => ({
   slug: 'authors',
   labels: {
     singular: label((t) => t.authors.singular),
@@ -27,6 +31,11 @@ export const Authors = ({ access }: AuthorsOptions): CollectionConfig => ({
     create: access.create,
     update: access.update,
     delete: access.delete,
+  },
+  hooks: {
+    // Articles carry their author's name and picture, so a change here changes
+    // every article page and byline that shows them.
+    ...revalidateHooks({ collection: 'authors', related: ['articles'] }, revalidate),
   },
   fields: [
     {

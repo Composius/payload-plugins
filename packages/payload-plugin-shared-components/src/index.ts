@@ -6,6 +6,15 @@ export {
   OrderedListButtonFeature,
   UnorderedListButtonFeature,
 } from './features/blockButtons/server.js'
+export type {
+  RevalidateCollection,
+  RevalidateEvent,
+  RevalidateOptions,
+} from './revalidate/hooks.js'
+export { revalidateAfterChange, revalidateAfterDelete, revalidateHooks } from './revalidate/hooks.js'
+export type { RevalidateProfile, RevalidateTagsResult } from './revalidate/revalidateTags.js'
+export { resetRevalidateTagsCache, revalidateTags } from './revalidate/revalidateTags.js'
+export { collectionTag, fieldTag, idTag, TAG_MAX_LENGTH } from './revalidate/tags.js'
 export {
   defaultGenerateDescription,
   defaultGenerateImage,

@@ -162,6 +162,9 @@ importers:
       '@types/react':
         specifier: 19.2.14
         version: 19.2.14
+      next:
+        specifier: 16.2.6
+        version: 16.2.6(@babel/core@7.29.7)(@playwright/test@1.58.2)(react-dom@19.2.6(react@19.2.6))(react@19.2.6)(sass@1.77.4)
       payload:
         specifier: 3.84.1
         version: 3.84.1(graphql@16.14.2)(typescript@5.7.3)
@@ -329,6 +332,12 @@ importers:
 
   packages/payload-plugin-menus:
     devDependencies:
+      '@composius/payload-plugin-shared-components':
+        specifier: workspace:*
+        version: link:../payload-plugin-shared-components
+      next:
+        specifier: 16.2.6
+        version: 16.2.6(@babel/core@7.29.7)(@playwright/test@1.58.2)(react-dom@19.2.6(react@19.2.6))(react@19.2.6)(sass@1.77.4)
       payload:
         specifier: 3.84.1
         version: 3.84.1(graphql@16.14.2)(typescript@5.7.3)
@@ -356,6 +365,9 @@ importers:
       '@types/react':
         specifier: 19.2.14
         version: 19.2.14
+      next:
+        specifier: 16.2.6
+        version: 16.2.6(@babel/core@7.29.7)(@playwright/test@1.58.2)(react-dom@19.2.6(react@19.2.6))(react@19.2.6)(sass@1.77.4)
       payload:
         specifier: 3.84.1
         version: 3.84.1(graphql@16.14.2)(typescript@5.7.3)
@@ -398,6 +410,9 @@ importers:
       '@types/react':
         specifier: 19.2.14
         version: 19.2.14
+      next:
+        specifier: 16.2.6
+        version: 16.2.6(@babel/core@7.29.7)(@playwright/test@1.58.2)(react-dom@19.2.6(react@19.2.6))(react@19.2.6)(sass@1.77.4)
       payload:
         specifier: 3.84.1
         version: 3.84.1(graphql@16.14.2)(typescript@5.7.3)

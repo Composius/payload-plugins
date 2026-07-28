@@ -5,6 +5,10 @@ import { defineConfig } from 'tsup'
  * into dist/ (JS via the devDependency, types via the tsconfig `paths`
  * mapping), so the published package has no dependency on it. Peer
  * dependencies (payload, @payloadcms/*) stay external.
+ *
+ * `next` is an optional peer, imported dynamically by the revalidation hooks:
+ * listing it keeps esbuild from following that import and bundling the
+ * framework into dist/.
  */
 const common = {
   format: 'esm' as const,
@@ -13,6 +17,7 @@ const common = {
   outDir: 'dist',
   splitting: false,
   clean: false,
+  external: [/^next(\/|$)/],
 }
 
 export default defineConfig([
@@ -25,5 +30,9 @@ export default defineConfig([
     entry: { 'exports/client': 'src/exports/client.ts' },
     // esbuild drops the "use client" directive when bundling; re-add it.
     banner: { js: "'use client'" },
+  },
+  {
+    ...common,
+    entry: { 'exports/tags': 'src/exports/tags.ts' },
   },
 ])

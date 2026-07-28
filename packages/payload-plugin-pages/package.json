@@ -22,6 +22,11 @@
       "import": "./src/exports/client.ts",
       "types": "./src/exports/client.ts",
       "default": "./src/exports/client.ts"
+    },
+    "./tags": {
+      "import": "./src/exports/tags.ts",
+      "types": "./src/exports/tags.ts",
+      "default": "./src/exports/tags.ts"
     }
   },
   "main": "./src/index.ts",
@@ -38,6 +43,7 @@
     "@payloadcms/plugin-seo": "3.84.1",
     "@payloadcms/richtext-lexical": "3.84.1",
     "@types/react": "19.2.14",
+    "next": "16.2.6",
     "payload": "3.84.1",
     "rimraf": "3.0.2",
     "tsup": "8.5.0",
@@ -46,7 +52,13 @@
   "peerDependencies": {
     "@payloadcms/plugin-seo": "^3.84.1",
     "@payloadcms/richtext-lexical": "^3.84.1",
+    "next": "^16.0.0",
     "payload": "^3.84.1"
+  },
+  "peerDependenciesMeta": {
+    "next": {
+      "optional": true
+    }
   },
   "engines": {
     "node": "^18.20.2 || >=20.9.0",
@@ -65,6 +77,11 @@
         "import": "./dist/exports/client.js",
         "types": "./dist/exports/client.d.ts",
         "default": "./dist/exports/client.js"
+      },
+      "./tags": {
+        "import": "./dist/exports/tags.js",
+        "types": "./dist/exports/tags.d.ts",
+        "default": "./dist/exports/tags.js"
       }
     },
     "main": "./dist/index.js",

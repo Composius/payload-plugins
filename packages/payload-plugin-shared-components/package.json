@@ -23,6 +23,11 @@
       "import": "./src/exports/client.ts",
       "types": "./src/exports/client.ts",
       "default": "./src/exports/client.ts"
+    },
+    "./tags": {
+      "import": "./src/revalidate/tags.ts",
+      "types": "./src/revalidate/tags.ts",
+      "default": "./src/revalidate/tags.ts"
     }
   },
   "main": "./src/index.ts",
@@ -31,6 +36,7 @@
     "@payloadcms/plugin-seo": "3.84.1",
     "@payloadcms/richtext-lexical": "3.84.1",
     "@types/react": "19.2.14",
+    "next": "16.2.6",
     "payload": "3.84.1",
     "slugify": "^1.6.9",
     "typescript": "5.7.3"

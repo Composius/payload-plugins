@@ -14,7 +14,17 @@ import {
   defaultGenerateURL,
   SEO_DESCRIPTION_MAX_LENGTH,
 } from '../src/defaults.js'
-import { ComposiusPayloadPluginArticles } from '../src/index.js'
+import {
+  articleIdTag,
+  articleTag,
+  ARTICLES_TAG,
+  authorIdTag,
+  AUTHORS_TAG,
+  categoryIdTag,
+  categoryTag,
+  CATEGORIES_TAG,
+  ComposiusPayloadPluginArticles,
+} from '../src/index.js'
 
 const accessArgs = (user: unknown) => ({ req: { user } }) as Parameters<Access>[0]
 
@@ -352,5 +362,65 @@ describe('ComposiusPayloadPluginArticles', () => {
       undefined,
     )
     expect(hook({ operation: 'create', value: undefined, req: {} })).toBe(undefined)
+  })
+})
+
+describe('cache tags', () => {
+  test('name the collection and the field addressing a document', () => {
+    expect(ARTICLES_TAG).toBe('articles')
+    expect(articleTag('hello-world')).toBe('articles:slug:hello-world')
+    expect(articleIdTag(7)).toBe('articles:id:7')
+
+    expect(CATEGORIES_TAG).toBe('categories')
+    expect(categoryTag('news')).toBe('categories:slug:news')
+    expect(categoryIdTag(3)).toBe('categories:id:3')
+
+    expect(AUTHORS_TAG).toBe('authors')
+    expect(authorIdTag(5)).toBe('authors:id:5')
+  })
+})
+
+describe('revalidation', () => {
+  const slugs = ['articles', 'authors', 'categories']
+
+  // `afterChange` is shared with nestedDocsPlugin on categories, so `afterDelete`
+  // is the hook that only revalidation ever adds.
+  const revalidates = (config: Config, slug: string): boolean =>
+    (findCollection(config, slug).hooks?.afterDelete?.length ?? 0) > 0
+
+  test('every collection revalidates on change and on delete by default', () => {
+    const config = ComposiusPayloadPluginArticles({ authors: true })(baseConfig())
+
+    for (const slug of slugs) {
+      expect(revalidates(config, slug)).toBe(true)
+      expect(findCollection(config, slug).hooks?.afterChange).toBeDefined()
+    }
+  })
+
+  test('revalidate: false leaves the collections without hooks', () => {
+    const config = ComposiusPayloadPluginArticles({ authors: true, revalidate: false })(
+      baseConfig(),
+    )
+
+    for (const slug of slugs) {
+      expect(revalidates(config, slug)).toBe(false)
+    }
+    expect(findArticles(config).hooks?.afterChange).toBeUndefined()
+  })
+
+  test('a disabled plugin keeps its collections but stops revalidating', () => {
+    const config = ComposiusPayloadPluginArticles({ disabled: true })(baseConfig())
+
+    findArticles(config)
+    expect(revalidates(config, 'articles')).toBe(false)
+    expect(revalidates(config, 'categories')).toBe(false)
+  })
+
+  test('the categories breadcrumbs hooks survive alongside revalidation', () => {
+    const categories = findCollection(ComposiusPayloadPluginArticles()(baseConfig()), 'categories')
+
+    // nestedDocsPlugin's two afterChange hooks, plus the revalidation one.
+    expect(categories.hooks?.afterChange).toHaveLength(3)
+    expect(categories.hooks?.beforeChange).toHaveLength(1)
   })
 })

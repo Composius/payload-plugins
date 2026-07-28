@@ -16,12 +16,27 @@ pnpm monorepo of [Payload CMS](https://payloadcms.com) plugins.
 | [@composius/payload-plugin-pages](packages/payload-plugin-pages)       | 1.0.1 | Pages collection with drafts, live preview, and SEO |
 | [@composius/payload-plugin-redirections](packages/payload-plugin-redirections) | 1.0.1 | Redirections collection with exact, prefix and regex URL matching, plus a Next.js proxy helper |
 | [@composius/payload-plugin-umami](packages/payload-plugin-umami)       | 1.0.0 | Umami widget |
-| [@composius/payload-plugin-shared-components](packages/payload-plugin-shared-components) | 1.0.0 (private) | Private — editor features, SEO field, and access defaults inlined into the plugins at build time |
+| [@composius/payload-plugin-shared-components](packages/payload-plugin-shared-components) | 1.0.0 (private) | Private — editor features, SEO field, access defaults, and Next.js cache revalidation hooks inlined into the plugins at build time |
 
 ## Layout
 
-- `packages/*` — the publishable plugins. Each one exports its source (`src/index.ts`) during development and swaps to `dist/` on publish via `publishConfig`. `payload-plugin-shared-components` is private: articles and pages bundle it into their own `dist/` with tsup, so it is never published.
+- `packages/*` — the publishable plugins. Each one exports its source (`src/index.ts`) during development and swaps to `dist/` on publish via `publishConfig`. `payload-plugin-shared-components` is private: articles, pages and menus bundle it into their own `dist/` with tsup, so it is never published.
+
 - `dev/` — a single shared Next + Payload dev app. `dev/payload.config.ts` picks a per-plugin config from `dev/configs/<suite>/config.ts` based on the required `DEV_SUITE` env var.
+
+## Next.js cache revalidation
+
+The articles, pages and menus plugins keep a Next.js `cacheComponents` front end
+in step with the CMS: saving or deleting a document invalidates its cache tags
+through `revalidateTag`. Each plugin publishes the tags to claim with `cacheTag`
+from a dependency-free `/tags` entry point — see the
+[articles](packages/payload-plugin-articles#cache-revalidation),
+[pages](packages/payload-plugin-pages#cache-revalidation) and
+[menus](packages/payload-plugin-menus#cache-revalidation) READMEs.
+
+The hooks live in `packages/payload-plugin-shared-components/src/revalidate/`.
+`next` is an optional peer dependency loaded through a dynamic import, so
+revalidation is a no-op — never an error — wherever Next.js is not running.
 
 ## Development
 
