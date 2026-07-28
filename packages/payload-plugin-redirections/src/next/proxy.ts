@@ -75,7 +75,14 @@ export const createRedirectionsProxy =
 
     const url = request.nextUrl ?? new URL(request.url)
 
-    const rules = await getRedirectionRules(options, url.origin, event?.waitUntil)
+    // Bound, because the cache calls this detached. A real `FetchEvent.waitUntil`
+    // reads private state off `this` and throws
+    // `Cannot read properties of undefined (reading 'Symbol(waitUntil)')` without
+    // its receiver — and only ever on a stale-while-revalidate refresh, which is
+    // why it surfaces intermittently rather than on the first request.
+    const waitUntil = event?.waitUntil?.bind(event)
+
+    const rules = await getRedirectionRules(options, url.origin, waitUntil)
     if (rules.length === 0) {
       return undefined
     }

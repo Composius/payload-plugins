@@ -289,6 +289,27 @@ describe('createRedirectionsProxy', () => {
 
     expect(waitUntil).toHaveBeenCalledTimes(1)
   })
+
+  test('waitUntil keeps its receiver, as a real FetchEvent method needs', async () => {
+    vi.useFakeTimers()
+
+    // Stands in for `FetchEvent.prototype.waitUntil`, which reads private state
+    // off `this` and throws when called detached.
+    const pending: Promise<unknown>[] = []
+    const event = {
+      waitUntil(this: { pending?: Promise<unknown>[] }, promise: Promise<unknown>) {
+        this.pending!.push(promise)
+      },
+      pending,
+    }
+
+    const proxy = createRedirectionsProxy({ ttl: 60 })
+    await proxy(request('https://example.com/old'), event)
+    vi.advanceTimersByTime(61_000)
+
+    await expect(proxy(request('https://example.com/old'), event)).resolves.toBeDefined()
+    expect(pending).toHaveLength(1)
+  })
 })
 
 describe('Next.js compatibility', () => {
