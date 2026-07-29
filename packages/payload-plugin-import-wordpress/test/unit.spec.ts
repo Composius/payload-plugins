@@ -1,11 +1,11 @@
 import type { Config } from 'payload'
 
-import { describe, expect, test } from 'vitest'
+import { afterEach, describe, expect, test, vi } from 'vitest'
 
 import type { LexNode } from '../src/lib/lexical.js'
 import type { WPCategory, WPPost } from '../src/lib/wpTypes.js'
 
-import { authenticated, resolveOptions } from '../src/defaults.js'
+import { authenticated, defaultArticleUrl, resolveOptions } from '../src/defaults.js'
 import { ComposiusPayloadPluginImportWordpress } from '../src/index.js'
 import { sortCategoriesParentsFirst } from '../src/lib/categories.js'
 import {
@@ -423,6 +423,22 @@ describe('rehydrateReport', () => {
     expect(runNumber).toBe(1)
     expect(report.imported.posts).toEqual([])
     expect(report.dryRun).toBe(true)
+  })
+})
+
+describe('defaultArticleUrl', () => {
+  afterEach(() => {
+    vi.unstubAllEnvs()
+  })
+
+  test('is relative and ignores the server URL env vars', () => {
+    vi.stubEnv('NEXT_PUBLIC_SERVER_URL', 'https://example.com')
+    vi.stubEnv('SERVER_URL', 'https://example.org')
+    expect(defaultArticleUrl('my-article')).toBe('/articles/my-article')
+  })
+
+  test('tolerates a missing slug', () => {
+    expect(defaultArticleUrl(null)).toBe('/articles/')
   })
 })
 

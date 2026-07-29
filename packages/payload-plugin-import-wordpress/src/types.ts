@@ -136,7 +136,8 @@ export type ComposiusPayloadPluginImportWordpressConfig = {
   /**
    * Builds the front-end URL of an imported article from its slug. Used to
    * rewrite internal links and as the target of created redirects.
-   * @default `${NEXT_PUBLIC_SERVER_URL || 'http://localhost:3000'}/articles/${slug}`
+   * Relative by default; pass an absolute URL builder here if you need one.
+   * @default `/articles/${slug}`
    */
   articleUrl?: (slug?: null | string) => string
   /** How WordPress authors are mapped. @default { strategy: 'users' } */

@@ -205,7 +205,7 @@ ComposiusPayloadPluginArticles({
   editorUpdateAccess: ({ req: { user } }) => Boolean(user),
 
   // Front-end URL of an article, used for (live) preview and SEO.
-  // Default: `${NEXT_PUBLIC_SERVER_URL}/articles/${slug}`
+  // Default: `${NEXT_PUBLIC_SERVER_URL || SERVER_URL}/articles/${slug}`
   articleUrl: (slug) => string,
 
   // SEO meta group + generate endpoints. `true` (default) uses built-in

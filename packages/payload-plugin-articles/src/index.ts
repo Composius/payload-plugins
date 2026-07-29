@@ -59,7 +59,7 @@ export type ComposiusPayloadPluginArticlesConfig = {
   categoriesAccess?: CategoriesAccess
   /**
    * Builds the front-end URL of an article, used for admin preview and live preview.
-   * Defaults to `${NEXT_PUBLIC_SERVER_URL || 'http://localhost:3000'}/articles/${slug}`.
+   * Defaults to `${NEXT_PUBLIC_SERVER_URL || SERVER_URL || 'http://localhost:3000'}/articles/${slug}`.
    */
   articleUrl?: (slug?: string | null) => string
   disabled?: boolean

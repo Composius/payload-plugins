@@ -114,7 +114,7 @@ ComposiusPayloadPluginPages({
   access: { read, create, update, delete },
 
   // Front-end URL of a page, used for (live) preview and SEO.
-  // Default: `${NEXT_PUBLIC_SERVER_URL}/${slug}` (pages live at the site root)
+  // Default: `${NEXT_PUBLIC_SERVER_URL || SERVER_URL}/${slug}` (pages live at the site root)
   pageUrl: (slug) => string,
 
   // SEO meta group + generate endpoints. `true` (default) uses built-in

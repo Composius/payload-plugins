@@ -20,11 +20,19 @@ afterEach(() => {
 describe('defaultPageUrl', () => {
   test('uses NEXT_PUBLIC_SERVER_URL when set', () => {
     vi.stubEnv('NEXT_PUBLIC_SERVER_URL', 'https://example.com')
+    vi.stubEnv('SERVER_URL', 'https://ignored.com')
+    expect(defaultPageUrl('my-page')).toBe('https://example.com/my-page')
+  })
+
+  test('falls back to SERVER_URL when NEXT_PUBLIC_SERVER_URL is unset', () => {
+    vi.stubEnv('NEXT_PUBLIC_SERVER_URL', '')
+    vi.stubEnv('SERVER_URL', 'https://example.com')
     expect(defaultPageUrl('my-page')).toBe('https://example.com/my-page')
   })
 
   test('falls back to localhost and tolerates a missing slug', () => {
     vi.stubEnv('NEXT_PUBLIC_SERVER_URL', '')
+    vi.stubEnv('SERVER_URL', '')
     expect(defaultPageUrl(null)).toBe('http://localhost:3000/')
   })
 })

@@ -33,7 +33,7 @@ export type ComposiusPayloadPluginPagesConfig = {
   disabled?: boolean
   /**
    * Builds the front-end URL of a page, used for admin preview and live preview.
-   * Defaults to `${NEXT_PUBLIC_SERVER_URL || 'http://localhost:3000'}/${slug}`.
+   * Defaults to `${NEXT_PUBLIC_SERVER_URL || SERVER_URL || 'http://localhost:3000'}/${slug}`.
    */
   pageUrl?: (slug?: string | null) => string
   /**

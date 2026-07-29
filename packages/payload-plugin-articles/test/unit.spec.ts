@@ -77,11 +77,19 @@ describe('access defaults', () => {
 describe('defaultArticleUrl', () => {
   test('uses NEXT_PUBLIC_SERVER_URL when set', () => {
     vi.stubEnv('NEXT_PUBLIC_SERVER_URL', 'https://example.com')
+    vi.stubEnv('SERVER_URL', 'https://ignored.com')
+    expect(defaultArticleUrl('my-article')).toBe('https://example.com/articles/my-article')
+  })
+
+  test('falls back to SERVER_URL when NEXT_PUBLIC_SERVER_URL is unset', () => {
+    vi.stubEnv('NEXT_PUBLIC_SERVER_URL', '')
+    vi.stubEnv('SERVER_URL', 'https://example.com')
     expect(defaultArticleUrl('my-article')).toBe('https://example.com/articles/my-article')
   })
 
   test('falls back to localhost and tolerates a missing slug', () => {
     vi.stubEnv('NEXT_PUBLIC_SERVER_URL', '')
+    vi.stubEnv('SERVER_URL', '')
     expect(defaultArticleUrl(null)).toBe('http://localhost:3000/articles/')
   })
 })

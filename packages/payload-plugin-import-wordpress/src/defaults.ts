@@ -6,8 +6,8 @@ export const anyone: Access = () => true
 
 export const authenticated: Access = ({ req: { user } }) => Boolean(user)
 
-export const defaultArticleUrl = (slug?: null | string): string =>
-  `${process.env.NEXT_PUBLIC_SERVER_URL || 'http://localhost:3000'}/articles/${slug ?? ''}`
+/** Relative, so rewritten links and redirect targets stay valid on any host. */
+export const defaultArticleUrl = (slug?: null | string): string => `/articles/${slug ?? ''}`
 
 /** Slug of the collection storing import jobs (the "form" + report surface). */
 export const JOBS_SLUG = 'wp-import-jobs'
