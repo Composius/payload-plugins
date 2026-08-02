@@ -1,4 +1,4 @@
-import type { Config } from 'payload'
+import type { Block, BlockSlug, Config } from 'payload'
 import type {
   GenerateDescription,
   GenerateImage,
@@ -30,6 +30,22 @@ export type ComposiusPayloadPluginPagesConfig = {
    * `create`/`update`/`delete` require an authenticated user.
    */
   access?: PagesAccess
+  /**
+   * Blocks of the page `layout` field, referenced instead of defined inline:
+   * either a slug of a block registered in `config.blocks`, or the block
+   * itself. References keep one block definition shared across every field
+   * that uses it, rather than copied into each.
+   *
+   * Combines with `blocks`; the field is only added when at least one of the
+   * two carries something.
+   */
+  blockReferences?: (Block | BlockSlug)[]
+  /**
+   * Blocks a page can be laid out with, defined inline on a `layout` field
+   * added after `content`. Without them — and without `blockReferences` — no
+   * such field exists and a page is title, cover image and rich text.
+   */
+  blocks?: Block[]
   disabled?: boolean
   /**
    * Builds the front-end URL of a page, used for admin preview and live preview.
@@ -102,6 +118,8 @@ export const ComposiusPayloadPluginPages =
     config.collections.push(
       Pages({
         access,
+        blockReferences: pluginOptions.blockReferences ?? [],
+        blocks: pluginOptions.blocks ?? [],
         pageUrl,
         revalidate,
         seo: seoEnabled

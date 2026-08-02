@@ -65,7 +65,9 @@ export interface Config {
   auth: {
     users: UserAuthOperations;
   };
-  blocks: {};
+  blocks: {
+    hero: Hero;
+  };
   collections: {
     media: Media;
     pages: Page;
@@ -121,6 +123,16 @@ export interface UserAuthOperations {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "hero".
+ */
+export interface Hero {
+  heading?: string | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'hero';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "media".
  */
 export interface Media {
@@ -165,6 +177,18 @@ export interface Page {
     };
     [k: string]: unknown;
   } | null;
+  layout?:
+    | (
+        | Hero
+        | {
+            label?: string | null;
+            href?: string | null;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'callToAction';
+          }
+      )[]
+    | null;
   publishedAt?: string | null;
   meta?: {
     title?: string | null;
@@ -308,6 +332,18 @@ export interface PagesSelect<T extends boolean = true> {
   slug?: T;
   coverImage?: T;
   content?: T;
+  layout?:
+    | T
+    | {
+        callToAction?:
+          | T
+          | {
+              label?: T;
+              href?: T;
+              id?: T;
+              blockName?: T;
+            };
+      };
   publishedAt?: T;
   meta?:
     | T

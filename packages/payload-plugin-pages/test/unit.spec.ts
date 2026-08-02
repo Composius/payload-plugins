@@ -1,4 +1,4 @@
-import type { Access, CollectionConfig, Config, Field } from 'payload'
+import type { Access, Block, BlocksField, CollectionConfig, Config, Field } from 'payload'
 
 import { afterEach, describe, expect, test, vi } from 'vitest'
 
@@ -90,6 +90,65 @@ describe('ComposiusPayloadPluginPages', () => {
 
     const preview = pages.admin?.preview as (data: Record<string, unknown>) => string
     expect(preview({ slug: 'my-page' })).toBe('https://custom.dev/my-page')
+  })
+})
+
+describe('layout blocks', () => {
+  const hero: Block = { slug: 'hero', fields: [{ name: 'heading', type: 'text' }] }
+  const cta: Block = { slug: 'cta', fields: [{ name: 'label', type: 'text' }] }
+
+  const findLayout = (config: Config): BlocksField | undefined =>
+    findPages(config).fields.find((field) => (field as { name?: string }).name === 'layout') as
+      | BlocksField
+      | undefined
+
+  test('no layout field without blocks', () => {
+    expect(findLayout(ComposiusPayloadPluginPages()(baseConfig()))).toBeUndefined()
+  })
+
+  test('blocks are defined inline on the layout field', () => {
+    const layout = findLayout(ComposiusPayloadPluginPages({ blocks: [hero] })(baseConfig()))
+
+    expect(layout?.type).toBe('blocks')
+    expect(layout?.blocks).toEqual([hero])
+    expect(layout?.blockReferences).toBeUndefined()
+  })
+
+  test('the layout field sits between content and publishedAt', () => {
+    const pages = findPages(ComposiusPayloadPluginPages({ blocks: [hero] })(baseConfig()))
+    const names = pages.fields.map((field) => (field as { name?: string }).name)
+
+    expect(names.indexOf('layout')).toBeGreaterThan(names.indexOf('content'))
+    expect(names.indexOf('layout')).toBeLessThan(names.indexOf('publishedAt'))
+  })
+
+  test('references are passed as blockReferences, which Payload requires to be alone', () => {
+    const layout = findLayout(
+      ComposiusPayloadPluginPages({ blockReferences: ['hero', cta] })(baseConfig()),
+    )
+
+    expect(layout?.blockReferences).toEqual(['hero', cta])
+    expect(layout?.blocks).toEqual([])
+  })
+
+  test('inline blocks join the references when both are given', () => {
+    const layout = findLayout(
+      ComposiusPayloadPluginPages({
+        blockReferences: ['hero'],
+        blocks: [cta],
+      })(baseConfig()),
+    )
+
+    expect(layout?.blockReferences).toEqual(['hero', cta])
+    expect(layout?.blocks).toEqual([])
+  })
+
+  test('a disabled plugin keeps the layout field for schema consistency', () => {
+    const layout = findLayout(
+      ComposiusPayloadPluginPages({ blocks: [hero], disabled: true })(baseConfig()),
+    )
+
+    expect(layout?.blocks).toEqual([hero])
   })
 })
 

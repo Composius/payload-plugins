@@ -1,4 +1,4 @@
-import type { Payload, Plugin } from 'payload'
+import type { Block, Payload, Plugin } from 'payload'
 
 import { sqliteAdapter } from '@payloadcms/db-sqlite'
 import { lexicalEditor } from '@payloadcms/richtext-lexical'
@@ -9,6 +9,8 @@ import sharp from 'sharp'
 import { testEmailAdapter } from '../helpers/testEmailAdapter.js'
 
 export type DevConfigOptions = {
+  /** Blocks registered at the config level, so fields can reference them by slug. */
+  blocks?: Block[]
   /** Set to false when a plugin provides its own `media` collection. */
   defaultMediaCollection?: boolean
   /** The suite directory (dev/configs/<suite>), used for per-suite db, media and types files. */
@@ -18,6 +20,7 @@ export type DevConfigOptions = {
 }
 
 export const buildDevConfig = ({
+  blocks,
   defaultMediaCollection = true,
   dirname,
   plugins,
@@ -51,6 +54,7 @@ export const buildDevConfig = ({
         importMapFile: path.resolve(devRoot, `app/(payload)/admin/importMaps/${suite}.js`),
       },
     },
+    blocks,
     collections: defaultMediaCollection
       ? [
           {

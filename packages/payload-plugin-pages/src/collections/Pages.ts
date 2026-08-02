@@ -1,4 +1,4 @@
-import type { Access, CollectionConfig } from 'payload'
+import type { Access, Block, BlockSlug, CollectionConfig, Field } from 'payload'
 import { slugField } from 'payload'
 import { lexicalEditor } from '@payloadcms/richtext-lexical'
 import type {
@@ -24,13 +24,53 @@ export type PagesSeoGenerators = SeoGenerators
 
 export type PagesOptions = {
   access: Required<PagesAccess>
+  /** Blocks of the `layout` field, referenced by slug from `config.blocks`. */
+  blockReferences: (Block | BlockSlug)[]
+  /** Blocks defined inline on the `layout` field. */
+  blocks: Block[]
   pageUrl: (slug?: string | null) => string
   /** Next.js cache invalidation on save and delete. `false` turns it off. */
   revalidate: false | RevalidateOptions
   seo: false | PagesSeoGenerators
 }
 
-export const Pages = ({ access, pageUrl, revalidate, seo }: PagesOptions): CollectionConfig => ({
+/**
+ * The `layout` blocks field, present only once the host has blocks to put in it.
+ *
+ * Payload rejects a field that carries both `blocks` and `blockReferences`, so
+ * when references are in play the inline blocks join them: a `Block` object
+ * listed under `blockReferences` is sanitized exactly like an inline one.
+ */
+const layoutFields = (blocks: Block[], blockReferences: (Block | BlockSlug)[]): Field[] => {
+  if (blocks.length === 0 && blockReferences.length === 0) {
+    return []
+  }
+
+  const fieldLabel = label((t) => t.fields.layout)
+
+  if (blockReferences.length === 0) {
+    return [{ name: 'layout', type: 'blocks', label: fieldLabel, blocks }]
+  }
+
+  return [
+    {
+      name: 'layout',
+      type: 'blocks',
+      label: fieldLabel,
+      blockReferences: [...blockReferences, ...blocks],
+      blocks: [],
+    },
+  ]
+}
+
+export const Pages = ({
+  access,
+  blockReferences,
+  blocks,
+  pageUrl,
+  revalidate,
+  seo,
+}: PagesOptions): CollectionConfig => ({
   slug: 'pages',
   labels: {
     singular: label((t) => t.pages.singular),
@@ -84,6 +124,7 @@ export const Pages = ({ access, pageUrl, revalidate, seo }: PagesOptions): Colle
         features: contentEditorFeatures('@composius/payload-plugin-pages/client'),
       }),
     },
+    ...layoutFields(blocks, blockReferences),
     {
       name: 'publishedAt',
       type: 'date',

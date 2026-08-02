@@ -10,10 +10,35 @@ A [Payload CMS](https://payloadcms.com) plugin that adds a `pages` collection wi
 | `slug`        | `text`     | auto-generated from title, unique         |
 | `coverImage`  | `upload`   | relates to `media`                        |
 | `content`     | `richText` |                                           |
+| `layout`      | `blocks`   | only when blocks are passed (see below)   |
 | `publishedAt` | `date`     | auto-set on first publish                 |
 | `meta`        | `group`    | SEO title/description/image/preview       |
 
 > Requires a `media` upload collection in the host config.
+
+## Blocks
+
+A page is title, cover image and rich text until you give it blocks. Pass them
+and a `layout` blocks field appears after `content`:
+
+```ts
+ComposiusPayloadPluginPages({ blocks: [Hero, CallToAction] })
+```
+
+Blocks registered on the config are named by slug instead, so one definition is
+shared by every field that uses it rather than copied into each:
+
+```ts
+export default buildConfig({
+  blocks: [Hero],
+  plugins: [ComposiusPayloadPluginPages({ blockReferences: ['hero'] })],
+})
+```
+
+`blockReferences` also takes block objects, and the two options combine — pass
+`blocks` alongside `blockReferences` and the inline blocks join the references
+on the same field, since Payload allows a blocks field only one of the two
+lists.
 
 ## Cache revalidation
 
@@ -112,6 +137,11 @@ ComposiusPayloadPluginPages({
   // Access per operation. Defaults: read = published or authenticated,
   // create/update/delete = authenticated.
   access: { read, create, update, delete },
+
+  // Blocks of the `layout` field: defined inline, and/or referenced by slug
+  // from `config.blocks`. No field is added when both are empty (the default).
+  blocks: [Hero],
+  blockReferences: ['hero'],
 
   // Front-end URL of a page, used for (live) preview and SEO.
   // Default: `${NEXT_PUBLIC_SERVER_URL || SERVER_URL}/${slug}` (pages live at the site root)

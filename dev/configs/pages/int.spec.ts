@@ -34,6 +34,24 @@ describe('Plugin integration tests', () => {
     expect(page.slug).toBe('hello-world')
   })
 
+  test('a page is laid out with both referenced and inline blocks', async () => {
+    const page = await payload.create({
+      collection: 'pages',
+      data: {
+        slug: 'with-layout',
+        title: 'With Layout',
+        layout: [
+          { blockType: 'hero', heading: 'Welcome' },
+          { blockType: 'callToAction', href: '/contact', label: 'Say hi' },
+        ],
+      },
+    })
+
+    expect(page.layout).toHaveLength(2)
+    expect(page.layout?.[0]).toMatchObject({ blockType: 'hero', heading: 'Welcome' })
+    expect(page.layout?.[1]).toMatchObject({ blockType: 'callToAction', label: 'Say hi' })
+  })
+
   // The revalidation hooks run inside the write's transaction, and there is no
   // Next.js request scope here to revalidate against. Every write below must
   // still go through: a cache that cannot be reached is not a failed write.
