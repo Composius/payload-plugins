@@ -39,6 +39,9 @@ export const fr: Translation = {
       articleCount: 'Articles',
       breadcrumbs: "Fil d'Ariane",
       description: 'Description',
+      isDefault: 'Par défaut',
+      isDefaultDescription:
+        'Attribuée aux articles enregistrés sans catégorie. Une seule catégorie peut être celle par défaut : cocher cette case la retire de la précédente.',
       name: 'Nom',
       parent: 'Parent',
     },

@@ -147,6 +147,64 @@ describe('Plugin integration tests', () => {
     expect(remaining.totalDocs).toBe(0)
   })
 
+  test('only one category is the default at a time', async () => {
+    const featured = await payload.create({
+      collection: 'categories',
+      data: { name: 'Featured', slug: 'featured', isDefault: true },
+    })
+    expect(featured.isDefault).toBe(true)
+
+    const opinion = await payload.create({
+      collection: 'categories',
+      data: { name: 'Opinion', slug: 'opinion', isDefault: true },
+    })
+
+    const previous = await payload.findByID({ collection: 'categories', id: featured.id })
+    expect(previous.isDefault).toBe(false)
+
+    const defaults = await payload.find({
+      collection: 'categories',
+      where: { isDefault: { equals: true } },
+    })
+    expect(defaults.docs).toHaveLength(1)
+    expect(defaults.docs[0]?.id).toBe(opinion.id)
+  })
+
+  test('an article saved without a category gets the default one', async () => {
+    const { docs } = await payload.find({
+      collection: 'categories',
+      where: { isDefault: { equals: true } },
+    })
+    const fallback = docs[0]!
+
+    const article = await payload.create({
+      collection: 'articles',
+      data: { slug: 'uncategorized', title: 'Uncategorized' },
+    })
+    expect(article.category).toMatchObject({ id: fallback.id })
+
+    // An explicit category is kept, and clearing it hands the article back to
+    // the default rather than leaving it uncategorized.
+    const guides = await payload.create({
+      collection: 'categories',
+      data: { name: 'Explicit', slug: 'explicit' },
+    })
+
+    const recategorized = await payload.update({
+      collection: 'articles',
+      id: article.id,
+      data: { category: guides.id },
+    })
+    expect(recategorized.category).toMatchObject({ id: guides.id })
+
+    const cleared = await payload.update({
+      collection: 'articles',
+      id: article.id,
+      data: { category: null },
+    })
+    expect(cleared.category).toMatchObject({ id: fallback.id })
+  })
+
   test('a category rename still saves and resaves its children', async () => {
     const parent = await payload.create({
       collection: 'categories',

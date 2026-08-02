@@ -1,4 +1,11 @@
-import type { Access, CollectionConfig, CollectionSlug, FieldAccess } from 'payload'
+import type {
+  Access,
+  CollectionConfig,
+  CollectionSlug,
+  FieldAccess,
+  FieldHook,
+  PayloadRequest,
+} from 'payload'
 import { slugField } from 'payload'
 import { lexicalEditor } from '@payloadcms/richtext-lexical'
 import type {
@@ -33,12 +40,48 @@ export type ArticlesOptions = {
   revalidate: false | RevalidateOptions
   seo: false | ArticlesSeoGenerators
   /**
+   * Falls back to the category flagged as default whenever an article is saved
+   * without one.
+   */
+  useDefaultCategory: boolean
+  /**
    * Slug of the users collection the `editor` field relates to. Typed as
    * `CollectionSlug` rather than `string`: once a host app generates its types,
    * that widens to a union of its actual slugs, and a plain `string` is no
    * longer assignable to the `relationTo` of a relationship field.
    */
   usersSlug: CollectionSlug
+}
+
+/** Id of the category flagged as the default, if there is one. */
+const defaultCategoryId = async (req: PayloadRequest): Promise<number | string | undefined> => {
+  const { docs } = await req.payload.find({
+    collection: 'categories',
+    depth: 0,
+    limit: 1,
+    pagination: false,
+    req,
+    select: {},
+    where: { isDefault: { equals: true } },
+  })
+
+  return docs[0]?.id
+}
+
+/** Ticks the default category in the form of a new article. */
+const defaultCategoryValue = ({ req }: { req: PayloadRequest }) => defaultCategoryId(req)
+
+/**
+ * Re-applies the default to an article saved with no category — the editor
+ * cleared the one that was ticked, or the write never went through the admin
+ * panel at all, where `defaultValue` is what fills the field in.
+ */
+const applyDefaultCategory: FieldHook = async ({ req, value }) => {
+  if (value != null) {
+    return value
+  }
+
+  return (await defaultCategoryId(req)) ?? value
 }
 
 export const Articles = ({
@@ -48,6 +91,7 @@ export const Articles = ({
   editorUpdateAccess,
   revalidate,
   seo,
+  useDefaultCategory,
   usersSlug,
 }: ArticlesOptions): CollectionConfig => ({
   slug: 'articles',
@@ -91,6 +135,14 @@ export const Articles = ({
       type: 'relationship',
       label: label((t) => t.articles.fields.category),
       relationTo: 'categories',
+      // Two paths to the same default: `defaultValue` ticks it in the form of a
+      // new article, the hook catches a save that reaches the server without one.
+      ...(useDefaultCategory
+        ? {
+            defaultValue: defaultCategoryValue,
+            hooks: { beforeChange: [applyDefaultCategory] },
+          }
+        : {}),
       admin: {
         position: 'sidebar',
         components: {

@@ -155,6 +155,10 @@ export interface Category {
   slug: string;
   parent?: (number | null) | Category;
   description?: string | null;
+  /**
+   * Given to articles saved without a category. Only one category can be the default: checking this box clears it on the previous one.
+   */
+  isDefault?: boolean | null;
   breadcrumbs?:
     | {
         doc?: (number | null) | Category;
@@ -367,6 +371,7 @@ export interface CategoriesSelect<T extends boolean = true> {
   slug?: T;
   parent?: T;
   description?: T;
+  isDefault?: T;
   breadcrumbs?:
     | T
     | {

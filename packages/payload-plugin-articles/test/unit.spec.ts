@@ -2,6 +2,7 @@ import type { Access, CollectionConfig, Config, Field, FieldAccess } from 'paylo
 
 import { afterEach, describe, expect, test, vi } from 'vitest'
 
+import { clearOtherDefaults } from '../src/collections/Categories.js'
 import {
   anyone,
   authenticated,
@@ -55,6 +56,21 @@ const findAuthors = (config: Config): CollectionConfig => findCollection(config,
 
 const findField = (collection: CollectionConfig, name: string): Field =>
   collection.fields.find((field) => (field as { name?: string }).name === name) as Field
+
+type FakeReq = { payload: { find: ReturnType<typeof vi.fn> } }
+
+type CategoryField = {
+  defaultValue?: (args: { req: FakeReq }) => Promise<unknown>
+  hooks?: { beforeChange: ((args: { req: FakeReq; value: unknown }) => Promise<unknown>)[] }
+}
+
+const categoryField = (config: Config): CategoryField =>
+  findField(findArticles(config), 'category') as CategoryField
+
+/** A request whose categories collection holds one default category, or none. */
+const reqWithDefaultCategory = (id?: number): FakeReq => ({
+  payload: { find: vi.fn().mockResolvedValue({ docs: id === undefined ? [] : [{ id }] }) },
+})
 
 afterEach(() => {
   vi.unstubAllEnvs()
@@ -152,6 +168,7 @@ describe('ComposiusPayloadPluginArticles', () => {
     expect(fieldNames).toContain('slug')
     expect(fieldNames).toContain('parent')
     expect(fieldNames).toContain('description')
+    expect(fieldNames).toContain('isDefault')
     expect(fieldNames).toContain('breadcrumbs')
   })
 
@@ -184,6 +201,85 @@ describe('ComposiusPayloadPluginArticles', () => {
     expect(
       (category as { admin?: { components?: { Field?: unknown } } }).admin?.components?.Field,
     ).toBe('@composius/payload-plugin-articles/client#CategoryFieldClient')
+  })
+
+  test('the default category is a single checkbox, indexed for the lookup', () => {
+    const config = ComposiusPayloadPluginArticles()(baseConfig())
+    const isDefault = findField(findCategories(config), 'isDefault')
+
+    expect(isDefault).toMatchObject({ type: 'checkbox', defaultValue: false, index: true })
+    expect(findCategories(config).admin?.defaultColumns).toContain('isDefault')
+  })
+
+  test('checking the default clears it on every other category', async () => {
+    const update = vi.fn()
+    const req = { payload: { update } } as unknown as Parameters<
+      typeof clearOtherDefaults
+    >[0]['req']
+
+    await clearOtherDefaults({ doc: { id: 4, isDefault: true }, req } as Parameters<
+      typeof clearOtherDefaults
+    >[0])
+
+    expect(update).toHaveBeenCalledWith(
+      expect.objectContaining({
+        collection: 'categories',
+        data: { isDefault: false },
+        req,
+        where: {
+          and: [{ id: { not_equals: 4 } }, { isDefault: { equals: true } }],
+        },
+      }),
+    )
+  })
+
+  test('clearing the default touches nothing, so the cascade cannot recurse', async () => {
+    const update = vi.fn()
+    const req = { payload: { update } } as unknown as Parameters<
+      typeof clearOtherDefaults
+    >[0]['req']
+
+    await clearOtherDefaults({ doc: { id: 4, isDefault: false }, req } as Parameters<
+      typeof clearOtherDefaults
+    >[0])
+
+    expect(update).not.toHaveBeenCalled()
+  })
+
+  test('a new article ticks the default category, and a save without one restores it', async () => {
+    const config = ComposiusPayloadPluginArticles()(baseConfig())
+    const category = categoryField(config)
+    const req = reqWithDefaultCategory(9)
+
+    expect(await category.defaultValue?.({ req })).toBe(9)
+    expect(await category.hooks?.beforeChange[0]({ req, value: undefined })).toBe(9)
+    expect(await category.hooks?.beforeChange[0]({ req, value: null })).toBe(9)
+  })
+
+  test('an article keeps the category it was saved with', async () => {
+    const config = ComposiusPayloadPluginArticles()(baseConfig())
+    const category = categoryField(config)
+    const req = reqWithDefaultCategory(9)
+
+    expect(await category.hooks?.beforeChange[0]({ req, value: 3 })).toBe(3)
+    expect(req.payload.find).not.toHaveBeenCalled()
+  })
+
+  test('without a default category the article is saved without one', async () => {
+    const config = ComposiusPayloadPluginArticles()(baseConfig())
+    const category = categoryField(config)
+    const req = reqWithDefaultCategory()
+
+    expect(await category.defaultValue?.({ req })).toBeUndefined()
+    expect(await category.hooks?.beforeChange[0]({ req, value: null })).toBeNull()
+  })
+
+  test('useDefaultCategory: false leaves the category empty', () => {
+    const config = ComposiusPayloadPluginArticles({ useDefaultCategory: false })(baseConfig())
+    const category = categoryField(config)
+
+    expect(category.defaultValue).toBeUndefined()
+    expect(category.hooks).toBeUndefined()
   })
 
   test('nested docs plugin wires breadcrumbs hooks and parent filterOptions', () => {
@@ -427,8 +523,10 @@ describe('revalidation', () => {
   test('the categories breadcrumbs hooks survive alongside revalidation', () => {
     const categories = findCollection(ComposiusPayloadPluginArticles()(baseConfig()), 'categories')
 
-    // nestedDocsPlugin's two afterChange hooks, plus the revalidation one.
-    expect(categories.hooks?.afterChange).toHaveLength(3)
+    // nestedDocsPlugin's two afterChange hooks, plus the single-default and
+    // the revalidation one.
+    expect(categories.hooks?.afterChange).toHaveLength(4)
+    expect(categories.hooks?.afterChange).toContain(clearOtherDefaults)
     expect(categories.hooks?.beforeChange).toHaveLength(1)
   })
 })

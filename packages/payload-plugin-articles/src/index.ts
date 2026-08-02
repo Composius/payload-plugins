@@ -97,6 +97,17 @@ export type ComposiusPayloadPluginArticlesConfig = {
         generateURL?: GenerateURL
       }
   /**
+   * Adds a `Default` checkbox to categories — only one category carries it at
+   * a time — and gives it to any article saved without a category: the box is
+   * already ticked in the form of a new article, and re-applied on save when
+   * the editor cleared it.
+   *
+   * `false` keeps the checkbox (it is part of the schema either way) but leaves
+   * `category` empty on articles that were saved without one.
+   * @default true
+   */
+  useDefaultCategory?: boolean
+  /**
    * Slug of the users collection the article `editor` field relates to.
    * Defaults to `'users'`.
    */
@@ -144,6 +155,7 @@ export const ComposiusPayloadPluginArticles =
       update: pluginOptions.authorsAccess?.update ?? authenticated,
     }
 
+    const useDefaultCategory = pluginOptions.useDefaultCategory !== false
     const usersSlug = pluginOptions.usersSlug ?? 'users'
     const editorUpdateAccess = pluginOptions.editorUpdateAccess ?? authenticatedField
 
@@ -175,6 +187,7 @@ export const ComposiusPayloadPluginArticles =
               hasGenerateTitle: true,
             }
           : false,
+        useDefaultCategory,
         usersSlug,
       }),
     )

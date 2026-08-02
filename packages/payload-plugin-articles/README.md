@@ -10,7 +10,7 @@ A [Payload CMS](https://payloadcms.com) plugin that adds an `articles` collectio
 | ------------- | -------------- | ----------------------------------------- |
 | `title`       | `text`         | required, used as admin title             |
 | `slug`        | `text`         | auto-generated from title, unique         |
-| `category`    | `relationship` | relates to `categories`, rendered as a checkbox tree |
+| `category`    | `relationship` | relates to `categories`, rendered as a checkbox tree; falls back to the default category |
 | `editor`      | `relationship` | relates to `users`; defaults to the creating user, editable afterwards |
 | `author`      | `relationship` | only with `authors: true`, relates to `authors` |
 | `coverImage`  | `upload`       | relates to `media`                        |
@@ -54,12 +54,30 @@ from the name with the `boring-avatars` `<Avatar variant="beam" />` component.
 | `slug`        | `text`         | auto-generated from name, unique                   |
 | `parent`      | `relationship` | relates to `categories` (nested categories)        |
 | `description` | `textarea`     |                                                    |
+| `isDefault`   | `checkbox`     | at most one category at a time — see below         |
 | `breadcrumbs` | `array`        | read-only, populated by `plugin-nested-docs` hooks |
 
 On articles, `category` is rendered by a custom sidebar component
 (`CategoryFieldClient` from the `/client` export): a checkbox per category,
 with children indented under their parent. Selection is exclusive — checking
 a category unchecks the previous one, and checking it again clears it.
+
+### The default category
+
+Ticking `Default` on a category clears the flag on whichever category held it
+before, through an `afterChange` hook: only one category is the default at any
+time, whether it is set from the admin panel, the REST API or a seed script.
+
+Articles saved without a category are given that default. The box is already
+ticked when a new article's form opens (a `defaultValue` on the `category`
+field), and a `beforeChange` field hook re-applies it to any save that reaches
+the server with an empty `category` — an editor who unticked it, an import, a
+REST call. An article always keeps a category it was explicitly given, and with
+no category flagged as the default, nothing is filled in.
+
+Pass `useDefaultCategory: false` to keep the checkbox (it stays part of the
+schema, and of whatever a front end reads) without articles ever falling back
+to it.
 
 Categories are nestable: pick a `parent` and `@payloadcms/plugin-nested-docs` keeps
 `breadcrumbs` (doc, label, url) up to date on save, including on all descendants.
@@ -196,6 +214,10 @@ ComposiusPayloadPluginArticles({
   // Authors access per operation, when `authors` is enabled.
   // Defaults: read = anyone, create/update/delete = authenticated.
   authorsAccess: { read, create, update, delete },
+
+  // Give articles saved without a category the one flagged `Default`
+  // (default: true). False keeps the checkbox but never applies it.
+  useDefaultCategory: true,
 
   // Users collection the article `editor` field relates to. Default: 'users'.
   usersSlug: 'users',

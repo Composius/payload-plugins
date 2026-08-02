@@ -37,6 +37,9 @@ export const en = {
       articleCount: 'Articles',
       breadcrumbs: 'Breadcrumbs',
       description: 'Description',
+      isDefault: 'Default',
+      isDefaultDescription:
+        'Given to articles saved without a category. Only one category can be the default: checking this box clears it on the previous one.',
       name: 'Name',
       parent: 'Parent',
     },
