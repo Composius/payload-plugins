@@ -8,7 +8,13 @@ import { ComposiusPayloadPluginHealth } from '../src/index.js'
 
 const baseConfig = (): Config => ({ collections: [] }) as unknown as Config
 
-const request = { payload: {} } as unknown as PayloadRequest
+/** Enough of a `payload` to satisfy the built-in `database` check. */
+const request = {
+  payload: {
+    config: { admin: { user: 'users' } },
+    count: async () => ({ totalDocs: 0 }),
+  },
+} as unknown as PayloadRequest
 
 const getEndpoint = (config: Config, path = '/health'): Endpoint => {
   const endpoint = config.endpoints?.find((entry) => entry.path === path)
@@ -52,7 +58,7 @@ describe('ComposiusPayloadPluginHealth', () => {
   })
 
   test('responds 200 ok without checks', async () => {
-    const config = ComposiusPayloadPluginHealth()(baseConfig())
+    const config = ComposiusPayloadPluginHealth({ database: false })(baseConfig())
     const { body, response } = await invoke(config)
 
     expect(response.status).toBe(200)
@@ -64,6 +70,7 @@ describe('ComposiusPayloadPluginHealth', () => {
 
   test('responds 200 with per-check results when every check passes', async () => {
     const config = ComposiusPayloadPluginHealth({
+      database: false,
       checks: {
         async database() {},
         cache() {},
@@ -77,6 +84,61 @@ describe('ComposiusPayloadPluginHealth', () => {
       cache: { status: 'ok' },
       database: { status: 'ok' },
     })
+  })
+
+  test('runs the built-in database check by default', async () => {
+    let counted: unknown
+    const config = ComposiusPayloadPluginHealth()(baseConfig())
+    const req = {
+      payload: {
+        config: { admin: { user: 'admins' } },
+        count: async (args: unknown) => {
+          counted = args
+          return { totalDocs: 0 }
+        },
+      },
+    } as unknown as PayloadRequest
+
+    const response = (await getEndpoint(config).handler(req)) as Response
+    const body = (await response.json()) as HealthResponse
+
+    expect(response.status).toBe(200)
+    expect(body.checks).toEqual({ database: { status: 'ok' } })
+    expect(counted).toEqual({ collection: 'admins' })
+  })
+
+  test('responds 503 when the built-in database check fails', async () => {
+    const config = ComposiusPayloadPluginHealth()(baseConfig())
+    const req = {
+      payload: {
+        config: { admin: { user: 'users' } },
+        count: async () => {
+          throw new Error('connection refused')
+        },
+      },
+    } as unknown as PayloadRequest
+
+    const response = (await getEndpoint(config).handler(req)) as Response
+    const body = (await response.json()) as HealthResponse
+
+    expect(response.status).toBe(503)
+    expect(body.checks?.database).toEqual({ status: 'error', error: 'connection refused' })
+  })
+
+  test('an explicit database check overrides the built-in one', async () => {
+    let called = false
+    const config = ComposiusPayloadPluginHealth({
+      checks: {
+        database() {
+          called = true
+        },
+      },
+    })(baseConfig())
+
+    const { body } = await invoke(config)
+
+    expect(called).toBe(true)
+    expect(body.checks).toEqual({ database: { status: 'ok' } })
   })
 
   test('responds 503 with the failing check message when a check throws', async () => {

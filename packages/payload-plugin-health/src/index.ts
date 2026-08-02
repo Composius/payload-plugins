@@ -1,4 +1,4 @@
-import type { Config, PayloadRequest } from 'payload'
+import type { CollectionSlug, Config, PayloadRequest } from 'payload'
 
 /**
  * A named health check. Resolve (return anything) to report `ok`; throw to
@@ -28,6 +28,13 @@ export type ComposiusPayloadPluginHealthConfig = {
    */
   path?: string
   /**
+   * Adds the built-in `database` check, which counts documents in the admin
+   * user collection to probe the database connection. Set to `false` to drop
+   * it; a `database` entry in `checks` takes precedence over it.
+   * @default true
+   */
+  database?: boolean
+  /**
    * Named checks run on every request. Each receives the `PayloadRequest`
    * (use `req.payload` to reach the Local API, e.g. a database probe).
    * A check that throws marks the response `error` with HTTP status 503;
@@ -35,6 +42,17 @@ export type ComposiusPayloadPluginHealthConfig = {
    */
   checks?: Record<string, HealthCheck>
   disabled?: boolean
+}
+
+/**
+ * Probes the database through the admin user collection, which always exists,
+ * whatever its slug. Added as the `database` check unless the `database`
+ * option is `false`.
+ */
+export const databaseHealthCheck: HealthCheck = async (req) => {
+  await req.payload.count({
+    collection: req.payload.config.admin.user as CollectionSlug,
+  })
 }
 
 /**
@@ -51,7 +69,11 @@ export const ComposiusPayloadPluginHealth =
       return config
     }
 
-    const checks = pluginOptions.checks ?? {}
+    // An explicit `checks.database` wins over the built-in one.
+    const checks: Record<string, HealthCheck> = {
+      ...(pluginOptions.database === false ? {} : { database: databaseHealthCheck }),
+      ...pluginOptions.checks,
+    }
 
     config.endpoints = [
       ...(config.endpoints ?? []),
