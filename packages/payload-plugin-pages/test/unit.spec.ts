@@ -1,9 +1,17 @@
 import type { Access, Block, BlocksField, CollectionConfig, Config, Field } from 'payload'
+import type { GenerateDescription } from '@payloadcms/plugin-seo/types'
 
 import { afterEach, describe, expect, test, vi } from 'vitest'
 
-import { authenticatedOrPublished, defaultPageUrl } from '../src/defaults.js'
-import { ComposiusPayloadPluginPages, pageIdTag, pageTag, PAGES_TAG } from '../src/index.js'
+import { authenticatedOrPublished, defaultGenerateDescription, defaultPageUrl } from '../src/defaults.js'
+import {
+  ComposiusPayloadPluginPages,
+  contentBlock,
+  CONTENT_BLOCK_SLUG,
+  pageIdTag,
+  pageTag,
+  PAGES_TAG,
+} from '../src/index.js'
 
 const baseConfig = (): Config => ({ collections: [] }) as unknown as Config
 
@@ -45,7 +53,7 @@ describe('ComposiusPayloadPluginPages', () => {
     expect(pages.versions).toMatchObject({ drafts: { autosave: true } })
     const fieldNames = pages.fields.map((field) => (field as { name?: string }).name)
     expect(fieldNames).toContain('title')
-    expect(fieldNames).toContain('content')
+    expect(fieldNames).toContain('publishedAt')
   })
 
   test('adds the SEO meta group and endpoints by default', () => {
@@ -115,9 +123,12 @@ describe('layout blocks', () => {
   })
 
   test('the layout field sits between content and publishedAt', () => {
-    const pages = findPages(ComposiusPayloadPluginPages({ blocks: [hero] })(baseConfig()))
+    const pages = findPages(
+      ComposiusPayloadPluginPages({ blocks: [hero], content: true })(baseConfig()),
+    )
     const names = pages.fields.map((field) => (field as { name?: string }).name)
 
+    expect(names).toContain('content')
     expect(names.indexOf('layout')).toBeGreaterThan(names.indexOf('content'))
     expect(names.indexOf('layout')).toBeLessThan(names.indexOf('publishedAt'))
   })
@@ -149,6 +160,62 @@ describe('layout blocks', () => {
     )
 
     expect(layout?.blocks).toEqual([hero])
+  })
+})
+
+describe('content', () => {
+  const contentField = (config: Config) =>
+    findPages(config).fields.find((field) => (field as { name?: string }).name === 'content')
+
+  test('no standalone content field by default', () => {
+    expect(contentField(ComposiusPayloadPluginPages()(baseConfig()))).toBeUndefined()
+  })
+
+  test('content: true restores the richText field', () => {
+    const content = contentField(ComposiusPayloadPluginPages({ content: true })(baseConfig()))
+
+    expect((content as Field)?.type).toBe('richText')
+  })
+
+  test('the exported block carries the same richText field', () => {
+    const block = contentBlock()
+
+    expect(block.slug).toBe(CONTENT_BLOCK_SLUG)
+    expect(block.fields).toHaveLength(1)
+    expect(block.fields[0]).toMatchObject({ name: 'content', type: 'richText' })
+  })
+
+  test('each call returns its own block, since Payload sanitizes in place', () => {
+    expect(contentBlock()).not.toBe(contentBlock())
+  })
+})
+
+describe('defaultGenerateDescription', () => {
+  const richText = (text: string) => ({
+    root: { children: [{ children: [{ text, type: 'text' }], type: 'paragraph' }], type: 'root' },
+  })
+
+  const metaDescription = (doc: Record<string, unknown>) =>
+    defaultGenerateDescription({ doc } as unknown as Parameters<GenerateDescription>[0])
+
+  test('reads the content field when the collection has one', () => {
+    expect(metaDescription({ content: richText('From the field') })).toBe('From the field')
+  })
+
+  test('falls back to the first content block of the layout', () => {
+    expect(
+      metaDescription({
+        layout: [
+          { blockType: 'hero', heading: 'Ignored' },
+          { blockType: CONTENT_BLOCK_SLUG, content: richText('From the block') },
+          { blockType: CONTENT_BLOCK_SLUG, content: richText('Later block') },
+        ],
+      }),
+    ).toBe('From the block')
+  })
+
+  test('empty when a page has neither', () => {
+    expect(metaDescription({ layout: [{ blockType: 'hero', heading: 'Just a hero' }] })).toBe('')
   })
 })
 

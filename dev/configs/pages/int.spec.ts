@@ -34,7 +34,7 @@ describe('Plugin integration tests', () => {
     expect(page.slug).toBe('hello-world')
   })
 
-  test('a page is laid out with both referenced and inline blocks', async () => {
+  test('a page is laid out with referenced, inline and content blocks', async () => {
     const page = await payload.create({
       collection: 'pages',
       data: {
@@ -42,14 +42,22 @@ describe('Plugin integration tests', () => {
         title: 'With Layout',
         layout: [
           { blockType: 'hero', heading: 'Welcome' },
+          { blockType: 'content' },
           { blockType: 'callToAction', href: '/contact', label: 'Say hi' },
         ],
       },
     })
 
-    expect(page.layout).toHaveLength(2)
+    expect(page.layout).toHaveLength(3)
     expect(page.layout?.[0]).toMatchObject({ blockType: 'hero', heading: 'Welcome' })
-    expect(page.layout?.[1]).toMatchObject({ blockType: 'callToAction', label: 'Say hi' })
+    expect(page.layout?.[1]).toMatchObject({ blockType: 'content' })
+    expect(page.layout?.[2]).toMatchObject({ blockType: 'callToAction', label: 'Say hi' })
+  })
+
+  test('prose lives in the content block, not on the document', () => {
+    expect(payload.collections['pages']?.config.fields).not.toContainEqual(
+      expect.objectContaining({ name: 'content' }),
+    )
   })
 
   // The revalidation hooks run inside the write's transaction, and there is no

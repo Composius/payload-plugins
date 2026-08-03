@@ -1,4 +1,10 @@
 export const en = {
+  blocks: {
+    content: {
+      plural: 'Content blocks',
+      singular: 'Content',
+    },
+  },
   fields: {
     content: 'Content',
     coverImage: 'Cover Image',

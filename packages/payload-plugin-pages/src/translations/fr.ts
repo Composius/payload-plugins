@@ -1,10 +1,16 @@
 import type { Translation } from './index.js'
 
 export const fr: Translation = {
+  blocks: {
+    content: {
+      plural: 'Blocs de contenu',
+      singular: 'Contenu',
+    },
+  },
   fields: {
     content: 'Contenu',
     coverImage: 'Image de couverture',
-    layout: 'Mise en page',
+    layout: 'Layout',
     publishedAt: 'Publié le',
     seo: 'SEO',
     seoTitle: 'Titre',

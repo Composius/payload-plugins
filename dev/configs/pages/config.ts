@@ -1,6 +1,6 @@
 import type { Block } from 'payload'
 
-import { ComposiusPayloadPluginPages } from '@composius/payload-plugin-pages'
+import { ComposiusPayloadPluginPages, contentBlock } from '@composius/payload-plugin-pages'
 import path from 'path'
 import { fileURLToPath } from 'url'
 
@@ -24,12 +24,13 @@ const callToAction: Block = {
 }
 
 export default buildDevConfig({
-  blocks: [hero],
+  blocks: [hero, contentBlock()],
   dirname,
   plugins: [
     ComposiusPayloadPluginPages({
-      blockReferences: ['hero'],
+      blockReferences: ['content', 'hero'],
       blocks: [callToAction],
+      // content: true,
     }),
   ],
   seed,

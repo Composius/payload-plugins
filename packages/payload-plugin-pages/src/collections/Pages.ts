@@ -28,6 +28,8 @@ export type PagesOptions = {
   blockReferences: (Block | BlockSlug)[]
   /** Blocks defined inline on the `layout` field. */
   blocks: Block[]
+  /** Adds the fixed `content` richText field, alongside any layout blocks. */
+  content: boolean
   pageUrl: (slug?: string | null) => string
   /** Next.js cache invalidation on save and delete. `false` turns it off. */
   revalidate: false | RevalidateOptions
@@ -67,6 +69,7 @@ export const Pages = ({
   access,
   blockReferences,
   blocks,
+  content,
   pageUrl,
   revalidate,
   seo,
@@ -116,14 +119,18 @@ export const Pages = ({
         position: 'sidebar',
       },
     },
-    {
-      name: 'content',
-      type: 'richText',
-      label: label((t) => t.fields.content),
-      editor: lexicalEditor({
-        features: contentEditorFeatures('@composius/payload-plugin-pages/client'),
-      }),
-    },
+    ...(content
+      ? [
+          {
+            name: 'content',
+            type: 'richText' as const,
+            label: label((t) => t.fields.content),
+            editor: lexicalEditor({
+              features: contentEditorFeatures('@composius/payload-plugin-pages/client'),
+            }),
+          },
+        ]
+      : []),
     ...layoutFields(blocks, blockReferences),
     {
       name: 'publishedAt',

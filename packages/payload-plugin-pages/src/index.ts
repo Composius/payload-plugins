@@ -46,6 +46,16 @@ export type ComposiusPayloadPluginPagesConfig = {
    * such field exists and a page is title, cover image and rich text.
    */
   blocks?: Block[]
+  /**
+   * Adds a fixed `content` richText field to the collection.
+   *
+   * Off by default: prose is a block like any other, and `contentBlock()` is
+   * exported for the `layout` field. Set to `true` to keep (or restore) the
+   * standalone field — note that the two store their text in different places,
+   * so switching between them on a populated collection needs a migration.
+   * @default false
+   */
+  content?: boolean
   disabled?: boolean
   /**
    * Builds the front-end URL of a page, used for admin preview and live preview.
@@ -120,6 +130,7 @@ export const ComposiusPayloadPluginPages =
         access,
         blockReferences: pluginOptions.blockReferences ?? [],
         blocks: pluginOptions.blocks ?? [],
+        content: pluginOptions.content ?? false,
         pageUrl,
         revalidate,
         seo: seoEnabled
@@ -155,4 +166,5 @@ export const ComposiusPayloadPluginPages =
   }
 
 export type { RevalidateEvent, RevalidateOptions, RevalidateProfile }
+export { contentBlock, CONTENT_BLOCK_SLUG } from './blocks/content.js'
 export { pageIdTag, pageTag, PAGES_TAG } from './tags.js'

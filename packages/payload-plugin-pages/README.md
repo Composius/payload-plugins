@@ -9,7 +9,7 @@ A [Payload CMS](https://payloadcms.com) plugin that adds a `pages` collection wi
 | `title`       | `text`     | required, used as admin title             |
 | `slug`        | `text`     | auto-generated from title, unique         |
 | `coverImage`  | `upload`   | relates to `media`                        |
-| `content`     | `richText` |                                           |
+| `content`     | `richText` | only with `content: true` (see below)     |
 | `layout`      | `blocks`   | only when blocks are passed (see below)   |
 | `publishedAt` | `date`     | auto-set on first publish                 |
 | `meta`        | `group`    | SEO title/description/image/preview       |
@@ -18,8 +18,8 @@ A [Payload CMS](https://payloadcms.com) plugin that adds a `pages` collection wi
 
 ## Blocks
 
-A page is title, cover image and rich text until you give it blocks. Pass them
-and a `layout` blocks field appears after `content`:
+A page is title and cover image until you give it blocks. Pass them and a
+`layout` blocks field appears:
 
 ```ts
 ComposiusPayloadPluginPages({ blocks: [Hero, CallToAction] })
@@ -39,6 +39,37 @@ export default buildConfig({
 `blocks` alongside `blockReferences` and the inline blocks join the references
 on the same field, since Payload allows a blocks field only one of the two
 lists.
+
+### Prose
+
+Rich text is a block like any other. `contentBlock()` builds it — the same
+lexical editor the standalone field used, with the plugin's toolbar features:
+
+```ts
+import { ComposiusPayloadPluginPages, contentBlock } from '@composius/payload-plugin-pages'
+
+// inline…
+ComposiusPayloadPluginPages({ blocks: [contentBlock(), Hero] })
+
+// …or registered once and referenced by slug
+export default buildConfig({
+  blocks: [contentBlock(), Hero],
+  plugins: [ComposiusPayloadPluginPages({ blockReferences: ['content', 'hero'] })],
+})
+```
+
+It is a factory, not a shared object: Payload marks a block sanitized in place,
+so each config needs its own copy.
+
+For a fixed `content` richText field on the document instead, pass
+`content: true`. The two are independent — a collection can have both — but they
+store their text in different places (a column on `pages`, versus rows in a
+`pages_blocks_content` table), so moving from one to the other on a populated
+collection needs a migration that copies the values across. Nothing is migrated
+automatically, and a dropped field takes its column with it.
+
+The default meta description reads whichever is present: the `content` field
+when the collection has one, otherwise the first content block in the layout.
 
 ## Cache revalidation
 
@@ -140,8 +171,12 @@ ComposiusPayloadPluginPages({
 
   // Blocks of the `layout` field: defined inline, and/or referenced by slug
   // from `config.blocks`. No field is added when both are empty (the default).
-  blocks: [Hero],
+  blocks: [contentBlock(), Hero],
   blockReferences: ['hero'],
+
+  // Adds a fixed `content` richText field to the document. Off by default:
+  // prose is a block, via contentBlock().
+  content: false,
 
   // Front-end URL of a page, used for (live) preview and SEO.
   // Default: `${NEXT_PUBLIC_SERVER_URL || SERVER_URL}/${slug}` (pages live at the site root)
