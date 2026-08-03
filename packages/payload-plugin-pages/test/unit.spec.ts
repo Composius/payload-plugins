@@ -110,12 +110,16 @@ describe('layout blocks', () => {
       | BlocksField
       | undefined
 
-  test('no layout field without blocks', () => {
-    expect(findLayout(ComposiusPayloadPluginPages()(baseConfig()))).toBeUndefined()
+  test('no layout field once nothing can go in it', () => {
+    expect(
+      findLayout(ComposiusPayloadPluginPages({ content: false })(baseConfig())),
+    ).toBeUndefined()
   })
 
   test('blocks are defined inline on the layout field', () => {
-    const layout = findLayout(ComposiusPayloadPluginPages({ blocks: [hero] })(baseConfig()))
+    const layout = findLayout(
+      ComposiusPayloadPluginPages({ blocks: [hero], content: false })(baseConfig()),
+    )
 
     expect(layout?.type).toBe('blocks')
     expect(layout?.blocks).toEqual([hero])
@@ -124,7 +128,7 @@ describe('layout blocks', () => {
 
   test('the layout field sits between content and publishedAt', () => {
     const pages = findPages(
-      ComposiusPayloadPluginPages({ blocks: [hero], content: true })(baseConfig()),
+      ComposiusPayloadPluginPages({ blocks: [hero], content: 'field' })(baseConfig()),
     )
     const names = pages.fields.map((field) => (field as { name?: string }).name)
 
@@ -135,28 +139,50 @@ describe('layout blocks', () => {
 
   test('references are passed as blockReferences, which Payload requires to be alone', () => {
     const layout = findLayout(
-      ComposiusPayloadPluginPages({ blockReferences: ['hero', cta] })(baseConfig()),
+      ComposiusPayloadPluginPages({ blockReferences: ['hero'], content: false })(baseConfig()),
     )
 
-    expect(layout?.blockReferences).toEqual(['hero', cta])
+    expect(layout?.blockReferences).toEqual(['hero'])
     expect(layout?.blocks).toEqual([])
   })
 
-  test('inline blocks join the references when both are given', () => {
-    const layout = findLayout(
-      ComposiusPayloadPluginPages({
-        blockReferences: ['hero'],
-        blocks: [cta],
-      })(baseConfig()),
-    )
+  // A block object reachable only through `blockReferences` contributes nothing
+  // to the import map — `generate:importmap` does not walk that list — so its
+  // components go missing at runtime. Registered on the config, it is walked.
+  test('inline blocks are registered on the config once references are in play', () => {
+    const config = ComposiusPayloadPluginPages({
+      blockReferences: ['hero'],
+      blocks: [cta],
+      content: false,
+    })(baseConfig())
 
-    expect(layout?.blockReferences).toEqual(['hero', cta])
-    expect(layout?.blocks).toEqual([])
+    expect(findLayout(config)?.blockReferences).toEqual(['hero', 'cta'])
+    expect(config.blocks).toEqual([cta])
+  })
+
+  test('a block passed as a reference object is registered too', () => {
+    const config = ComposiusPayloadPluginPages({
+      blockReferences: ['hero', cta],
+      content: false,
+    })(baseConfig())
+
+    expect(findLayout(config)?.blockReferences).toEqual(['hero', 'cta'])
+    expect(config.blocks).toEqual([cta])
+  })
+
+  test('a slug the host already registered keeps their definition', () => {
+    const theirs: Block = { slug: 'cta', fields: [{ name: 'theirs', type: 'text' }] }
+    const config = baseConfig()
+    config.blocks = [theirs]
+
+    ComposiusPayloadPluginPages({ blockReferences: ['hero'], blocks: [cta], content: false })(config)
+
+    expect(config.blocks).toEqual([theirs])
   })
 
   test('a disabled plugin keeps the layout field for schema consistency', () => {
     const layout = findLayout(
-      ComposiusPayloadPluginPages({ blocks: [hero], disabled: true })(baseConfig()),
+      ComposiusPayloadPluginPages({ blocks: [hero], content: false, disabled: true })(baseConfig()),
     )
 
     expect(layout?.blocks).toEqual([hero])
@@ -167,14 +193,67 @@ describe('content', () => {
   const contentField = (config: Config) =>
     findPages(config).fields.find((field) => (field as { name?: string }).name === 'content')
 
-  test('no standalone content field by default', () => {
-    expect(contentField(ComposiusPayloadPluginPages()(baseConfig()))).toBeUndefined()
+  const layoutSlugs = (config: Config) => {
+    const layout = findPages(config).fields.find(
+      (field) => (field as { name?: string }).name === 'layout',
+    ) as BlocksField | undefined
+
+    return (layout?.blockReferences ?? layout?.blocks ?? []).map((block) =>
+      typeof block === 'string' ? block : block.slug,
+    )
+  }
+
+  test('the content block is in the layout by default, with nothing imported', () => {
+    const config = ComposiusPayloadPluginPages()(baseConfig())
+
+    expect(layoutSlugs(config)).toEqual([CONTENT_BLOCK_SLUG])
+    expect(contentField(config)).toBeUndefined()
   })
 
-  test('content: true restores the richText field', () => {
-    const content = contentField(ComposiusPayloadPluginPages({ content: true })(baseConfig()))
+  test('it leads the blocks the host passes', () => {
+    const hero: Block = { slug: 'hero', fields: [] }
+    const config = ComposiusPayloadPluginPages({ blocks: [hero] })(baseConfig())
 
-    expect((content as Field)?.type).toBe('richText')
+    expect(layoutSlugs(config)).toEqual([CONTENT_BLOCK_SLUG, 'hero'])
+  })
+
+  test('and joins the references, registered on the config so the import map sees it', () => {
+    const config = ComposiusPayloadPluginPages({ blockReferences: ['hero'] })(baseConfig())
+
+    expect(layoutSlugs(config)).toEqual(['hero', CONTENT_BLOCK_SLUG])
+    expect(config.blocks?.map((block) => block.slug)).toEqual([CONTENT_BLOCK_SLUG])
+  })
+
+  test("content: 'field' puts the richText on the document instead", () => {
+    const config = ComposiusPayloadPluginPages({ content: 'field' })(baseConfig())
+
+    expect((contentField(config) as Field)?.type).toBe('richText')
+    expect(layoutSlugs(config)).toEqual([])
+  })
+
+  test('content: false leaves a page without prose of either kind', () => {
+    const config = ComposiusPayloadPluginPages({ content: false })(baseConfig())
+
+    expect(contentField(config)).toBeUndefined()
+    expect(layoutSlugs(config)).toEqual([])
+  })
+
+  test('a block of the same slug replaces the built-in one', () => {
+    const mine: Block = { slug: CONTENT_BLOCK_SLUG, fields: [{ name: 'body', type: 'text' }] }
+    const config = ComposiusPayloadPluginPages({ blocks: [mine] })(baseConfig())
+    const layout = findPages(config).fields.find(
+      (field) => (field as { name?: string }).name === 'layout',
+    ) as BlocksField
+
+    expect(layout.blocks).toEqual([mine])
+  })
+
+  test('so does a reference to one, since the slug is taken', () => {
+    const config = ComposiusPayloadPluginPages({ blockReferences: [CONTENT_BLOCK_SLUG] })(
+      baseConfig(),
+    )
+
+    expect(layoutSlugs(config)).toEqual([CONTENT_BLOCK_SLUG])
   })
 
   test('the exported block carries the same richText field', () => {

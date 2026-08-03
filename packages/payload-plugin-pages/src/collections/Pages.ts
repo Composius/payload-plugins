@@ -29,7 +29,7 @@ export type PagesOptions = {
   /** Blocks defined inline on the `layout` field. */
   blocks: Block[]
   /** Adds the fixed `content` richText field, alongside any layout blocks. */
-  content: boolean
+  contentField: boolean
   pageUrl: (slug?: string | null) => string
   /** Next.js cache invalidation on save and delete. `false` turns it off. */
   revalidate: false | RevalidateOptions
@@ -40,8 +40,8 @@ export type PagesOptions = {
  * The `layout` blocks field, present only once the host has blocks to put in it.
  *
  * Payload rejects a field that carries both `blocks` and `blockReferences`, so
- * when references are in play the inline blocks join them: a `Block` object
- * listed under `blockReferences` is sanitized exactly like an inline one.
+ * only one list is ever set. The plugin decides which, and hands the blocks
+ * over already sorted into it.
  */
 const layoutFields = (blocks: Block[], blockReferences: (Block | BlockSlug)[]): Field[] => {
   if (blocks.length === 0 && blockReferences.length === 0) {
@@ -69,7 +69,7 @@ export const Pages = ({
   access,
   blockReferences,
   blocks,
-  content,
+  contentField,
   pageUrl,
   revalidate,
   seo,
@@ -119,7 +119,7 @@ export const Pages = ({
         position: 'sidebar',
       },
     },
-    ...(content
+    ...(contentField
       ? [
           {
             name: 'content',

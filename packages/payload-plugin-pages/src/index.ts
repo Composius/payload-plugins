@@ -13,6 +13,7 @@ import type {
 } from '@composius/payload-plugin-shared-components'
 import type { PagesAccess } from './collections/Pages.js'
 import { Pages } from './collections/Pages.js'
+import { contentBlock, CONTENT_BLOCK_SLUG } from './blocks/content.js'
 import {
   authenticated,
   authenticatedOrPublished,
@@ -41,21 +42,27 @@ export type ComposiusPayloadPluginPagesConfig = {
    */
   blockReferences?: (Block | BlockSlug)[]
   /**
-   * Blocks a page can be laid out with, defined inline on a `layout` field
-   * added after `content`. Without them — and without `blockReferences` — no
-   * such field exists and a page is title, cover image and rich text.
+   * Blocks a page can be laid out with, defined inline on the `layout` field.
+   * They join the content block the plugin contributes by default.
    */
   blocks?: Block[]
   /**
-   * Adds a fixed `content` richText field to the collection.
+   * Where the prose of a page lives:
    *
-   * Off by default: prose is a block like any other, and `contentBlock()` is
-   * exported for the `layout` field. Set to `true` to keep (or restore) the
-   * standalone field — note that the two store their text in different places,
-   * so switching between them on a populated collection needs a migration.
-   * @default false
+   * - `'block'` (the default) — a content block, added to `layout` for you.
+   *   Nothing to import: `contentBlock()` is exported only for hosts that want
+   *   to place it themselves, or register it in `config.blocks`.
+   * - `'field'` — a fixed `content` richText field on the document.
+   * - `false` — neither; the layout is whatever you pass.
+   *
+   * Passing a block of your own under the `content` slug, inline or by
+   * reference, replaces the built-in one rather than colliding with it.
+   *
+   * The block and the field store their text in different places, so moving
+   * between them on a populated collection needs a migration.
+   * @default 'block'
    */
-  content?: boolean
+  content?: 'block' | 'field' | false
   disabled?: boolean
   /**
    * Builds the front-end URL of a page, used for admin preview and live preview.
@@ -92,6 +99,21 @@ export type ComposiusPayloadPluginPagesConfig = {
       }
 }
 
+/**
+ * Puts a block on `config.blocks` and returns its slug, so a field can name it.
+ * A slug already registered is left alone: the host's definition wins, and
+ * Payload rejects a config that registers one slug twice.
+ */
+const registerBlock = (config: Config, block: Block): string => {
+  config.blocks ??= []
+
+  if (!config.blocks.some((registered) => registered.slug === block.slug)) {
+    config.blocks.push(block)
+  }
+
+  return block.slug
+}
+
 export const ComposiusPayloadPluginPages =
   (pluginOptions: ComposiusPayloadPluginPagesConfig = {}) =>
   (config: Config): Config => {
@@ -117,6 +139,34 @@ export const ComposiusPayloadPluginPages =
     const generateTitle: GenerateTitle = seoOverrides.generateTitle ?? defaultGenerateTitle
     const generateURL: GenerateURL = seoOverrides.generateURL ?? defaultGenerateURL(pageUrl)
 
+    const content = pluginOptions.content ?? 'block'
+    const givenReferences = pluginOptions.blockReferences ?? []
+    const givenBlocks = pluginOptions.blocks ?? []
+
+    // The built-in content block stands down for one the host defines under the
+    // same slug: two blocks named `content` on one field is an error, and the
+    // host's own definition is the one they meant to use.
+    const claimsContentSlug = [...givenBlocks, ...givenReferences].some(
+      (block) => (typeof block === 'string' ? block : block.slug) === CONTENT_BLOCK_SLUG,
+    )
+
+    const layoutBlocks =
+      content === 'block' && !claimsContentSlug ? [contentBlock(), ...givenBlocks] : givenBlocks
+
+    // `generate:importmap` walks `config.blocks` and a blocks field's `blocks`,
+    // but never its `blockReferences` — a block object reachable only as a
+    // reference contributes none of its components, and a richText inside it
+    // fails at runtime with "PayloadComponent not found in importMap". So once
+    // the field is in reference mode, every block object goes onto the config
+    // and is named by slug, which the generator does follow.
+    const references = givenReferences.length > 0
+    const blocks = references ? [] : layoutBlocks
+    const blockReferences = references
+      ? [...givenReferences, ...layoutBlocks].map((block) =>
+          typeof block === 'string' ? block : registerBlock(config, block),
+        )
+      : []
+
     // A disabled plugin keeps its collection for schema consistency, but must
     // not act on it: revalidating from a plugin that is meant to be off would
     // be a side effect nobody asked for.
@@ -128,9 +178,9 @@ export const ComposiusPayloadPluginPages =
     config.collections.push(
       Pages({
         access,
-        blockReferences: pluginOptions.blockReferences ?? [],
-        blocks: pluginOptions.blocks ?? [],
-        content: pluginOptions.content ?? false,
+        blockReferences,
+        blocks,
+        contentField: content === 'field',
         pageUrl,
         revalidate,
         seo: seoEnabled

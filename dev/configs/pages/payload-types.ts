@@ -68,6 +68,7 @@ export interface Config {
   blocks: {
     hero: Hero;
     content: Content;
+    callToAction: CallToAction;
   };
   collections: {
     media: Media;
@@ -158,6 +159,17 @@ export interface Content {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "callToAction".
+ */
+export interface CallToAction {
+  label?: string | null;
+  href?: string | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'callToAction';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "media".
  */
 export interface Media {
@@ -187,19 +199,7 @@ export interface Page {
   generateSlug?: boolean | null;
   slug: string;
   coverImage?: (number | null) | Media;
-  layout?:
-    | (
-        | Content
-        | Hero
-        | {
-            label?: string | null;
-            href?: string | null;
-            id?: string | null;
-            blockName?: string | null;
-            blockType: 'callToAction';
-          }
-      )[]
-    | null;
+  layout?: (Hero | Content | CallToAction)[] | null;
   publishedAt?: string | null;
   meta?: {
     title?: string | null;
@@ -342,18 +342,7 @@ export interface PagesSelect<T extends boolean = true> {
   generateSlug?: T;
   slug?: T;
   coverImage?: T;
-  layout?:
-    | T
-    | {
-        callToAction?:
-          | T
-          | {
-              label?: T;
-              href?: T;
-              id?: T;
-              blockName?: T;
-            };
-      };
+  layout?: T | {};
   publishedAt?: T;
   meta?:
     | T

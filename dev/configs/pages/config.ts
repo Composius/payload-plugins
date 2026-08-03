@@ -1,6 +1,6 @@
 import type { Block } from 'payload'
 
-import { ComposiusPayloadPluginPages, contentBlock } from '@composius/payload-plugin-pages'
+import { ComposiusPayloadPluginPages } from '@composius/payload-plugin-pages'
 import path from 'path'
 import { fileURLToPath } from 'url'
 
@@ -23,14 +23,14 @@ const callToAction: Block = {
   ],
 }
 
+// The content block is not listed anywhere: the plugin adds it to the layout.
 export default buildDevConfig({
-  blocks: [hero, contentBlock()],
+  blocks: [hero],
   dirname,
   plugins: [
     ComposiusPayloadPluginPages({
-      blockReferences: ['content', 'hero'],
+      blockReferences: ['hero'],
       blocks: [callToAction],
-      // content: true,
     }),
   ],
   seed,

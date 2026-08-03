@@ -9,8 +9,8 @@ A [Payload CMS](https://payloadcms.com) plugin that adds a `pages` collection wi
 | `title`       | `text`     | required, used as admin title             |
 | `slug`        | `text`     | auto-generated from title, unique         |
 | `coverImage`  | `upload`   | relates to `media`                        |
-| `content`     | `richText` | only with `content: true` (see below)     |
-| `layout`      | `blocks`   | only when blocks are passed (see below)   |
+| `content`     | `richText` | only with `content: 'field'` (see below)  |
+| `layout`      | `blocks`   | the content block, plus any you pass      |
 | `publishedAt` | `date`     | auto-set on first publish                 |
 | `meta`        | `group`    | SEO title/description/image/preview       |
 
@@ -18,11 +18,12 @@ A [Payload CMS](https://payloadcms.com) plugin that adds a `pages` collection wi
 
 ## Blocks
 
-A page is title and cover image until you give it blocks. Pass them and a
-`layout` blocks field appears:
+A page is written in its `layout` field. Out of the box that field holds one
+block — the rich text one, contributed by the plugin — and yours join it:
 
 ```ts
 ComposiusPayloadPluginPages({ blocks: [Hero, CallToAction] })
+// layout: content, hero, callToAction
 ```
 
 Blocks registered on the config are named by slug instead, so one definition is
@@ -42,31 +43,41 @@ lists.
 
 ### Prose
 
-Rich text is a block like any other. `contentBlock()` builds it — the same
-lexical editor the standalone field used, with the plugin's toolbar features:
+Rich text is a block like any other, and the plugin adds it for you — the
+`content` block, the same lexical editor and toolbar features the standalone
+field used. The `content` option says where prose lives:
+
+| Value              | Effect                                                        |
+| ------------------ | ------------------------------------------------------------- |
+| `'block'` (default) | a `content` block, added to the layout                        |
+| `'field'`          | a fixed `content` richText field on the document              |
+| `false`            | neither — the layout is exactly what you pass                 |
+
+Define a block of your own under the `content` slug and it replaces the built-in
+one instead of colliding with it, inline or by reference:
 
 ```ts
-import { ComposiusPayloadPluginPages, contentBlock } from '@composius/payload-plugin-pages'
+ComposiusPayloadPluginPages({ blocks: [{ slug: 'content', fields: [...] }] })
+```
 
-// inline…
-ComposiusPayloadPluginPages({ blocks: [contentBlock(), Hero] })
+`contentBlock()` is exported for hosts that want to place it themselves — first
+in the picker, registered in `config.blocks`, wrapped in a tab. It is a factory,
+not a shared object: Payload marks a block sanitized in place, so each config
+needs its own copy.
 
-// …or registered once and referenced by slug
+```ts
+import { contentBlock } from '@composius/payload-plugin-pages'
+
 export default buildConfig({
   blocks: [contentBlock(), Hero],
-  plugins: [ComposiusPayloadPluginPages({ blockReferences: ['content', 'hero'] })],
+  plugins: [ComposiusPayloadPluginPages({ blockReferences: ['hero', 'content'] })],
 })
 ```
 
-It is a factory, not a shared object: Payload marks a block sanitized in place,
-so each config needs its own copy.
-
-For a fixed `content` richText field on the document instead, pass
-`content: true`. The two are independent — a collection can have both — but they
-store their text in different places (a column on `pages`, versus rows in a
-`pages_blocks_content` table), so moving from one to the other on a populated
-collection needs a migration that copies the values across. Nothing is migrated
-automatically, and a dropped field takes its column with it.
+The block and the field store their text in different places — rows in a
+`pages_blocks_content` table, versus a column on `pages` — so moving between
+them on a populated collection needs a migration that copies the values across.
+Nothing is migrated automatically, and a dropped field takes its column with it.
 
 The default meta description reads whichever is present: the `content` field
 when the collection has one, otherwise the first content block in the layout.
@@ -170,13 +181,13 @@ ComposiusPayloadPluginPages({
   access: { read, create, update, delete },
 
   // Blocks of the `layout` field: defined inline, and/or referenced by slug
-  // from `config.blocks`. No field is added when both are empty (the default).
-  blocks: [contentBlock(), Hero],
+  // from `config.blocks`. Both join the content block the plugin adds.
+  blocks: [Hero],
   blockReferences: ['hero'],
 
-  // Adds a fixed `content` richText field to the document. Off by default:
-  // prose is a block, via contentBlock().
-  content: false,
+  // Where the prose of a page lives: a block in the layout (default), a fixed
+  // `content` richText field on the document, or nowhere.
+  content: 'block',
 
   // Front-end URL of a page, used for (live) preview and SEO.
   // Default: `${NEXT_PUBLIC_SERVER_URL || SERVER_URL}/${slug}` (pages live at the site root)
