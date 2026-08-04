@@ -5,7 +5,7 @@ import type { MediaAccess, MediaPrefix } from './types.js'
 import { Media } from './collections/Media.js'
 import { anyone, authenticated, defaultImageSizes } from './defaults.js'
 
-export { buildPrefix, uniqueFilename } from './collections/Media.js'
+export { buildPrefix, convertToWebp, uniqueFilename } from './collections/Media.js'
 export { defaultImageSizes } from './defaults.js'
 export type { MediaAccess, MediaPrefix } from './types.js'
 

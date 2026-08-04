@@ -19,17 +19,22 @@ beforeAll(async () => {
   payload = await getPayload({ config })
 })
 
-const createImage = async (name: string, width = 1600, height = 900) => {
+const createImage = async (
+  name: string,
+  width = 1600,
+  height = 900,
+  format: 'avif' | 'png' = 'png',
+) => {
   const data = await sharp({
     create: { width, height, channels: 3, background: { b: 40, g: 80, r: 200 } },
   })
-    .png()
+    .toFormat(format)
     .toBuffer()
 
   return payload.create({
     collection: 'media',
     data: { alt: 'Test image' },
-    file: { data, mimetype: 'image/png', name, size: data.length },
+    file: { data, mimetype: `image/${format}`, name, size: data.length },
   })
 }
 
@@ -47,6 +52,14 @@ describe('Plugin integration tests', () => {
     expect(doc.alt).toBe('Test image')
   })
 
+  test('AVIF uploads are kept as AVIF', async () => {
+    const doc = await createImage('photo.avif', 1600, 900, 'avif')
+
+    expect(doc.filename).toBe('photo.avif')
+    expect(doc.mimeType).toBe('image/avif')
+    expect(doc.sizes?.thumbnail?.filename).toBe('photo-300x169.avif')
+  })
+
   test('the default image sizes are generated', async () => {
     const doc = await createImage('sizes.png')
 
@@ -55,6 +68,13 @@ describe('Plugin integration tests', () => {
     expect(doc.sizes?.medium?.width).toBe(900)
     expect(doc.sizes?.large?.width).toBe(1400)
     expect(doc.sizes?.og).toMatchObject({ height: 630, width: 1200 })
+  })
+
+  test('the generated sizes are WebP too', async () => {
+    const doc = await createImage('formats.png')
+
+    expect(doc.sizes?.thumbnail?.mimeType).toBe('image/webp')
+    expect(doc.sizes?.thumbnail?.filename).toBe('formats-300x169.webp')
   })
 
   test('the original is capped at 2560px wide', async () => {

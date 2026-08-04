@@ -1,6 +1,7 @@
-import type { CollectionConfig } from 'payload'
+import type { CollectionBeforeOperationHook, CollectionConfig } from 'payload'
 
 import crypto from 'crypto'
+import fs from 'fs/promises'
 import path from 'path'
 
 import type { MediaOptions, MediaPrefix } from '../types.js'
@@ -31,6 +32,46 @@ export const uniqueFilename = (filename: string): string => {
   return `${base}-${crypto.randomBytes(4).toString('hex')}${ext}`
 }
 
+/**
+ * Mime types converted to WebP. AVIF is left alone — it is already a modern
+ * format and transcoding it to WebP only costs quality — and so is anything
+ * sharp cannot re-encode (SVG…), which passes through untouched.
+ */
+export const convertedToWebp = ['image/gif', 'image/jpeg', 'image/png', 'image/tiff']
+
+/**
+ * Converts the uploaded file to WebP before Payload processes it, so that the
+ * stored original *and* the generated sizes are WebP. Done here rather than
+ * with `upload.formatOptions` because that config is static: it would also
+ * transcode AVIF uploads.
+ */
+export const convertToWebp: CollectionBeforeOperationHook = async ({ req }) => {
+  const { file } = req
+  const { sharp } = req.payload.config
+
+  if (!sharp || !file || !convertedToWebp.includes(file.mimetype)) {
+    return
+  }
+
+  const converted = await sharp(file.tempFilePath || file.data, {
+    animated: file.mimetype === 'image/gif',
+  })
+    .rotate() // apply the EXIF orientation, which the WebP output drops
+    .webp({ quality: 90 })
+    .toBuffer()
+
+  if (file.tempFilePath) {
+    // `file.data` is an empty buffer when Payload runs with `useTempFiles`
+    await fs.writeFile(file.tempFilePath, converted)
+  } else {
+    file.data = converted
+  }
+
+  file.mimetype = 'image/webp'
+  file.name = `${path.basename(file.name, path.extname(file.name))}.webp`
+  file.size = converted.length
+}
+
 export const Media = ({
   access,
   imageSizes,
@@ -50,15 +91,18 @@ export const Media = ({
     delete: access.delete,
   },
   hooks: {
-    ...(randomSuffix && {
-      beforeOperation: [
-        ({ operation, req }) => {
-          if (operation === 'create' && req.file?.name) {
-            req.file.name = uniqueFilename(req.file.name)
-          }
-        },
-      ],
-    }),
+    beforeOperation: [
+      convertToWebp, // runs first so the random suffix lands on the .webp name
+      ...(randomSuffix
+        ? [
+            ({ operation, req }: Parameters<CollectionBeforeOperationHook>[0]) => {
+              if (operation === 'create' && req.file?.name) {
+                req.file.name = uniqueFilename(req.file.name)
+              }
+            },
+          ]
+        : []),
+    ],
     ...(prefix !== undefined && {
       beforeValidate: [
         // Cloud storage plugins (e.g. @payloadcms/storage-s3) read this
@@ -83,7 +127,6 @@ export const Media = ({
     adminThumbnail: imageSizes.some((size) => size.name === 'thumbnail')
       ? 'thumbnail'
       : imageSizes[0]?.name,
-    formatOptions: { format: 'webp', options: { quality: 90 } },
     imageSizes,
     mimeTypes: ['image/*'],
     resizeOptions: { width: 2560, withoutEnlargement: true }, // cap the "original"
