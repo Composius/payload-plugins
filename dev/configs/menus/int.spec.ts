@@ -112,6 +112,33 @@ describe('Plugin integration tests', () => {
     expect(updated.links?.[0]?.title).toBe('after@example.com')
   })
 
+  test('stores an anchor on an internal link, without its leading #', async () => {
+    const user = await createUser('anchor@example.com')
+    const menu = await payload.create({
+      collection: 'menus',
+      data: {
+        name: 'Anchor menu',
+        links: [
+          {
+            anchor: '#contact',
+            blockType: 'internal',
+            doc: { relationTo: 'users', value: user.id },
+          },
+          {
+            anchor: 'pricing',
+            blockType: 'internal',
+            doc: { relationTo: 'users', value: user.id },
+          },
+          { blockType: 'internal', doc: { relationTo: 'users', value: user.id } },
+        ],
+      },
+    })
+
+    expect(menu.links?.[0]?.anchor).toBe('contact')
+    expect(menu.links?.[1]?.anchor).toBe('pricing')
+    expect(menu.links?.[2]?.anchor).toBeFalsy()
+  })
+
   test('a custom title overrides the linked document title', async () => {
     const user = await createUser('override@example.com')
     const menu = await payload.create({

@@ -155,6 +155,10 @@ export interface Menu {
              * Leave it blank to use the title of the linked document. Edit to override it.
              */
             title?: string | null;
+            /**
+             * Optional. The id of a section of the linked document, without the "#", to jump straight to it.
+             */
+            anchor?: string | null;
             newTab?: boolean | null;
             id?: string | null;
             blockName?: string | null;
@@ -308,6 +312,7 @@ export interface MenusSelect<T extends boolean = true> {
           | {
               doc?: T;
               title?: T;
+              anchor?: T;
               newTab?: T;
               id?: T;
               blockName?: T;

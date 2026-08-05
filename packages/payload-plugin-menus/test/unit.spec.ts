@@ -73,6 +73,25 @@ describe('ComposiusPayloadPluginMenus', () => {
     })
   })
 
+  test('an internal link takes an optional anchor', () => {
+    const config = ComposiusPayloadPluginMenus({ collections: ['users'] })(baseConfig())
+    const links = findLinks(findMenus(config))
+
+    const internal = (links.blocks as Block[]).find((block) => block.slug === 'internal')!
+    const anchor = internal.fields.find((field) => (field as { name?: string }).name === 'anchor')
+    expect(anchor).toMatchObject({ type: 'text' })
+    expect((anchor as { required?: boolean }).required).toBeUndefined()
+  })
+
+  test('external links have no anchor', () => {
+    const config = ComposiusPayloadPluginMenus({ collections: ['users'] })(baseConfig())
+    const links = findLinks(findMenus(config))
+
+    const external = (links.blocks as Block[]).find((block) => block.slug === 'external')!
+    const fieldNames = external.fields.map((field) => (field as { name?: string }).name)
+    expect(fieldNames).not.toContain('anchor')
+  })
+
   test('default access: read is public, writes require a user', () => {
     const config = ComposiusPayloadPluginMenus()(baseConfig())
     const menus = findMenus(config)

@@ -38,6 +38,29 @@ const newTab: Field = {
   label: label((t) => t.fields.newTab),
 }
 
+const anchor: Field = {
+  name: 'anchor',
+  type: 'text',
+  label: label((t) => t.fields.anchor),
+  admin: {
+    description: label((t) => t.links.anchorDescription),
+  },
+  hooks: {
+    // Stored without its leading '#', whether or not the editor typed one, so a
+    // front end can always build the href as `${path}#${anchor}`.
+    beforeValidate: [
+      ({ value }) => {
+        if (typeof value !== 'string') {
+          return value
+        }
+
+        const normalized = value.trim().replace(/^#+/, '')
+        return normalized === '' ? null : normalized
+      },
+    ],
+  },
+}
+
 const externalLink: Block = {
   slug: 'external',
   labels: {
@@ -83,6 +106,7 @@ const internalLink = (collections: CollectionSlug[]): Block => ({
         description: label((t) => t.links.titleDescription),
       },
     },
+    anchor,
     newTab,
   ],
 })

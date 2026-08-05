@@ -17,10 +17,14 @@ Each item in `links` is one of two block types:
 - **`external`** — a `title` and a `url`, both required.
 - **`internal`** — a `doc` relationship to one of the collections configured via the
   `collections` option (pick the collection, then the document), plus an optional
-  `title`. Only available when `collections` is non-empty.
+  `title` and an optional `anchor`. Only available when `collections` is non-empty.
 
 Both block types also have a `newTab` checkbox (default `false`) for opening the
 link in a new tab.
+
+An internal link's `anchor` targets a section of the linked document. It is stored
+without its leading `#` — typing `#contact` or `contact` both save as `contact` —
+so a front end can build the href as `` `${path}#${anchor}` `` unconditionally.
 
 For internal links, the title resolves at read time: when `title` is empty, an
 `afterRead` hook fills it with the linked document's title (its `admin.useAsTitle`
