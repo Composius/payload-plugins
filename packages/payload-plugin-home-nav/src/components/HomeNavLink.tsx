@@ -7,6 +7,17 @@ import type { LocalizedText } from '../localized.js'
 
 import { resolveHomeLabel } from '../label.js'
 
+/**
+ * Sets the link apart from the collection links that follow it, using the
+ * same 10px `.nav-group` uses between groups. The rule is unlayered, so it
+ * wins over Payload's `@layer payload-default` styles.
+ */
+const linkStyles = `
+#nav-home {
+  margin-bottom: 10px;
+}
+`
+
 export type HomeNavLinkProps = ServerProps & {
   /** Destination from the plugin options. Default: the admin dashboard. */
   href?: string
@@ -26,6 +37,7 @@ export const HomeNavLink = ({ href, i18n, label, payload }: HomeNavLinkProps) =>
 
   return (
     <Link className="nav__link" href={url} id="nav-home" prefetch={false}>
+      <style>{linkStyles}</style>
       <span className="nav__link-label">{text}</span>
     </Link>
   )
