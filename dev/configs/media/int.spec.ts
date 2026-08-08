@@ -52,12 +52,12 @@ describe('Plugin integration tests', () => {
     expect(doc.alt).toBe('Test image')
   })
 
-  test('AVIF uploads are kept as AVIF', async () => {
-    const doc = await createImage('photo.avif', 1600, 900, 'avif')
+  test('AVIF uploads are converted too', async () => {
+    const doc = await createImage('modern.avif', 1600, 900, 'avif')
 
-    expect(doc.filename).toBe('photo.avif')
-    expect(doc.mimeType).toBe('image/avif')
-    expect(doc.sizes?.thumbnail?.filename).toBe('photo-300x169.avif')
+    expect(doc.filename).toBe('modern.webp')
+    expect(doc.mimeType).toBe('image/webp')
+    expect(doc.sizes?.thumbnail?.filename).toBe('modern-300x169.webp')
   })
 
   test('the default image sizes are generated', async () => {

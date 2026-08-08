@@ -5,7 +5,12 @@ import type { MediaAccess, MediaPrefix } from './types.js'
 import { Media } from './collections/Media.js'
 import { anyone, authenticated, defaultImageSizes } from './defaults.js'
 
-export { buildPrefix, convertToWebp, uniqueFilename } from './collections/Media.js'
+export {
+  buildPrefix,
+  convertAvifToWebp,
+  uniqueFilename,
+  withWebpSizes,
+} from './collections/Media.js'
 export { defaultImageSizes } from './defaults.js'
 export type { MediaAccess, MediaPrefix } from './types.js'
 
@@ -21,7 +26,8 @@ export type ComposiusPayloadPluginMediaConfig = {
    * Image sizes generated for each upload. Defaults to `thumbnail` (300),
    * `small` (600), `medium` (900), `large` (1400) and `og` (1200×630,
    * center crop). The admin thumbnail uses the `thumbnail` size when
-   * present, otherwise the first size.
+   * present, otherwise the first size. Sizes are encoded as WebP unless
+   * they carry their own `formatOptions`.
    */
   imageSizes?: ImageSize[]
   /**

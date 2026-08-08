@@ -1,7 +1,7 @@
 # @composius/payload-plugin-media
 
 A [Payload CMS](https://payloadcms.com) plugin that adds a `media` upload
-collection: images are converted to WebP (AVIF uploads are kept as AVIF), the
+collection: images and their generated sizes are converted to WebP, the
 original is capped at 2560px wide, a set of responsive sizes is generated,
 filenames get a random suffix so they are unique, and an optional storage key
 prefix (`<folder>/<year>/<month>`) is set for cloud storage plugins.
@@ -18,16 +18,20 @@ Plus the file fields Payload adds to upload collections (`filename`,
 ## Uploads
 
 - Only images are accepted (`mimeTypes: ['image/*']`).
-- JPEG, PNG, GIF and TIFF uploads are converted to WebP by a
-  `beforeOperation` hook (animated GIFs keep their frames). AVIF is left as
-  AVIF — it is already a modern format, so transcoding it would only cost
-  quality — and formats sharp cannot re-encode (SVG…) pass through untouched.
-  The generated sizes follow the format of the stored original.
-- The stored original is resized down to at most 2560px wide (never
-  enlarged). Payload always re-runs sharp on WebP/AVIF files, so the encoding
-  quality of the stored files is sharp's default (WebP 80, AVIF 50); setting
-  `upload.formatOptions` to pin it is not an option here, as it would
-  unconditionally transcode AVIF.
+- Every upload is converted to WebP — the stored original at quality 90, the
+  generated sizes at quality 80 — and the original is resized down to at most
+  2560px wide (never enlarged). Animated GIFs keep their frames. Formats sharp
+  cannot re-encode (SVG…) pass through untouched, without sizes.
+- AVIF uploads are converted as well. Keeping them as AVIF is not worth it:
+  Payload re-runs sharp on AVIF input no matter what, at a quality that cannot
+  be configured alongside this conversion (sharp's default of 50, which halves
+  the file of an AVIF encoded at quality 80), and encoding six AVIFs per upload
+  takes seconds — 27s for a 4000×3000 photo against 1.3s for the same photo as
+  WebP. AVIF `og` images are also rejected by most social crawlers.
+- AVIF is the one format converted by a `beforeOperation` hook rather than by
+  `formatOptions`, because Payload decodes the uploaded file once per output
+  and AVIF decoding is expensive: converting it up front means paying that
+  once (~3s instead of ~12s for a 4000×3000 upload).
 - Default generated sizes: `thumbnail` (300), `small` (600), `medium` (900),
   `large` (1400) and `og` (1200×630, center crop, for social sharing). The
   admin thumbnail uses the `thumbnail` size when present, otherwise the first

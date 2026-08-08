@@ -11,8 +11,9 @@ import { describe, expect, test } from 'vitest'
 import { anyone, authenticated, defaultImageSizes } from '../src/defaults.js'
 import {
   buildPrefix,
-  convertToWebp,
+  convertAvifToWebp,
   uniqueFilename,
+  withWebpSizes,
   ComposiusPayloadPluginMedia,
 } from '../src/index.js'
 
@@ -75,23 +76,17 @@ describe('uniqueFilename', () => {
   })
 })
 
-describe('convertToWebp', () => {
+describe('convertAvifToWebp', () => {
   const webpData = Buffer.from('webp-bytes')
 
-  type SharpCall = {
-    animated?: boolean
-    effort?: number
-    input: unknown
-    quality?: number
-    resize?: unknown
-  }
+  type SharpCall = { effort?: number; input: unknown; quality?: number; resize?: unknown }
 
   /** Minimal stub of the sharp chain used by the hook. */
   const sharpStub = () => {
     const calls: SharpCall[] = []
 
-    const sharp = (input: unknown, options?: { animated?: boolean }) => {
-      const call: SharpCall = { animated: options?.animated, input }
+    const sharp = (input: unknown) => {
+      const call: SharpCall = { input }
 
       const chain = {
         resize: (resizeOptions: unknown) => {
@@ -112,11 +107,11 @@ describe('convertToWebp', () => {
     return { calls, sharp }
   }
 
-  const file = (overrides: Partial<{ data: Buffer; mimetype: string; name: string }> = {}) => ({
-    data: Buffer.from('original-bytes'),
-    mimetype: 'image/png',
-    name: 'photo.png',
-    size: 14,
+  const file = (overrides: Partial<{ mimetype: string; name: string }> = {}) => ({
+    data: Buffer.from('avif-bytes'),
+    mimetype: 'image/avif',
+    name: 'photo.avif',
+    size: 10,
     ...overrides,
   })
 
@@ -126,11 +121,11 @@ describe('convertToWebp', () => {
       req: { file: uploaded, payload: { config: { sharp } }, query },
     }) as unknown as Parameters<CollectionBeforeOperationHook>[0]
 
-  test('converts a PNG upload to WebP in place', async () => {
+  test('converts an AVIF upload to WebP in place', async () => {
     const { calls, sharp } = sharpStub()
     const uploaded = file()
 
-    await convertToWebp(hookArgs(uploaded, sharp))
+    await convertAvifToWebp(hookArgs(uploaded, sharp))
 
     expect(uploaded).toMatchObject({
       data: webpData,
@@ -140,9 +135,8 @@ describe('convertToWebp', () => {
     })
     expect(calls).toEqual([
       {
-        animated: false,
         effort: 0,
-        input: Buffer.from('original-bytes'),
+        input: Buffer.from('avif-bytes'),
         quality: 90,
         resize: { width: 2560, withoutEnlargement: true },
       },
@@ -153,56 +147,54 @@ describe('convertToWebp', () => {
     const { calls, sharp } = sharpStub()
     const crop = { uploadEdits: { crop: { height: 50, width: 50, x: 0, y: 0 } } }
 
-    await convertToWebp(hookArgs(file(), sharp, crop))
+    await convertAvifToWebp(hookArgs(file(), sharp, crop))
 
     expect(calls[0]?.resize).toBeUndefined()
-    expect(calls[0]?.quality).toBe(90)
   })
 
-  test('leaves AVIF uploads untouched', async () => {
+  test('other formats are left to formatOptions', async () => {
     const { calls, sharp } = sharpStub()
-    const uploaded = file({ mimetype: 'image/avif', name: 'photo.avif' })
+    const uploaded = file({ mimetype: 'image/jpeg', name: 'photo.jpg' })
 
-    await convertToWebp(hookArgs(uploaded, sharp))
+    await convertAvifToWebp(hookArgs(uploaded, sharp))
 
-    expect(uploaded).toMatchObject({ mimetype: 'image/avif', name: 'photo.avif' })
+    expect(uploaded).toMatchObject({ mimetype: 'image/jpeg', name: 'photo.jpg' })
     expect(calls).toHaveLength(0)
-  })
-
-  test('leaves formats sharp cannot re-encode untouched', async () => {
-    const { calls, sharp } = sharpStub()
-    const uploaded = file({ mimetype: 'image/svg+xml', name: 'logo.svg' })
-
-    await convertToWebp(hookArgs(uploaded, sharp))
-
-    expect(uploaded).toMatchObject({ mimetype: 'image/svg+xml', name: 'logo.svg' })
-    expect(calls).toHaveLength(0)
-  })
-
-  test('re-encoding a WebP upload is skipped', async () => {
-    const { calls, sharp } = sharpStub()
-
-    await convertToWebp(hookArgs(file({ mimetype: 'image/webp', name: 'photo.webp' }), sharp))
-
-    expect(calls).toHaveLength(0)
-  })
-
-  test('animated GIFs keep their frames', async () => {
-    const { calls, sharp } = sharpStub()
-
-    await convertToWebp(hookArgs(file({ mimetype: 'image/gif', name: 'loop.gif' }), sharp))
-
-    expect(calls[0]?.animated).toBe(true)
   })
 
   test('no-op without a file or without sharp configured', async () => {
     const { sharp } = sharpStub()
     const uploaded = file()
 
-    await convertToWebp(hookArgs(undefined, sharp))
-    await convertToWebp(hookArgs(uploaded, undefined))
+    await convertAvifToWebp(hookArgs(undefined, sharp))
+    await convertAvifToWebp(hookArgs(uploaded, undefined))
 
-    expect(uploaded).toMatchObject({ mimetype: 'image/png', name: 'photo.png' })
+    expect(uploaded).toMatchObject({ mimetype: 'image/avif', name: 'photo.avif' })
+  })
+})
+
+describe('withWebpSizes', () => {
+  const webp = { format: 'webp', options: { quality: 80 } }
+
+  test('every size is encoded as WebP', () => {
+    expect(withWebpSizes([{ name: 'hero', width: 1920 }])).toEqual([
+      { formatOptions: webp, name: 'hero', width: 1920 },
+    ])
+  })
+
+  test('a size that asks for its own format keeps it', () => {
+    const avif = { format: 'avif' as const, options: { quality: 60 } }
+
+    expect(withWebpSizes([{ formatOptions: avif, name: 'hero', width: 1920 }])).toEqual([
+      { formatOptions: avif, name: 'hero', width: 1920 },
+    ])
+  })
+
+  test('the input sizes are not mutated', () => {
+    const imageSizes = [{ name: 'hero', width: 1920 }]
+    withWebpSizes(imageSizes)
+
+    expect(imageSizes).toEqual([{ name: 'hero', width: 1920 }])
   })
 })
 
@@ -216,14 +208,12 @@ describe('ComposiusPayloadPluginMedia', () => {
 
     expect(upload(media)).toMatchObject({
       adminThumbnail: 'thumbnail',
-      imageSizes: defaultImageSizes,
+      formatOptions: { format: 'webp', options: { quality: 90 } },
+      imageSizes: withWebpSizes(defaultImageSizes),
       mimeTypes: ['image/*'],
       resizeOptions: { width: 2560, withoutEnlargement: true },
     })
 
-    // The conversion is done by the beforeOperation hook, not by
-    // formatOptions, which would also transcode AVIF
-    expect(upload(media).formatOptions).toBeUndefined()
   })
 
   test('custom image sizes replace the defaults', () => {
@@ -232,7 +222,7 @@ describe('ComposiusPayloadPluginMedia', () => {
 
     expect(upload(findMedia(config))).toMatchObject({
       adminThumbnail: 'hero',
-      imageSizes,
+      imageSizes: withWebpSizes(imageSizes),
     })
   })
 
@@ -269,9 +259,9 @@ describe('ComposiusPayloadPluginMedia', () => {
     expect(untouched.file.name).toBe('photo.png')
   })
 
-  test('randomSuffix: false leaves only the WebP conversion hook', () => {
+  test('randomSuffix: false leaves only the AVIF conversion hook', () => {
     const config = ComposiusPayloadPluginMedia({ randomSuffix: false })(baseConfig())
-    expect(findMedia(config).hooks?.beforeOperation).toEqual([convertToWebp])
+    expect(findMedia(config).hooks?.beforeOperation).toEqual([convertAvifToWebp])
   })
 
   test('prefix option sets data.prefix on create', () => {

@@ -1,4 +1,4 @@
-import type { CollectionBeforeOperationHook, CollectionConfig } from 'payload'
+import type { CollectionBeforeOperationHook, CollectionConfig, ImageSize } from 'payload'
 
 import crypto from 'crypto'
 import fs from 'fs/promises'
@@ -32,46 +32,51 @@ export const uniqueFilename = (filename: string): string => {
   return `${base}-${crypto.randomBytes(4).toString('hex')}${ext}`
 }
 
-/**
- * Mime types converted to WebP. AVIF is left alone — it is already a modern
- * format and transcoding it to WebP only costs quality — and so is anything
- * sharp cannot re-encode (SVG…), which passes through untouched.
- */
-export const convertedToWebp = ['image/gif', 'image/jpeg', 'image/png', 'image/tiff']
-
 /** Cap for the stored "original". */
 const resizeOptions = { width: 2560, withoutEnlargement: true }
 
+/** Encoding of the stored "original", which doubles as the archive copy. */
+const originalFormat = { format: 'webp', options: { quality: 90 } } as const
+
+/** Encoding of the generated sizes, which are what browsers are served. */
+const sizeFormat = { format: 'webp', options: { quality: 80 } } as const
+
 /**
- * Converts the uploaded file to WebP before Payload processes it, so that the
- * stored original *and* the generated sizes are WebP. Done here rather than
- * with `upload.formatOptions` because that config is static: it would also
- * transcode AVIF uploads.
+ * Payload only applies `upload.formatOptions` to the stored original — sizes
+ * are generated from the *uploaded* file and keep its format unless the size
+ * says otherwise. So a PNG upload would produce a WebP original next to PNG
+ * sizes without this.
  */
-export const convertToWebp: CollectionBeforeOperationHook = async ({ req }) => {
+export const withWebpSizes = (imageSizes: ImageSize[]): ImageSize[] =>
+  imageSizes.map((size) => ({ formatOptions: sizeFormat, ...size }))
+
+/**
+ * Converts AVIF uploads to WebP up front. `formatOptions` would convert them
+ * anyway, but Payload decodes the uploaded file once for the original and
+ * again for every generated size, and decoding AVIF is an order of magnitude
+ * more expensive than decoding WebP — paying it once takes a 4000×3000 upload
+ * from ~12s to ~3s. Cheaper formats are left to `formatOptions`, whose single
+ * pass is already the fastest route.
+ */
+export const convertAvifToWebp: CollectionBeforeOperationHook = async ({ req }) => {
   const { file } = req
   const { sharp } = req.payload.config
 
-  if (!sharp || !file || !convertedToWebp.includes(file.mimetype)) {
+  if (!sharp || !file || file.mimetype !== 'image/avif') {
     return
   }
 
-  const image = sharp(file.tempFilePath || file.data, {
-    animated: file.mimetype === 'image/gif',
-  }).rotate() // apply the EXIF orientation, which the WebP output drops
+  const image = sharp(file.tempFilePath || file.data, { animated: true }).rotate() // apply the EXIF orientation, which the WebP output drops
 
   // Payload crops before it resizes, using pixel values the admin measured on
   // the file as uploaded, so downscaling first would move the crop box
   const uploadEdits = req.query?.uploadEdits as undefined | { crop?: unknown }
   if (!uploadEdits?.crop) {
-    // Applying the cap here rather than leaving it all to `resizeOptions`
-    // keeps the encode below from working on pixels Payload throws away
     image.resize(resizeOptions)
   }
 
-  // Payload re-encodes WebP input at its own quality no matter what we do, so
-  // this pass only has to avoid *losing* quality: `effort: 0` halves its cost
-  // in exchange for a fatter buffer that never leaves memory
+  // `formatOptions` re-encodes this buffer at its own quality, so this pass
+  // only has to avoid *losing* quality: `effort: 0` keeps it cheap
   const converted = await image.webp({ effort: 0, quality: 90 }).toBuffer()
 
   if (file.tempFilePath) {
@@ -106,7 +111,7 @@ export const Media = ({
   },
   hooks: {
     beforeOperation: [
-      convertToWebp, // runs first so the random suffix lands on the .webp name
+      convertAvifToWebp, // runs first so the random suffix lands on the .webp name
       ...(randomSuffix
         ? [
             ({ operation, req }: Parameters<CollectionBeforeOperationHook>[0]) => {
@@ -141,9 +146,10 @@ export const Media = ({
     adminThumbnail: imageSizes.some((size) => size.name === 'thumbnail')
       ? 'thumbnail'
       : imageSizes[0]?.name,
-    imageSizes,
+    formatOptions: originalFormat,
+    imageSizes: withWebpSizes(imageSizes),
     mimeTypes: ['image/*'],
-    resizeOptions, // caps AVIF, and WebP that `convertToWebp` left at full size
+    resizeOptions: { width: 2560, withoutEnlargement: true }, // cap the "original"
     ...(staticDir !== undefined && { staticDir }),
   },
 })
