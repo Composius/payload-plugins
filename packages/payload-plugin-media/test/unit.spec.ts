@@ -78,18 +78,36 @@ describe('uniqueFilename', () => {
 describe('convertToWebp', () => {
   const webpData = Buffer.from('webp-bytes')
 
+  type SharpCall = {
+    animated?: boolean
+    effort?: number
+    input: unknown
+    quality?: number
+    resize?: unknown
+  }
+
   /** Minimal stub of the sharp chain used by the hook. */
   const sharpStub = () => {
-    const calls: { animated?: boolean; input: unknown; quality?: number }[] = []
+    const calls: SharpCall[] = []
 
-    const sharp = (input: unknown, options?: { animated?: boolean }) => ({
-      rotate: () => ({
-        webp: (webpOptions?: { quality?: number }) => {
-          calls.push({ animated: options?.animated, input, quality: webpOptions?.quality })
-          return { toBuffer: async () => webpData }
+    const sharp = (input: unknown, options?: { animated?: boolean }) => {
+      const call: SharpCall = { animated: options?.animated, input }
+
+      const chain = {
+        resize: (resizeOptions: unknown) => {
+          call.resize = resizeOptions
+          return chain
         },
-      }),
-    })
+        rotate: () => chain,
+        toBuffer: async () => webpData,
+        webp: (webpOptions?: { effort?: number; quality?: number }) => {
+          calls.push({ ...call, ...webpOptions })
+          return chain
+        },
+      }
+
+      return chain
+    }
 
     return { calls, sharp }
   }
@@ -102,10 +120,10 @@ describe('convertToWebp', () => {
     ...overrides,
   })
 
-  const hookArgs = (uploaded: unknown, sharp: unknown) =>
+  const hookArgs = (uploaded: unknown, sharp: unknown, query: unknown = {}) =>
     ({
       operation: 'create',
-      req: { file: uploaded, payload: { config: { sharp } } },
+      req: { file: uploaded, payload: { config: { sharp } }, query },
     }) as unknown as Parameters<CollectionBeforeOperationHook>[0]
 
   test('converts a PNG upload to WebP in place', async () => {
@@ -120,7 +138,25 @@ describe('convertToWebp', () => {
       name: 'photo.webp',
       size: webpData.length,
     })
-    expect(calls).toEqual([{ animated: false, input: Buffer.from('original-bytes'), quality: 90 }])
+    expect(calls).toEqual([
+      {
+        animated: false,
+        effort: 0,
+        input: Buffer.from('original-bytes'),
+        quality: 90,
+        resize: { width: 2560, withoutEnlargement: true },
+      },
+    ])
+  })
+
+  test('a pending crop is left at full resolution for Payload to crop', async () => {
+    const { calls, sharp } = sharpStub()
+    const crop = { uploadEdits: { crop: { height: 50, width: 50, x: 0, y: 0 } } }
+
+    await convertToWebp(hookArgs(file(), sharp, crop))
+
+    expect(calls[0]?.resize).toBeUndefined()
+    expect(calls[0]?.quality).toBe(90)
   })
 
   test('leaves AVIF uploads untouched', async () => {

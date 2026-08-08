@@ -39,6 +39,9 @@ export const uniqueFilename = (filename: string): string => {
  */
 export const convertedToWebp = ['image/gif', 'image/jpeg', 'image/png', 'image/tiff']
 
+/** Cap for the stored "original". */
+const resizeOptions = { width: 2560, withoutEnlargement: true }
+
 /**
  * Converts the uploaded file to WebP before Payload processes it, so that the
  * stored original *and* the generated sizes are WebP. Done here rather than
@@ -53,12 +56,23 @@ export const convertToWebp: CollectionBeforeOperationHook = async ({ req }) => {
     return
   }
 
-  const converted = await sharp(file.tempFilePath || file.data, {
+  const image = sharp(file.tempFilePath || file.data, {
     animated: file.mimetype === 'image/gif',
-  })
-    .rotate() // apply the EXIF orientation, which the WebP output drops
-    .webp({ quality: 90 })
-    .toBuffer()
+  }).rotate() // apply the EXIF orientation, which the WebP output drops
+
+  // Payload crops before it resizes, using pixel values the admin measured on
+  // the file as uploaded, so downscaling first would move the crop box
+  const uploadEdits = req.query?.uploadEdits as undefined | { crop?: unknown }
+  if (!uploadEdits?.crop) {
+    // Applying the cap here rather than leaving it all to `resizeOptions`
+    // keeps the encode below from working on pixels Payload throws away
+    image.resize(resizeOptions)
+  }
+
+  // Payload re-encodes WebP input at its own quality no matter what we do, so
+  // this pass only has to avoid *losing* quality: `effort: 0` halves its cost
+  // in exchange for a fatter buffer that never leaves memory
+  const converted = await image.webp({ effort: 0, quality: 90 }).toBuffer()
 
   if (file.tempFilePath) {
     // `file.data` is an empty buffer when Payload runs with `useTempFiles`
@@ -129,7 +143,7 @@ export const Media = ({
       : imageSizes[0]?.name,
     imageSizes,
     mimeTypes: ['image/*'],
-    resizeOptions: { width: 2560, withoutEnlargement: true }, // cap the "original"
+    resizeOptions, // caps AVIF, and WebP that `convertToWebp` left at full size
     ...(staticDir !== undefined && { staticDir }),
   },
 })
