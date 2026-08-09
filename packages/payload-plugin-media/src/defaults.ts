@@ -4,6 +4,9 @@ export const anyone: Access = () => true
 
 export const authenticated: Access = ({ req: { user } }) => Boolean(user)
 
+/** Largest accepted upload, in bytes. */
+export const defaultMaxFileSize = 5 * 1024 * 1024
+
 export const defaultImageSizes: ImageSize[] = [
   { name: 'thumbnail', width: 300 },
   { name: 'small', width: 600 },

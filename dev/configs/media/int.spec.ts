@@ -83,6 +83,19 @@ describe('Plugin integration tests', () => {
     expect(doc.width).toBe(2560)
   })
 
+  test('uploads over the size limit are rejected', async () => {
+    // The suite is configured with maxFileSize: 1 MB
+    const data = Buffer.alloc(1024 * 1024 + 1)
+
+    await expect(
+      payload.create({
+        collection: 'media',
+        data: { alt: 'Test image' },
+        file: { data, mimetype: 'image/png', name: 'huge.png', size: data.length },
+      }),
+    ).rejects.toThrow(/maximum upload size is 1 MB/)
+  })
+
   test('a small original is not enlarged', async () => {
     const doc = await createImage('small.png', 800, 450)
 

@@ -28,6 +28,7 @@ export type MediaPrefix =
 export type MediaOptions = {
   access: Required<MediaAccess>
   imageSizes: ImageSize[]
+  maxFileSize: number
   prefix?: MediaPrefix
   randomSuffix: boolean
   staticDir?: string

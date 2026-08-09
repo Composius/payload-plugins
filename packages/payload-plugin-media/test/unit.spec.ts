@@ -12,6 +12,7 @@ import { anyone, authenticated, defaultImageSizes } from '../src/defaults.js'
 import {
   buildPrefix,
   convertAvifToWebp,
+  enforceMaxFileSize,
   uniqueFilename,
   withWebpSizes,
   ComposiusPayloadPluginMedia,
@@ -73,6 +74,46 @@ describe('uniqueFilename', () => {
 
   test('two calls produce different names', () => {
     expect(uniqueFilename('photo.png')).not.toBe(uniqueFilename('photo.png'))
+  })
+})
+
+describe('enforceMaxFileSize', () => {
+  const hook = enforceMaxFileSize(1000)
+
+  const hookArgs = (file: unknown, language = 'en') =>
+    ({ operation: 'create', req: { file, i18n: { language } } }) as unknown as Parameters<
+      CollectionBeforeOperationHook
+    >[0]
+
+  test('a file within the limit passes', () => {
+    expect(() => hook(hookArgs({ name: 'photo.jpg', size: 1000 }))).not.toThrow()
+  })
+
+  test('an oversized file is rejected with the limit in the message', () => {
+    expect(() => hook(hookArgs({ name: 'photo.jpg', size: 1001 }))).toThrow(
+      /maximum upload size is 1000 bytes/,
+    )
+  })
+
+  test('the limit is reported in a readable unit', () => {
+    expect(() => enforceMaxFileSize(5 * 1024 * 1024)(hookArgs({ size: 6_000_000 }))).toThrow(/5 MB/)
+    expect(() => enforceMaxFileSize(512_000)(hookArgs({ size: 600_000 }))).toThrow(/500 KB/)
+  })
+
+  test('the message follows the request language', () => {
+    expect(() => hook(hookArgs({ name: 'photo.jpg', size: 1001 }, 'fr'))).toThrow(
+      /trop volumineux/,
+    )
+  })
+
+  test('a file truncated by the app-wide limit is rejected', () => {
+    // Payload truncates instead of failing unless `abortOnLimit` is set, which
+    // leaves the file sitting exactly on the limit
+    expect(() => hook(hookArgs({ name: 'photo.jpg', size: 1000, truncated: true }))).toThrow()
+  })
+
+  test('operations without a file pass', () => {
+    expect(() => hook(hookArgs(undefined))).not.toThrow()
   })
 })
 
@@ -247,7 +288,7 @@ describe('ComposiusPayloadPluginMedia', () => {
 
   test('renames uploaded files on create by default', () => {
     const config = ComposiusPayloadPluginMedia()(baseConfig())
-    const [, hook] = findMedia(config).hooks?.beforeOperation ?? []
+    const [, , hook] = findMedia(config).hooks?.beforeOperation ?? []
     expect(hook).toBeDefined()
 
     const req = { file: { name: 'photo.png' } }
@@ -259,9 +300,36 @@ describe('ComposiusPayloadPluginMedia', () => {
     expect(untouched.file.name).toBe('photo.png')
   })
 
-  test('randomSuffix: false leaves only the AVIF conversion hook', () => {
+  test('randomSuffix: false drops the rename hook', () => {
     const config = ComposiusPayloadPluginMedia({ randomSuffix: false })(baseConfig())
-    expect(findMedia(config).hooks?.beforeOperation).toEqual([convertAvifToWebp])
+    const hooks = findMedia(config).hooks?.beforeOperation ?? []
+
+    expect(hooks).toHaveLength(2)
+    expect(hooks[1]).toBe(convertAvifToWebp)
+  })
+
+  test('uploads are limited to 5 MB by default', () => {
+    const config = ComposiusPayloadPluginMedia()(baseConfig())
+    const [hook] = findMedia(config).hooks?.beforeOperation ?? []
+    const args = (size: number) =>
+      ({ operation: 'create', req: { file: { name: 'photo.jpg', size } } }) as unknown as Parameters<
+        CollectionBeforeOperationHook
+      >[0]
+
+    expect(() => hook!(args(5 * 1024 * 1024))).not.toThrow()
+    expect(() => hook!(args(5 * 1024 * 1024 + 1))).toThrow(/5 MB/)
+  })
+
+  test('maxFileSize overrides the default', () => {
+    const config = ComposiusPayloadPluginMedia({ maxFileSize: 500 })(baseConfig())
+    const [hook] = findMedia(config).hooks?.beforeOperation ?? []
+    const args = (size: number) =>
+      ({ operation: 'create', req: { file: { name: 'photo.jpg', size } } }) as unknown as Parameters<
+        CollectionBeforeOperationHook
+      >[0]
+
+    expect(() => hook!(args(500))).not.toThrow()
+    expect(() => hook!(args(501))).toThrow()
   })
 
   test('prefix option sets data.prefix on create', () => {

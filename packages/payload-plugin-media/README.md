@@ -17,7 +17,27 @@ Plus the file fields Payload adds to upload collections (`filename`,
 
 ## Uploads
 
-- Only images are accepted (`mimeTypes: ['image/*']`).
+- Only images are accepted (`mimeTypes: ['image/*']`), up to `maxFileSize`
+  (5 MB by default). Payload has no per-collection size limit, so a
+  `beforeOperation` hook rejects oversized uploads with a 413 before any image
+  processing happens.
+
+  That hook runs once the file has been received. To also have oversized
+  requests aborted mid-transfer, set the matching app-wide limit in your
+  Payload config — **with `abortOnLimit`**, since Payload otherwise truncates
+  the file at the limit and hands it over as if it were complete:
+
+  ```ts
+  buildConfig({
+    upload: { limits: { fileSize: 5 * 1024 * 1024 }, abortOnLimit: true },
+    // ...
+  })
+  ```
+
+  This is app-wide: it caps every upload collection, so pick the largest limit
+  across them rather than the media one if you have others. The plugin rejects
+  truncated files whatever you set, so a mismatch can never store a partial
+  image.
 - Every upload is converted to WebP — the stored original at quality 90, the
   generated sizes at quality 80 — and the original is resized down to at most
   2560px wide (never enlarged). Animated GIFs keep their frames. Formats sharp
@@ -83,6 +103,9 @@ ComposiusPayloadPluginMedia({
   // Generated image sizes (default: thumbnail/small/medium/large/og,
   // see above).
   imageSizes: [{ name: 'thumbnail', width: 300 }],
+
+  // Largest accepted upload, in bytes (default: 5 MB).
+  maxFileSize: 5 * 1024 * 1024,
 
   // Storage key prefix for cloud storage plugins (default: disabled).
   // Either a full string used as-is…

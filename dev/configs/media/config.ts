@@ -12,6 +12,7 @@ export default buildDevConfig({
   dirname,
   plugins: [
     ComposiusPayloadPluginMedia({
+      maxFileSize: 1024 * 1024,
       prefix: { folder: 'uploads' },
       randomSuffix: false,
       staticDir: path.resolve(dirname, 'media'),

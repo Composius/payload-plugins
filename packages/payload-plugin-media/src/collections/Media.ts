@@ -3,10 +3,11 @@ import type { CollectionBeforeOperationHook, CollectionConfig, ImageSize } from 
 import crypto from 'crypto'
 import fs from 'fs/promises'
 import path from 'path'
+import { APIError } from 'payload'
 
 import type { MediaOptions, MediaPrefix } from '../types.js'
 
-import { label } from '../translations/index.js'
+import { label, translation } from '../translations/index.js'
 
 export const buildPrefix = (prefix: MediaPrefix, now = new Date()): string => {
   if (typeof prefix === 'string') {
@@ -49,6 +50,47 @@ const sizeFormat = { format: 'webp', options: { quality: 80 } } as const
  */
 export const withWebpSizes = (imageSizes: ImageSize[]): ImageSize[] =>
   imageSizes.map((size) => ({ formatOptions: sizeFormat, ...size }))
+
+/** `5242880` → `5 MB`, `512000` → `500 KB`. */
+const formatSize = (bytes: number): string => {
+  const units = ['bytes', 'KB', 'MB', 'GB']
+  const unit = bytes < 1024 ? 0 : Math.min(Math.floor(Math.log(bytes) / Math.log(1024)), 3)
+  return `${Math.round((bytes / 1024 ** unit) * 100) / 100} ${units[unit]}`
+}
+
+/**
+ * Rejects uploads over `maxFileSize`, before any image processing happens.
+ * Payload has no per-collection limit — `upload.limits.fileSize` in the Payload
+ * config is app-wide — so the check lives here. It runs once the file has been
+ * received, so set that app-wide limit too if you need oversized requests
+ * aborted while they are still being parsed.
+ */
+export const enforceMaxFileSize =
+  (maxFileSize: number): CollectionBeforeOperationHook =>
+  ({ req }) => {
+    const { file } = req
+
+    if (!file) {
+      return
+    }
+
+    // `upload.limits.fileSize` truncates the file rather than failing unless
+    // `abortOnLimit` is set, and a truncated file sits exactly on that limit —
+    // so it would pass the size check below and be stored half-decoded
+    const { truncated } = file as { truncated?: boolean }
+
+    if (!truncated && file.size <= maxFileSize) {
+      return
+    }
+
+    // An APIError rather than a ValidationError: `file` is not a form field,
+    // so the admin would only show "the following field is invalid" for it,
+    // whereas an APIError message is toasted as-is
+    throw new APIError(
+      translation(req.i18n?.language).errors.fileTooLarge(formatSize(maxFileSize)),
+      413, // Payload Too Large
+    )
+  }
 
 /**
  * Converts AVIF uploads to WebP up front. `formatOptions` would convert them
@@ -94,6 +136,7 @@ export const convertAvifToWebp: CollectionBeforeOperationHook = async ({ req }) 
 export const Media = ({
   access,
   imageSizes,
+  maxFileSize,
   prefix,
   randomSuffix,
   staticDir,
@@ -111,7 +154,8 @@ export const Media = ({
   },
   hooks: {
     beforeOperation: [
-      convertAvifToWebp, // runs first so the random suffix lands on the .webp name
+      enforceMaxFileSize(maxFileSize), // reject before doing any work on the file
+      convertAvifToWebp, // runs before the rename so the suffix lands on the .webp name
       ...(randomSuffix
         ? [
             ({ operation, req }: Parameters<CollectionBeforeOperationHook>[0]) => {

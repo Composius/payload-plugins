@@ -3,15 +3,16 @@ import type { Config, ImageSize } from 'payload'
 import type { MediaAccess, MediaPrefix } from './types.js'
 
 import { Media } from './collections/Media.js'
-import { anyone, authenticated, defaultImageSizes } from './defaults.js'
+import { anyone, authenticated, defaultImageSizes, defaultMaxFileSize } from './defaults.js'
 
 export {
   buildPrefix,
   convertAvifToWebp,
+  enforceMaxFileSize,
   uniqueFilename,
   withWebpSizes,
 } from './collections/Media.js'
-export { defaultImageSizes } from './defaults.js'
+export { defaultImageSizes, defaultMaxFileSize } from './defaults.js'
 export type { MediaAccess, MediaPrefix } from './types.js'
 
 export type ComposiusPayloadPluginMediaConfig = {
@@ -30,6 +31,13 @@ export type ComposiusPayloadPluginMediaConfig = {
    * they carry their own `formatOptions`.
    */
   imageSizes?: ImageSize[]
+  /**
+   * Largest accepted upload, in bytes. Default: 5 MB (`5 * 1024 * 1024`).
+   * Enforced by a `beforeOperation` hook on the media collection, once the
+   * file has been received — set `upload.limits.fileSize` in your Payload
+   * config (app-wide) to have oversized requests aborted earlier.
+   */
+  maxFileSize?: number
   /**
    * Storage key prefix written to the document's `prefix` on create, read
    * by cloud storage plugins (e.g. @payloadcms/storage-s3) when building
@@ -69,6 +77,7 @@ export const ComposiusPayloadPluginMedia =
       Media({
         access,
         imageSizes: pluginOptions.imageSizes ?? defaultImageSizes,
+        maxFileSize: pluginOptions.maxFileSize ?? defaultMaxFileSize,
         prefix: pluginOptions.prefix,
         randomSuffix: pluginOptions.randomSuffix ?? true,
         staticDir: pluginOptions.staticDir,
