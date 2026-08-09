@@ -83,6 +83,81 @@ Categories are nestable: pick a `parent` and `@payloadcms/plugin-nested-docs` ke
 `breadcrumbs` (doc, label, url) up to date on save, including on all descendants.
 The parent picker excludes the category itself and its descendants.
 
+## Video embeds
+
+The `content` editor carries a **Video** block: paste the link of a YouTube,
+Vimeo or Gan Jing World video and that is the whole of it. A link of any other
+kind is refused with a message in the field, in English or in French.
+
+| Provider       | Links it reads                                                                | Player URL                            |
+| -------------- | ----------------------------------------------------------------------------- | ------------------------------------- |
+| YouTube        | `watch?v=`, `youtu.be/`, `/embed/`, `/shorts/`, `/live/`, `youtube-nocookie.com` | `youtube.com/embed/<id>`            |
+| Vimeo          | `vimeo.com/<id>`, channel, group and album links, unlisted `/<id>/<hash>`      | `player.vimeo.com/video/<id>`         |
+| Gan Jing World | `ganjingworld.com/video/<id>` (or `ganjing.com`), with or without a locale     | `ganjingworld.com/embed/<id>`         |
+
+### The title
+
+Alongside the link the block carries a read-only `title`, fetched from the
+provider while the document saves — YouTube and Vimeo through their oEmbed
+endpoints, Gan Jing World (which publishes none) from the `og:title` of the
+video page. No API keys, no configuration.
+
+The field fills itself in as the link is typed, before any save: all three
+providers allow cross-origin reads, so the admin panel asks them directly. The
+save then resolves the link again server-side and that pass is the
+authoritative one — a title arriving from an API client is refetched, never
+trusted.
+
+A saved link is looked up once: the save reuses whatever the previous one
+resolved, so autosave does not hammer the providers, and only editing the link
+asks again. A lookup that comes back empty is remembered as such — a deleted or
+private video is not re-fetched on every keystroke — and the field says so
+rather than leaving the editor to guess:
+
+> Title
+> ⌷ *(empty)*
+> The provider returned no title for this link
+
+A link that is not a video link of a supported provider is called out in the
+same place, as soon as it is typed — the `url` field's own validation only
+speaks up once the document is submitted:
+
+> Title
+> ⌷ *(empty)*
+> No title: this is not a YouTube, Vimeo or Gan Jing World video link
+
+The title never blocks a save: a provider that is down, slow (there is a 5s
+timeout) or unreachable costs the label, nothing more. It is a convenience for
+editors scanning a document, not something a front end should depend on — it is
+a snapshot of the title as of the last save, and the block's link remains the
+source of truth.
+
+### Rendering
+
+Only the link matters for playback, so a document never holds a player URL that
+has since moved. Turn it into one at render time with `parseVideoEmbedUrl`,
+which returns `{ embedUrl, id, provider }` or `null`:
+
+```tsx
+import { parseVideoEmbedUrl } from '@composius/payload-plugin-articles'
+
+const VideoEmbed = ({ url }: { url: string }) => {
+  const video = parseVideoEmbedUrl(url)
+
+  return video ? (
+    <iframe allowFullScreen src={video.embedUrl} title="Video" />
+  ) : null
+}
+```
+
+The block's slug is exported as `VIDEO_EMBED_BLOCK_SLUG` (`videoEmbed`), to
+match against `blockType` while walking the rich text. Its fields are `url`,
+`title` (which may be absent) and `titleUnavailable`.
+
+> The block pulls `@payloadcms/richtext-lexical/client#BlocksFeatureClient` and
+> the title field component into the admin panel: run
+> `payload generate:importmap` after upgrading.
+
 ## Cache revalidation
 
 Publishing, unpublishing or deleting a document invalidates the Next.js cache
@@ -232,7 +307,8 @@ ComposiusPayloadPluginArticles({
 
   // SEO meta group + generate endpoints. `true` (default) uses built-in
   // generate functions; pass an object to override any of them; `false` disables.
-  seo: { generateTitle, generateDescription, generateImage, generateURL },
+  // `siteName` ends every generated title with it, as `Title | Site name`.
+  seo: { generateTitle, generateDescription, generateImage, generateURL, siteName: 'Acme' },
 
   // Next.js cache invalidation on save and delete, for all three collections
   // (default: enabled). Pass false to drop the hooks entirely.

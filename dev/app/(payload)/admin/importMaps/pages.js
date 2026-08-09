@@ -7,6 +7,8 @@ import { PreviewComponent as PreviewComponent_a8a977ebc872c5d5ea7ee689724c0860 }
 import { RscEntryLexicalCell as RscEntryLexicalCell_44fe37237e0ebf4470c9990d8cb7b07e } from '@payloadcms/richtext-lexical/rsc'
 import { RscEntryLexicalField as RscEntryLexicalField_44fe37237e0ebf4470c9990d8cb7b07e } from '@payloadcms/richtext-lexical/rsc'
 import { LexicalDiffComponent as LexicalDiffComponent_44fe37237e0ebf4470c9990d8cb7b07e } from '@payloadcms/richtext-lexical/rsc'
+import { BlocksFeatureClient as BlocksFeatureClient_e70f5e05f09f93e00b997edb1ef0c864 } from '@payloadcms/richtext-lexical/client'
+import { VideoEmbedTitleField as VideoEmbedTitleField_11f77570cc59a6d03a23baf300de2460 } from '@composius/payload-plugin-pages/client'
 import { FixedToolbarFeatureClient as FixedToolbarFeatureClient_e70f5e05f09f93e00b997edb1ef0c864 } from '@payloadcms/richtext-lexical/client'
 import { BlockquoteButtonFeatureClient as BlockquoteButtonFeatureClient_11f77570cc59a6d03a23baf300de2460 } from '@composius/payload-plugin-pages/client'
 import { ChecklistButtonFeatureClient as ChecklistButtonFeatureClient_11f77570cc59a6d03a23baf300de2460 } from '@composius/payload-plugin-pages/client'
@@ -41,6 +43,8 @@ export const importMap = {
   "@payloadcms/richtext-lexical/rsc#RscEntryLexicalCell": RscEntryLexicalCell_44fe37237e0ebf4470c9990d8cb7b07e,
   "@payloadcms/richtext-lexical/rsc#RscEntryLexicalField": RscEntryLexicalField_44fe37237e0ebf4470c9990d8cb7b07e,
   "@payloadcms/richtext-lexical/rsc#LexicalDiffComponent": LexicalDiffComponent_44fe37237e0ebf4470c9990d8cb7b07e,
+  "@payloadcms/richtext-lexical/client#BlocksFeatureClient": BlocksFeatureClient_e70f5e05f09f93e00b997edb1ef0c864,
+  "@composius/payload-plugin-pages/client#VideoEmbedTitleField": VideoEmbedTitleField_11f77570cc59a6d03a23baf300de2460,
   "@payloadcms/richtext-lexical/client#FixedToolbarFeatureClient": FixedToolbarFeatureClient_e70f5e05f09f93e00b997edb1ef0c864,
   "@composius/payload-plugin-pages/client#BlockquoteButtonFeatureClient": BlockquoteButtonFeatureClient_11f77570cc59a6d03a23baf300de2460,
   "@composius/payload-plugin-pages/client#ChecklistButtonFeatureClient": ChecklistButtonFeatureClient_11f77570cc59a6d03a23baf300de2460,

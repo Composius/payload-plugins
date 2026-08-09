@@ -6,6 +6,12 @@ export {
   OrderedListButtonFeature,
   UnorderedListButtonFeature,
 } from './features/blockButtons/server.js'
+export { VIDEO_EMBED_BLOCK_SLUG, videoEmbedBlock } from './features/videoEmbed/block.js'
+export { VideoEmbedTitlesFeature } from './features/videoEmbed/feature.js'
+export type { VideoEmbed, VideoEmbedProvider } from './features/videoEmbed/providers.js'
+export { parseVideoEmbedUrl } from './features/videoEmbed/providers.js'
+export { fillVideoEmbedTitles } from './features/videoEmbed/titleHook.js'
+export { fetchVideoTitle, TITLE_TIMEOUT_MS } from './features/videoEmbed/titles.js'
 export type {
   RevalidateCollection,
   RevalidateEvent,
@@ -21,6 +27,8 @@ export {
   defaultGenerateTitle,
   defaultGenerateURL,
   SEO_DESCRIPTION_MAX_LENGTH,
+  SITE_NAME_SEPARATOR,
+  withSiteName,
 } from './seo/defaults.js'
 export type { SeoFieldOptions, SeoGenerators } from './seo/field.js'
 export { seoField } from './seo/field.js'

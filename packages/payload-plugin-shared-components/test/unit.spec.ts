@@ -1,4 +1,5 @@
 import type { Access } from 'payload'
+import type { GenerateTitle } from '@payloadcms/plugin-seo/types'
 
 import { describe, expect, test } from 'vitest'
 
@@ -13,8 +14,10 @@ import {
   defaultGenerateURL,
   SEO_DESCRIPTION_MAX_LENGTH,
   seoField,
+  SITE_NAME_SEPARATOR,
   slugify,
   slugifyValue,
+  withSiteName,
 } from '../src/index.js'
 
 const accessArgs = (user: unknown) => ({ req: { user } }) as Parameters<Access>[0]
@@ -87,6 +90,43 @@ describe('SEO generate defaults', () => {
   test('generateURL builds the URL from the document slug', () => {
     const generateURL = defaultGenerateURL((slug) => `https://example.com/a/${slug}`)
     expect(generateURL(generateArgs({ slug: 'my-doc' }))).toBe('https://example.com/a/my-doc')
+  })
+})
+
+describe('withSiteName', () => {
+  const titleOf = (generate: GenerateTitle, doc: unknown) =>
+    generate(generateArgs(doc) as Parameters<GenerateTitle>[0])
+
+  test('ends the generated title with the site name', async () => {
+    const generate = withSiteName(defaultGenerateTitle, 'Acme')
+
+    await expect(titleOf(generate, { title: 'Hello' })).resolves.toBe('Hello | Acme')
+  })
+
+  test('the site name stands alone when the document has no title', async () => {
+    const generate = withSiteName(defaultGenerateTitle, 'Acme')
+
+    await expect(titleOf(generate, {})).resolves.toBe('Acme')
+    await expect(titleOf(generate, { title: '   ' })).resolves.toBe('Acme')
+  })
+
+  test('no site name leaves the generator exactly as it was', () => {
+    expect(withSiteName(defaultGenerateTitle)).toBe(defaultGenerateTitle)
+    expect(withSiteName(defaultGenerateTitle, '')).toBe(defaultGenerateTitle)
+    expect(withSiteName(defaultGenerateTitle, '  ')).toBe(defaultGenerateTitle)
+  })
+
+  test('wraps a generator of the host, async ones included', async () => {
+    const generate = withSiteName(() => Promise.resolve('  From the host  '), 'Acme')
+
+    await expect(titleOf(generate, {})).resolves.toBe('From the host | Acme')
+  })
+
+  test('the separator can be something other than a pipe', async () => {
+    const generate = withSiteName(defaultGenerateTitle, 'Acme', '—')
+
+    await expect(titleOf(generate, { title: 'Hello' })).resolves.toBe('Hello — Acme')
+    expect(SITE_NAME_SEPARATOR).toBe('|')
   })
 })
 

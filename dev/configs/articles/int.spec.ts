@@ -1,14 +1,44 @@
 import type { Payload } from 'payload'
 
-import { getPayload } from 'payload'
+import { getPayload, ValidationError } from 'payload'
 
 import config from './config.js'
-import { afterAll, beforeAll, describe, expect, test } from 'vitest'
+import { afterAll, afterEach, beforeAll, describe, expect, test, vi } from 'vitest'
 
 let payload: Payload
 
+/** Rich text holding a single video embed block. */
+const videoContent = (url: string) => ({
+  root: {
+    type: 'root',
+    direction: null,
+    format: '' as const,
+    indent: 0,
+    version: 1,
+    children: [
+      {
+        type: 'block',
+        format: '' as const,
+        version: 2,
+        fields: { blockType: 'videoEmbed', url },
+      },
+    ],
+  },
+})
+
+/** Keeps the title lookup off the network — the providers are not under test here. */
+const stubProvider = (response: Partial<Response>) =>
+  vi.stubGlobal('fetch', vi.fn(() => Promise.resolve(response as Response)))
+
+const videoFields = (doc: { content?: { root: { children: unknown[] } } | null }) =>
+  (doc.content?.root.children[0] as { fields: Record<string, unknown> }).fields
+
 afterAll(async () => {
   await payload.destroy()
+})
+
+afterEach(() => {
+  vi.unstubAllGlobals()
 })
 
 beforeAll(async () => {
@@ -32,6 +62,108 @@ describe('Plugin integration tests', () => {
 
     expect(article.title).toBe('Hello World')
     expect(article.slug).toBe('hello-world')
+  })
+
+  test('the content editor takes a video embed block, and only supported links', async () => {
+    const article = await payload.create({
+      collection: 'articles',
+      data: {
+        slug: 'watch-this',
+        title: 'Watch this',
+        content: videoContent('https://youtu.be/dQw4w9WgXcQ'),
+      },
+    })
+
+    expect(article.content?.root.children[0]).toMatchObject({
+      type: 'block',
+      fields: { blockType: 'videoEmbed', url: 'https://youtu.be/dQw4w9WgXcQ' },
+    })
+
+    const rejected: unknown = await payload
+      .create({
+        collection: 'articles',
+        data: {
+          slug: 'watch-that',
+          title: 'Watch that',
+          content: videoContent('https://example.com/not-a-video'),
+        },
+      })
+      .catch((error: unknown) => error)
+
+    // Lexical reports a failing block by name only — the message the validator
+    // returns is what the field shows in the admin panel, not what comes back here.
+    expect(rejected).toBeInstanceOf(ValidationError)
+    expect(JSON.stringify((rejected as ValidationError).data.errors)).toMatch(
+      /block node failed to validate.*url/,
+    )
+  })
+
+  test('the video title is fetched from the provider and stored read-only', async () => {
+    stubProvider({ json: () => Promise.resolve({ title: 'Never Gonna Give You Up' }), ok: true })
+
+    const article = await payload.create({
+      collection: 'articles',
+      data: {
+        slug: 'titled-video',
+        title: 'Titled video',
+        content: videoContent('https://youtu.be/dQw4w9WgXcQ'),
+      },
+    })
+
+    expect(videoFields(article)).toMatchObject({ title: 'Never Gonna Give You Up' })
+
+    // Everything that follows leaves the link alone, so none of it is worth a
+    // second lookup — not the autosaves an editor's keystrokes trigger, and not
+    // the publish, whose previous value comes from another version.
+    await payload.update({
+      collection: 'articles',
+      id: article.id,
+      data: { title: 'Retitled' },
+      draft: true,
+    })
+
+    await payload.update({
+      autosave: true,
+      collection: 'articles',
+      id: article.id,
+      data: { content: article.content },
+      draft: true,
+    })
+
+    const published = await payload.update({
+      collection: 'articles',
+      id: article.id,
+      data: { _status: 'published', content: article.content },
+    })
+
+    expect(videoFields(published).title).toBe('Never Gonna Give You Up')
+    expect(vi.mocked(fetch)).toHaveBeenCalledTimes(1)
+
+    // Only a link that actually changes is asked about again.
+    const moved = await payload.update({
+      collection: 'articles',
+      id: article.id,
+      data: { content: videoContent('https://vimeo.com/1084537') },
+    })
+
+    expect(videoFields(moved).title).toBe('Never Gonna Give You Up')
+    expect(vi.mocked(fetch)).toHaveBeenCalledTimes(2)
+  })
+
+  test('a link the provider will not resolve is marked, and still saves', async () => {
+    stubProvider({ ok: false, status: 404 })
+
+    const article = await payload.create({
+      collection: 'articles',
+      data: {
+        slug: 'untitled-video',
+        title: 'Untitled video',
+        content: videoContent('https://youtu.be/aaaaaaaaaaa'),
+      },
+    })
+
+    expect(videoFields(article).title).toBeUndefined()
+    expect(videoFields(article).titleUnavailable).toBe(true)
   })
 
   test('plugin adds the categories collection', () => {

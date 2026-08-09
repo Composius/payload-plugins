@@ -1,11 +1,14 @@
 import type { FeatureProviderServer, LexicalEditorProps } from '@payloadcms/richtext-lexical'
 import {
   BlockquoteFeature,
+  BlocksFeature,
   ChecklistFeature,
   FixedToolbarFeature,
   OrderedListFeature,
   UnorderedListFeature,
 } from '@payloadcms/richtext-lexical'
+import { videoEmbedBlock } from '../videoEmbed/block.js'
+import { VideoEmbedTitlesFeature } from '../videoEmbed/feature.js'
 
 /**
  * Server counterparts of the features in `client.ts`: identical to the default
@@ -48,8 +51,9 @@ export const UnorderedListButtonFeature = (clientModulePath: string) =>
 
 /**
  * Default-features callback for `lexicalEditor()`: swaps the default
- * blockquote/list features for the button wrappers above and adds a fixed
- * toolbar.
+ * blockquote/list features for the button wrappers above, adds a fixed toolbar
+ * and the video embed block, whose titles the accompanying feature fills in on
+ * save.
  */
 export const contentEditorFeatures =
   (clientModulePath: string): NonNullable<LexicalEditorProps['features']> =>
@@ -62,4 +66,6 @@ export const contentEditorFeatures =
     ChecklistButtonFeature(clientModulePath),
     BlockquoteButtonFeature(clientModulePath),
     FixedToolbarFeature(),
+    BlocksFeature({ blocks: [videoEmbedBlock(clientModulePath)] }),
+    VideoEmbedTitlesFeature(),
   ]

@@ -9,6 +9,7 @@ export {
   defaultGenerateTitle,
   defaultGenerateURL,
   SEO_DESCRIPTION_MAX_LENGTH,
+  withSiteName,
 } from '@composius/payload-plugin-shared-components'
 
 /** Pages live at the site root, unlike articles which live under /articles/. */

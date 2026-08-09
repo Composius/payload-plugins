@@ -10,6 +10,12 @@ import type {
   RevalidateEvent,
   RevalidateOptions,
   RevalidateProfile,
+  VideoEmbed,
+  VideoEmbedProvider,
+} from '@composius/payload-plugin-shared-components'
+import {
+  parseVideoEmbedUrl,
+  VIDEO_EMBED_BLOCK_SLUG,
 } from '@composius/payload-plugin-shared-components'
 import type { PagesAccess } from './collections/Pages.js'
 import { Pages } from './collections/Pages.js'
@@ -21,6 +27,7 @@ import {
   defaultGenerateImage,
   defaultGenerateTitle,
   defaultGenerateURL,
+  withSiteName,
   defaultPageUrl,
 } from './defaults.js'
 
@@ -96,6 +103,14 @@ export type ComposiusPayloadPluginPagesConfig = {
         generateImage?: GenerateImage
         generateTitle?: GenerateTitle
         generateURL?: GenerateURL
+        /**
+         * Ends every generated meta title with the name of the site, as
+         * `Title | Site name`. Left out, titles are the document's own.
+         *
+         * It wraps `generateTitle` rather than competing with it, so a custom
+         * one still gets the site name appended.
+         */
+        siteName?: string
       }
 }
 
@@ -136,7 +151,10 @@ export const ComposiusPayloadPluginPages =
     const generateDescription: GenerateDescription =
       seoOverrides.generateDescription ?? defaultGenerateDescription
     const generateImage: GenerateImage = seoOverrides.generateImage ?? defaultGenerateImage
-    const generateTitle: GenerateTitle = seoOverrides.generateTitle ?? defaultGenerateTitle
+    const generateTitle: GenerateTitle = withSiteName(
+      seoOverrides.generateTitle ?? defaultGenerateTitle,
+      seoOverrides.siteName,
+    )
     const generateURL: GenerateURL = seoOverrides.generateURL ?? defaultGenerateURL(pageUrl)
 
     const content = pluginOptions.content ?? 'block'
@@ -216,5 +234,7 @@ export const ComposiusPayloadPluginPages =
   }
 
 export type { RevalidateEvent, RevalidateOptions, RevalidateProfile }
+export type { VideoEmbed, VideoEmbedProvider }
+export { parseVideoEmbedUrl, VIDEO_EMBED_BLOCK_SLUG }
 export { contentBlock, CONTENT_BLOCK_SLUG } from './blocks/content.js'
 export { pageIdTag, pageTag, PAGES_TAG } from './tags.js'

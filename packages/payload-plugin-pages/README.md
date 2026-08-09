@@ -82,6 +82,83 @@ Nothing is migrated automatically, and a dropped field takes its column with it.
 The default meta description reads whichever is present: the `content` field
 when the collection has one, otherwise the first content block in the layout.
 
+## Video embeds
+
+The rich text editor — the `content` block as well as the `content` field —
+carries a **Video** block: paste the link of a YouTube, Vimeo or Gan Jing World
+video and that is the whole of it. A link of any other kind is refused with a
+message in the field, in English or in French.
+
+| Provider       | Links it reads                                                                | Player URL                            |
+| -------------- | ----------------------------------------------------------------------------- | ------------------------------------- |
+| YouTube        | `watch?v=`, `youtu.be/`, `/embed/`, `/shorts/`, `/live/`, `youtube-nocookie.com` | `youtube.com/embed/<id>`            |
+| Vimeo          | `vimeo.com/<id>`, channel, group and album links, unlisted `/<id>/<hash>`      | `player.vimeo.com/video/<id>`         |
+| Gan Jing World | `ganjingworld.com/video/<id>` (or `ganjing.com`), with or without a locale     | `ganjingworld.com/embed/<id>`         |
+
+### The title
+
+Alongside the link the block carries a read-only `title`, fetched from the
+provider while the document saves — YouTube and Vimeo through their oEmbed
+endpoints, Gan Jing World (which publishes none) from the `og:title` of the
+video page. No API keys, no configuration.
+
+The field fills itself in as the link is typed, before any save: all three
+providers allow cross-origin reads, so the admin panel asks them directly. The
+save then resolves the link again server-side and that pass is the
+authoritative one — a title arriving from an API client is refetched, never
+trusted.
+
+A saved link is looked up once: the save reuses whatever the previous one
+resolved, so autosave does not hammer the providers, and only editing the link
+asks again. A lookup that comes back empty is remembered as such — a deleted or
+private video is not re-fetched on every keystroke — and the field says so
+rather than leaving the editor to guess:
+
+> Title
+> ⌷ *(empty)*
+> The provider returned no title for this link
+
+A link that is not a video link of a supported provider is called out in the
+same place, as soon as it is typed — the `url` field's own validation only
+speaks up once the document is submitted:
+
+> Title
+> ⌷ *(empty)*
+> No title: this is not a YouTube, Vimeo or Gan Jing World video link
+
+The title never blocks a save: a provider that is down, slow (there is a 5s
+timeout) or unreachable costs the label, nothing more. It is a convenience for
+editors scanning a document, not something a front end should depend on — it is
+a snapshot of the title as of the last save, and the block's link remains the
+source of truth.
+
+### Rendering
+
+Only the link matters for playback, so a document never holds a player URL that
+has since moved. Turn it into one at render time with `parseVideoEmbedUrl`,
+which returns `{ embedUrl, id, provider }` or `null`:
+
+```tsx
+import { parseVideoEmbedUrl } from '@composius/payload-plugin-pages'
+
+const VideoEmbed = ({ url }: { url: string }) => {
+  const video = parseVideoEmbedUrl(url)
+
+  return video ? (
+    <iframe allowFullScreen src={video.embedUrl} title="Video" />
+  ) : null
+}
+```
+
+The block's slug is exported as `VIDEO_EMBED_BLOCK_SLUG` (`videoEmbed`), to
+match against `blockType` while walking the rich text. Its fields are `url`,
+`title` (which may be absent) and `titleUnavailable`. It is a lexical block, not
+a layout one: it lives inside the prose, not in the `layout` field.
+
+> The block pulls `@payloadcms/richtext-lexical/client#BlocksFeatureClient` and
+> the title field component into the admin panel: run
+> `payload generate:importmap` after upgrading.
+
 ## Cache revalidation
 
 Publishing, unpublishing or deleting a page invalidates the collection's Next.js
@@ -149,10 +226,12 @@ The following dependencies are required to be installed in your project before u
 
 - `@payloadcms/plugin-seo` (`^3.84.1`)
 - `@payloadcms/richtext-lexical` (`^3.84.1`)
+- `@payloadcms/ui` (`^3.84.1`)
 - `payload` (`^3.84.1`)
+- `react` (`^19.0.0`)
 
 ```bash
-pnpm add @payloadcms/plugin-seo @payloadcms/richtext-lexical payload
+pnpm add @payloadcms/plugin-seo @payloadcms/richtext-lexical @payloadcms/ui payload react
 ```
 
 `next` (`^16.0.0`) is an optional peer dependency: it is only needed for cache
@@ -195,7 +274,8 @@ ComposiusPayloadPluginPages({
 
   // SEO meta group + generate endpoints. `true` (default) uses built-in
   // generate functions; pass an object to override any of them; `false` disables.
-  seo: { generateTitle, generateDescription, generateImage, generateURL },
+  // `siteName` ends every generated title with it, as `Title | Site name`.
+  seo: { generateTitle, generateDescription, generateImage, generateURL, siteName: 'Acme' },
 
   // Next.js cache invalidation on save and delete (default: enabled).
   // Pass false to drop the hooks entirely.

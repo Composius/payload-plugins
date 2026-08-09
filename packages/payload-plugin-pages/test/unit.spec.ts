@@ -66,6 +66,41 @@ describe('ComposiusPayloadPluginPages', () => {
     expect(config.endpoints?.some((endpoint) => endpoint.path.includes('generate'))).toBe(true)
   })
 
+  /** Runs the plugin's own generate-title endpoint, the way the SEO field does. */
+  const generateTitle = async (config: Config, doc: Record<string, unknown>) => {
+    const endpoint = config.endpoints?.find((route) =>
+      route.path.includes('generate-title'),
+    )
+    expect(endpoint).toBeDefined()
+
+    const response = await endpoint!.handler({
+      json: () => Promise.resolve({ doc }),
+    } as unknown as Parameters<NonNullable<typeof endpoint>['handler']>[0])
+
+    return ((await (response as Response).json()) as { result: string }).result
+  }
+
+  test('meta titles are the document title by default', async () => {
+    const config = ComposiusPayloadPluginPages()(baseConfig())
+
+    expect(await generateTitle(config, { title: 'Hello' })).toBe('Hello')
+  })
+
+  test('siteName ends every generated title with it', async () => {
+    const config = ComposiusPayloadPluginPages({ seo: { siteName: 'Acme' } })(baseConfig())
+
+    expect(await generateTitle(config, { title: 'Hello' })).toBe('Hello | Acme')
+    expect(await generateTitle(config, {})).toBe('Acme')
+  })
+
+  test('siteName applies to a generateTitle of the host too', async () => {
+    const config = ComposiusPayloadPluginPages({
+      seo: { generateTitle: () => 'Theirs', siteName: 'Acme' },
+    })(baseConfig())
+
+    expect(await generateTitle(config, { title: 'Ignored' })).toBe('Theirs | Acme')
+  })
+
   test('seo: false removes the meta group and skips the SEO plugin', () => {
     const config = ComposiusPayloadPluginPages({ seo: false })(baseConfig())
     const pages = findPages(config)

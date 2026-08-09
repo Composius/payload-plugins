@@ -11,6 +11,12 @@ import type {
   RevalidateEvent,
   RevalidateOptions,
   RevalidateProfile,
+  VideoEmbed,
+  VideoEmbedProvider,
+} from '@composius/payload-plugin-shared-components'
+import {
+  parseVideoEmbedUrl,
+  VIDEO_EMBED_BLOCK_SLUG,
 } from '@composius/payload-plugin-shared-components'
 import type { ArticlesAccess } from './collections/Articles.js'
 import { Articles } from './collections/Articles.js'
@@ -28,6 +34,7 @@ import {
   defaultGenerateImage,
   defaultGenerateTitle,
   defaultGenerateURL,
+  withSiteName,
 } from './defaults.js'
 
 export type ComposiusPayloadPluginArticlesConfig = {
@@ -95,6 +102,14 @@ export type ComposiusPayloadPluginArticlesConfig = {
         generateImage?: GenerateImage
         generateTitle?: GenerateTitle
         generateURL?: GenerateURL
+        /**
+         * Ends every generated meta title with the name of the site, as
+         * `Title | Site name`. Left out, titles are the document's own.
+         *
+         * It wraps `generateTitle` rather than competing with it, so a custom
+         * one still gets the site name appended.
+         */
+        siteName?: string
       }
   /**
    * Adds a `Default` checkbox to categories — only one category carries it at
@@ -136,7 +151,10 @@ export const ComposiusPayloadPluginArticles =
     const generateDescription: GenerateDescription =
       seoOverrides.generateDescription ?? defaultGenerateDescription
     const generateImage: GenerateImage = seoOverrides.generateImage ?? defaultGenerateImage
-    const generateTitle: GenerateTitle = seoOverrides.generateTitle ?? defaultGenerateTitle
+    const generateTitle: GenerateTitle = withSiteName(
+      seoOverrides.generateTitle ?? defaultGenerateTitle,
+      seoOverrides.siteName,
+    )
     const generateURL: GenerateURL = seoOverrides.generateURL ?? defaultGenerateURL(articleUrl)
 
     const categoriesAccess = {
@@ -223,6 +241,8 @@ export const ComposiusPayloadPluginArticles =
   }
 
 export type { RevalidateEvent, RevalidateOptions, RevalidateProfile }
+export type { VideoEmbed, VideoEmbedProvider }
+export { parseVideoEmbedUrl, VIDEO_EMBED_BLOCK_SLUG }
 export {
   articleIdTag,
   articleTag,
