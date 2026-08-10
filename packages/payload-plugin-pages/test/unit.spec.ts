@@ -299,6 +299,14 @@ describe('content', () => {
     expect(block.fields[0]).toMatchObject({ name: 'content', type: 'richText' })
   })
 
+  test('it carries its own drawer thumbnail, with no asset to host', () => {
+    const thumbnail = contentBlock().admin?.images?.thumbnail as { alt: string; url: string }
+
+    expect(thumbnail.url).toMatch(/^data:image\/svg\+xml,/)
+    expect(decodeURIComponent(thumbnail.url)).toContain('<svg')
+    expect(thumbnail.alt).toBeTruthy()
+  })
+
   test('each call returns its own block, since Payload sanitizes in place', () => {
     expect(contentBlock()).not.toBe(contentBlock())
   })

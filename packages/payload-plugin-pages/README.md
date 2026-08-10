@@ -60,6 +60,10 @@ one instead of colliding with it, inline or by reference:
 ComposiusPayloadPluginPages({ blocks: [{ slug: 'content', fields: [...] }] })
 ```
 
+It comes with its own thumbnail for the block drawer — a heading over three
+lines of prose, inlined as an SVG data URI, so there is no asset for the host to
+serve. (An admin panel behind a strict CSP needs `img-src data:`.)
+
 `contentBlock()` is exported for hosts that want to place it themselves — first
 in the picker, registered in `config.blocks`, wrapped in a tab. It is a factory,
 not a shared object: Payload marks a block sanitized in place, so each config

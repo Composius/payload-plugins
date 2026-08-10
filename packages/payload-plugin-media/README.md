@@ -22,22 +22,32 @@ Plus the file fields Payload adds to upload collections (`filename`,
   `beforeOperation` hook rejects oversized uploads with a 413 before any image
   processing happens.
 
-  That hook runs once the file has been received. To also have oversized
-  requests aborted mid-transfer, set the matching app-wide limit in your
-  Payload config — **with `abortOnLimit`**, since Payload otherwise truncates
-  the file at the limit and hands it over as if it were complete:
+  That hook runs once the file has been received, so it is worth pairing with
+  Payload's app-wide parser limit, which aborts a request mid-transfer:
 
   ```ts
   buildConfig({
-    upload: { limits: { fileSize: 5 * 1024 * 1024 }, abortOnLimit: true },
+    upload: {
+      limits: { fileSize: 25 * 1024 * 1024 }, // headroom over maxFileSize
+      abortOnLimit: true, // without it, Payload truncates instead of failing
+      responseOnLimit: 'File is too large.', // replaces Payload's own wording
+    },
     // ...
   })
   ```
 
-  This is app-wide: it caps every upload collection, so pick the largest limit
-  across them rather than the media one if you have others. The plugin rejects
-  truncated files whatever you set, so a mismatch can never store a partial
-  image.
+  Give that limit **headroom over `maxFileSize`** rather than matching it: the
+  parser aborts before any hook runs, so a matching value means every oversized
+  upload gets Payload's generic `responseOnLimit` message ("File size limit has
+  been reached") and never reaches the plugin's — which names the actual limit
+  and follows the admin language. With headroom, files just over `maxFileSize`
+  get the good message, and only genuinely huge ones are cut off mid-transfer.
+
+  Two more things to know: the limit is app-wide, so it caps every upload
+  collection — size it for the largest one. And `abortOnLimit` matters: without
+  it Payload truncates the file at the limit and passes it on as if complete.
+  The plugin rejects truncated files whatever you set, so a partial image can
+  never be stored.
 - Every upload is converted to WebP — the stored original at quality 90, the
   generated sizes at quality 80 — and the original is resized down to at most
   2560px wide (never enlarged). Animated GIFs keep their frames. Formats sharp

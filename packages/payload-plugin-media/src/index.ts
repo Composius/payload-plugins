@@ -34,8 +34,10 @@ export type ComposiusPayloadPluginMediaConfig = {
   /**
    * Largest accepted upload, in bytes. Default: 5 MB (`5 * 1024 * 1024`).
    * Enforced by a `beforeOperation` hook on the media collection, once the
-   * file has been received — set `upload.limits.fileSize` in your Payload
-   * config (app-wide) to have oversized requests aborted earlier.
+   * file has been received. Pair it with `upload.limits.fileSize` in your
+   * Payload config (app-wide) to have huge requests aborted mid-transfer —
+   * give that one headroom, as the parser aborts before any hook runs and
+   * answers with its own `responseOnLimit` message instead of this limit's.
    */
   maxFileSize?: number
   /**
