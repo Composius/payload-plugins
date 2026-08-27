@@ -1,4 +1,5 @@
 export { anyone, authenticated, authenticatedField, authenticatedOrPublished } from './access.js'
+export type { ContentEditorOptions } from './features/blockButtons/server.js'
 export {
   BlockquoteButtonFeature,
   ChecklistButtonFeature,
@@ -6,6 +7,17 @@ export {
   OrderedListButtonFeature,
   UnorderedListButtonFeature,
 } from './features/blockButtons/server.js'
+export type { EditorFontSizeFeatureProps } from './features/fontSize/server.js'
+export { EditorFontSizeFeature } from './features/fontSize/server.js'
+export type { EditorFontSize } from './features/fontSize/sizes.js'
+export {
+  DEFAULT_EDITOR_FONT_SIZE,
+  EDITOR_FONT_SCALES,
+  EDITOR_FONT_SIZES,
+  isEditorFontSize,
+} from './features/fontSize/sizes.js'
+export type { EditorLinkEmphasisFeatureProps } from './features/linkEmphasis/server.js'
+export { EditorLinkEmphasisFeature } from './features/linkEmphasis/server.js'
 export { VIDEO_EMBED_BLOCK_SLUG, videoEmbedBlock } from './features/videoEmbed/block.js'
 export { VideoEmbedTitlesFeature } from './features/videoEmbed/feature.js'
 export type { VideoEmbed, VideoEmbedProvider } from './features/videoEmbed/providers.js'

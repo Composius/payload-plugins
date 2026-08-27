@@ -83,6 +83,51 @@ Categories are nestable: pick a `parent` and `@payloadcms/plugin-nested-docs` ke
 `breadcrumbs` (doc, label, url) up to date on save, including on all descendants.
 The parent picker excludes the category itself and its descendants.
 
+## Editor font size
+
+The `content` editor's toolbar ends with a font size control — **Small**,
+**Normal**, **Large**, **Huge** — that scales the text being written, so a long
+article is readable without leaning into the screen.
+
+It is CSS over Payload's own sizes and nothing else. No size is stored on any
+node, nothing is added to the saved rich text, and a front end renders the
+article exactly as it did before the control existed. `Normal` is the size
+Payload's lexical editor already draws at.
+
+The choice is remembered in the browser, and applies to every editor this plugin
+puts on the page. `editorFontSize` sets the size an editor opens at before
+anyone has picked one, and `false` leaves the control out entirely:
+
+```ts
+ComposiusPayloadPluginArticles({ editorFontSize: 'large' }) // opens large
+ComposiusPayloadPluginArticles({ editorFontSize: false })   // no control
+```
+
+> The control adds `@composius/payload-plugin-articles/client#EditorFontSizeFeatureClient`
+> to the admin panel: run `payload generate:importmap` after upgrading.
+
+## Emphasized links
+
+Payload draws links in the editor green, under a dotted border, which is easy to
+miss in a wall of prose. `emphasizeEditorLinks` draws them blue and continuously
+underlined instead — more contrast against the surrounding text:
+
+```ts
+ComposiusPayloadPluginArticles({ emphasizeEditorLinks: true })
+```
+
+Off by default. Like the font size, it is CSS over the admin panel and nothing
+more: no node carries the emphasis, so a front end styles its links however it
+already did. The blue is the plugin's own — Payload's palette has no blue to
+borrow — and follows the admin theme, darker on light and lighter on dark.
+
+The styling is scoped to this plugin's editor, so a site running the pages
+plugin alongside can have one emphasized and the other left alone.
+
+> With the option on, the editor pulls
+> `@composius/payload-plugin-articles/client#EditorLinkEmphasisFeatureClient`
+> into the admin panel: run `payload generate:importmap` after turning it on.
+
 ## Video embeds
 
 The `content` editor carries a **Video** block: paste the link of a YouTube,
@@ -300,6 +345,14 @@ ComposiusPayloadPluginArticles({
   // Field-level access controlling who may change an article's `editor`.
   // Default: any authenticated user.
   editorUpdateAccess: ({ req: { user } }) => Boolean(user),
+
+  // Size the content editor opens at, and whether the toolbar control is there
+  // at all: 'small' | 'normal' (default) | 'large' | 'huge', or false.
+  editorFontSize: 'normal',
+
+  // Draw the content editor's links blue and continuously underlined, rather
+  // than Payload's green under a dotted border (default: false).
+  emphasizeEditorLinks: false,
 
   // Front-end URL of an article, used for (live) preview and SEO.
   // Default: `${NEXT_PUBLIC_SERVER_URL || SERVER_URL}/articles/${slug}`

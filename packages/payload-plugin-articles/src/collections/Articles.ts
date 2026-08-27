@@ -9,6 +9,7 @@ import type {
 import { slugField } from 'payload'
 import { lexicalEditor } from '@payloadcms/richtext-lexical'
 import type {
+  EditorFontSize,
   RevalidateOptions,
   SeoGenerators,
 } from '@composius/payload-plugin-shared-components'
@@ -34,6 +35,10 @@ export type ArticlesOptions = {
   articleUrl: (slug?: string | null) => string
   /** Adds the `author` relationship to the `authors` collection. */
   authors: boolean
+  /** Font size control on the content editor's toolbar. `false` leaves it out. */
+  editorFontSize: EditorFontSize | false
+  /** Draws the content editor's links blue and continuously underlined. */
+  emphasizeEditorLinks: boolean
   /** Field-level access controlling who may change the `editor` field. */
   editorUpdateAccess: FieldAccess
   /** Next.js cache invalidation on save and delete. `false` turns it off. */
@@ -88,7 +93,9 @@ export const Articles = ({
   access,
   articleUrl,
   authors,
+  editorFontSize,
   editorUpdateAccess,
+  emphasizeEditorLinks,
   revalidate,
   seo,
   useDefaultCategory,
@@ -177,7 +184,10 @@ export const Articles = ({
       type: 'richText',
       label: label((t) => t.articles.fields.content),
       editor: lexicalEditor({
-        features: contentEditorFeatures('@composius/payload-plugin-articles/client'),
+        features: contentEditorFeatures('@composius/payload-plugin-articles/client', {
+          emphasizeLinks: emphasizeEditorLinks,
+          fontSize: editorFontSize,
+        }),
       }),
     },
     {

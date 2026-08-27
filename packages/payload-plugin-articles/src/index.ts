@@ -8,6 +8,7 @@ import type {
 import { seoPlugin } from '@payloadcms/plugin-seo'
 import { nestedDocsPlugin } from '@payloadcms/plugin-nested-docs'
 import type {
+  EditorFontSize,
   RevalidateEvent,
   RevalidateOptions,
   RevalidateProfile,
@@ -71,10 +72,33 @@ export type ComposiusPayloadPluginArticlesConfig = {
   articleUrl?: (slug?: string | null) => string
   disabled?: boolean
   /**
+   * Adds a font size control to the content editor's toolbar, scaling the text
+   * of the admin editor between `small`, `normal`, `large` and `huge`. It is
+   * CSS over Payload's own sizes and nothing more: no size is written to the
+   * document, so a front end renders the content exactly as it did before.
+   *
+   * The value sets the size an editor opens at; whoever is writing can pick
+   * another from the toolbar, and their browser remembers it from then on.
+   * `false` leaves the control out, at Payload's own size.
+   * @default 'normal'
+   */
+  editorFontSize?: EditorFontSize | false
+  /**
    * Field-level access controlling who may change an article's `editor`.
    * Defaults to any authenticated user.
    */
   editorUpdateAccess?: FieldAccess
+  /**
+   * Draws the links in the content editor blue and continuously underlined,
+   * where Payload draws them green under a dotted border — more contrast
+   * against the surrounding prose, so links are easier to pick out while
+   * writing.
+   *
+   * CSS over the admin panel alone, scoped to this plugin's editor: nothing is
+   * written to a node, so a front end styles its links however it already did.
+   * @default false
+   */
+  emphasizeEditorLinks?: boolean
   /**
    * Invalidates the Next.js cache tags of the articles, categories and authors
    * collections whenever a document is saved or deleted, so a `'use cache'`
@@ -173,6 +197,8 @@ export const ComposiusPayloadPluginArticles =
       update: pluginOptions.authorsAccess?.update ?? authenticated,
     }
 
+    const editorFontSize = pluginOptions.editorFontSize ?? 'normal'
+    const emphasizeEditorLinks = pluginOptions.emphasizeEditorLinks === true
     const useDefaultCategory = pluginOptions.useDefaultCategory !== false
     const usersSlug = pluginOptions.usersSlug ?? 'users'
     const editorUpdateAccess = pluginOptions.editorUpdateAccess ?? authenticatedField
@@ -196,7 +222,9 @@ export const ComposiusPayloadPluginArticles =
         access,
         articleUrl,
         authors: authorsEnabled,
+        editorFontSize,
         editorUpdateAccess,
+        emphasizeEditorLinks,
         revalidate,
         seo: seoEnabled
           ? {
@@ -240,7 +268,7 @@ export const ComposiusPayloadPluginArticles =
     return config
   }
 
-export type { RevalidateEvent, RevalidateOptions, RevalidateProfile }
+export type { EditorFontSize, RevalidateEvent, RevalidateOptions, RevalidateProfile }
 export type { VideoEmbed, VideoEmbedProvider }
 export { parseVideoEmbedUrl, VIDEO_EMBED_BLOCK_SLUG }
 export {

@@ -1,6 +1,15 @@
 import type { Translation } from './index.js'
 
 export const fr: Translation = {
+  editorFontSize: {
+    sizes: {
+      huge: 'Très grand',
+      large: 'Grand',
+      normal: 'Normal',
+      small: 'Petit',
+    },
+    tooltip: 'Taille du texte dans l’éditeur seulement',
+  },
   videoEmbed: {
     errors: {
       titleUnavailable: 'La plateforme n’a renvoyé aucun titre pour ce lien',

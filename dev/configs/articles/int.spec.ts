@@ -33,6 +33,15 @@ const stubProvider = (response: Partial<Response>) =>
 const videoFields = (doc: { content?: { root: { children: unknown[] } } | null }) =>
   (doc.content?.root.children[0] as { fields: Record<string, unknown> }).fields
 
+/** A lexical feature of the `content` field, as the editor resolved it. */
+const contentEditorFeature = (key: string): unknown => {
+  const content = payload.collections['articles']?.config.fields.find(
+    (field) => 'name' in field && field.name === 'content',
+  ) as { editor: { editorConfig: { resolvedFeatureMap: Map<string, unknown> } } }
+
+  return content.editor.editorConfig.resolvedFeatureMap.get(key)
+}
+
 afterAll(async () => {
   await payload.destroy()
 })
@@ -48,6 +57,23 @@ beforeAll(async () => {
 describe('Plugin integration tests', () => {
   test('plugin adds the articles collection', () => {
     expect(payload.collections['articles']).toBeDefined()
+  })
+
+  test('the content editor carries the font size control, pointing at this plugin', () => {
+    const fontSize = contentEditorFeature('editorFontSize')
+
+    expect(fontSize).toMatchObject({
+      ClientFeature: '@composius/payload-plugin-articles/client#EditorFontSizeFeatureClient',
+      clientFeatureProps: { defaultSize: 'normal' },
+    })
+  })
+
+  // This suite passes `emphasizeEditorLinks: true`; the pages suite leaves the
+  // option at its default, and asserts the feature is absent there.
+  test('the content editor emphasises its links, having been asked to', () => {
+    expect(contentEditorFeature('editorLinkEmphasis')).toMatchObject({
+      ClientFeature: '@composius/payload-plugin-articles/client#EditorLinkEmphasisFeatureClient',
+    })
   })
 
   test('can create an article', async () => {

@@ -6,6 +6,8 @@ export { EditorCell } from '../components/EditorCell.js'
 export {
   BlockquoteButtonFeatureClient,
   ChecklistButtonFeatureClient,
+  EditorFontSizeFeatureClient,
+  EditorLinkEmphasisFeatureClient,
   OrderedListButtonFeatureClient,
   UnorderedListButtonFeatureClient,
   VideoEmbedTitleField,

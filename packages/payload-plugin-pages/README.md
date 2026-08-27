@@ -86,6 +86,67 @@ Nothing is migrated automatically, and a dropped field takes its column with it.
 The default meta description reads whichever is present: the `content` field
 when the collection has one, otherwise the first content block in the layout.
 
+## Editor font size
+
+The editor toolbar ends with a font size control — **Small**, **Normal**,
+**Large**, **Huge** — that scales the text being written, so a long page is
+readable without leaning into the screen.
+
+It is CSS over Payload's own sizes and nothing else. No size is stored on any
+node, nothing is added to the saved rich text, and a front end renders the
+document exactly as it did before the control existed. `Normal` is the size
+Payload's lexical editor already draws at.
+
+The choice is remembered in the browser, and applies to every editor this plugin
+puts on the page. `editorFontSize` sets the size an editor opens at before
+anyone has picked one, and `false` leaves the control out entirely:
+
+```ts
+ComposiusPayloadPluginPages({ editorFontSize: 'large' }) // opens large
+ComposiusPayloadPluginPages({ editorFontSize: false })   // no control
+```
+
+The option reaches the built-in content block and the `content` field alike. A
+content block you place yourself takes it directly:
+
+```ts
+import { contentBlock } from '@composius/payload-plugin-pages'
+
+contentBlock({ fontSize: 'large' })
+```
+
+> The control adds `@composius/payload-plugin-pages/client#EditorFontSizeFeatureClient`
+> to the admin panel: run `payload generate:importmap` after upgrading.
+
+## Emphasized links
+
+Payload draws links in the editor green, under a dotted border, which is easy to
+miss in a wall of prose. `emphasizeEditorLinks` draws them blue and continuously
+underlined instead — more contrast against the surrounding text:
+
+```ts
+ComposiusPayloadPluginPages({ emphasizeEditorLinks: true })
+```
+
+Off by default. Like the font size, it is CSS over the admin panel and nothing
+more: no node carries the emphasis, so a front end styles its links however it
+already did. The blue is the plugin's own — Payload's palette has no blue to
+borrow — and follows the admin theme, darker on light and lighter on dark.
+
+It reaches the built-in content block and the `content` field alike, and a
+content block you place yourself takes it directly:
+
+```ts
+contentBlock({ emphasizeLinks: true })
+```
+
+The styling is scoped to this plugin's editor, so a site running the articles
+plugin alongside can have one emphasized and the other left alone.
+
+> With the option on, the editor pulls
+> `@composius/payload-plugin-pages/client#EditorLinkEmphasisFeatureClient`
+> into the admin panel: run `payload generate:importmap` after turning it on.
+
 ## Video embeds
 
 The rich text editor — the `content` block as well as the `content` field —
@@ -271,6 +332,14 @@ ComposiusPayloadPluginPages({
   // Where the prose of a page lives: a block in the layout (default), a fixed
   // `content` richText field on the document, or nowhere.
   content: 'block',
+
+  // Size the editor opens at, and whether the toolbar control is there at all:
+  // 'small' | 'normal' (default) | 'large' | 'huge', or false to leave it out.
+  editorFontSize: 'normal',
+
+  // Draw the content editor's links blue and continuously underlined, rather
+  // than Payload's green under a dotted border (default: false).
+  emphasizeEditorLinks: false,
 
   // Front-end URL of a page, used for (live) preview and SEO.
   // Default: `${NEXT_PUBLIC_SERVER_URL || SERVER_URL}/${slug}` (pages live at the site root)

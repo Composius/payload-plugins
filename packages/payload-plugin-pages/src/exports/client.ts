@@ -1,6 +1,8 @@
 export {
   BlockquoteButtonFeatureClient,
   ChecklistButtonFeatureClient,
+  EditorFontSizeFeatureClient,
+  EditorLinkEmphasisFeatureClient,
   OrderedListButtonFeatureClient,
   UnorderedListButtonFeatureClient,
   VideoEmbedTitleField,

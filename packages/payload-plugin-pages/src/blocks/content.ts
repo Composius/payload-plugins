@@ -1,5 +1,6 @@
 import type { Block } from 'payload'
 import { lexicalEditor } from '@payloadcms/richtext-lexical'
+import type { EditorFontSize } from '@composius/payload-plugin-shared-components'
 import { contentEditorFeatures } from '@composius/payload-plugin-shared-components'
 import { label } from '../translations/index.js'
 
@@ -26,6 +27,21 @@ const thumbnail = `
 
 const thumbnailUrl = `data:image/svg+xml,${encodeURIComponent(thumbnail.trim())}`
 
+export type ContentBlockOptions = {
+  /**
+   * Draws the editor's links blue and continuously underlined, rather than the
+   * green under a dotted border Payload gives them.
+   * @default false
+   */
+  emphasizeLinks?: boolean
+  /**
+   * Font size control on the editor's toolbar, scaling the admin editor with
+   * CSS alone. `false` leaves it out, at Payload's own size.
+   * @default 'normal'
+   */
+  fontSize?: EditorFontSize | false
+}
+
 /**
  * The rich text of a page, as a block rather than a fixed field: pages compose
  * their content out of blocks, and prose is one of them.
@@ -34,7 +50,10 @@ const thumbnailUrl = `data:image/svg+xml,${encodeURIComponent(thumbnail.trim())}
  * place, so two configs built in one process (the dev suites, a test file)
  * would otherwise pass the same mutated definition around.
  */
-export const contentBlock = (): Block => ({
+export const contentBlock = ({
+  emphasizeLinks,
+  fontSize,
+}: ContentBlockOptions = {}): Block => ({
   slug: CONTENT_BLOCK_SLUG,
   admin: {
     images: {
@@ -54,7 +73,10 @@ export const contentBlock = (): Block => ({
       type: 'richText',
       label: label((t) => t.fields.content),
       editor: lexicalEditor({
-        features: contentEditorFeatures('@composius/payload-plugin-pages/client'),
+        features: contentEditorFeatures('@composius/payload-plugin-pages/client', {
+          emphasizeLinks,
+          fontSize,
+        }),
       }),
     },
   ],

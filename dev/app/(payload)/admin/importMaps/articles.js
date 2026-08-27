@@ -8,6 +8,8 @@ import { RscEntryLexicalField as RscEntryLexicalField_44fe37237e0ebf4470c9990d8c
 import { LexicalDiffComponent as LexicalDiffComponent_44fe37237e0ebf4470c9990d8cb7b07e } from '@payloadcms/richtext-lexical/rsc'
 import { BlocksFeatureClient as BlocksFeatureClient_e70f5e05f09f93e00b997edb1ef0c864 } from '@payloadcms/richtext-lexical/client'
 import { VideoEmbedTitleField as VideoEmbedTitleField_1381e1bcaa7cd205c361ad7b0dfeea20 } from '@composius/payload-plugin-articles/client'
+import { EditorLinkEmphasisFeatureClient as EditorLinkEmphasisFeatureClient_1381e1bcaa7cd205c361ad7b0dfeea20 } from '@composius/payload-plugin-articles/client'
+import { EditorFontSizeFeatureClient as EditorFontSizeFeatureClient_1381e1bcaa7cd205c361ad7b0dfeea20 } from '@composius/payload-plugin-articles/client'
 import { FixedToolbarFeatureClient as FixedToolbarFeatureClient_e70f5e05f09f93e00b997edb1ef0c864 } from '@payloadcms/richtext-lexical/client'
 import { BlockquoteButtonFeatureClient as BlockquoteButtonFeatureClient_1381e1bcaa7cd205c361ad7b0dfeea20 } from '@composius/payload-plugin-articles/client'
 import { ChecklistButtonFeatureClient as ChecklistButtonFeatureClient_1381e1bcaa7cd205c361ad7b0dfeea20 } from '@composius/payload-plugin-articles/client'
@@ -49,6 +51,8 @@ export const importMap = {
   "@payloadcms/richtext-lexical/rsc#LexicalDiffComponent": LexicalDiffComponent_44fe37237e0ebf4470c9990d8cb7b07e,
   "@payloadcms/richtext-lexical/client#BlocksFeatureClient": BlocksFeatureClient_e70f5e05f09f93e00b997edb1ef0c864,
   "@composius/payload-plugin-articles/client#VideoEmbedTitleField": VideoEmbedTitleField_1381e1bcaa7cd205c361ad7b0dfeea20,
+  "@composius/payload-plugin-articles/client#EditorLinkEmphasisFeatureClient": EditorLinkEmphasisFeatureClient_1381e1bcaa7cd205c361ad7b0dfeea20,
+  "@composius/payload-plugin-articles/client#EditorFontSizeFeatureClient": EditorFontSizeFeatureClient_1381e1bcaa7cd205c361ad7b0dfeea20,
   "@payloadcms/richtext-lexical/client#FixedToolbarFeatureClient": FixedToolbarFeatureClient_e70f5e05f09f93e00b997edb1ef0c864,
   "@composius/payload-plugin-articles/client#BlockquoteButtonFeatureClient": BlockquoteButtonFeatureClient_1381e1bcaa7cd205c361ad7b0dfeea20,
   "@composius/payload-plugin-articles/client#ChecklistButtonFeatureClient": ChecklistButtonFeatureClient_1381e1bcaa7cd205c361ad7b0dfeea20,

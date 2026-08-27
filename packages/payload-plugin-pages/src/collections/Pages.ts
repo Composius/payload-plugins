@@ -2,6 +2,7 @@ import type { Access, Block, BlockSlug, CollectionConfig, Field } from 'payload'
 import { slugField } from 'payload'
 import { lexicalEditor } from '@payloadcms/richtext-lexical'
 import type {
+  EditorFontSize,
   RevalidateOptions,
   SeoGenerators,
 } from '@composius/payload-plugin-shared-components'
@@ -30,6 +31,10 @@ export type PagesOptions = {
   blocks: Block[]
   /** Adds the fixed `content` richText field, alongside any layout blocks. */
   contentField: boolean
+  /** Font size control on the content editor's toolbar. `false` leaves it out. */
+  editorFontSize: EditorFontSize | false
+  /** Draws the content editor's links blue and continuously underlined. */
+  emphasizeEditorLinks: boolean
   pageUrl: (slug?: string | null) => string
   /** Next.js cache invalidation on save and delete. `false` turns it off. */
   revalidate: false | RevalidateOptions
@@ -70,6 +75,8 @@ export const Pages = ({
   blockReferences,
   blocks,
   contentField,
+  editorFontSize,
+  emphasizeEditorLinks,
   pageUrl,
   revalidate,
   seo,
@@ -126,7 +133,10 @@ export const Pages = ({
             type: 'richText' as const,
             label: label((t) => t.fields.content),
             editor: lexicalEditor({
-              features: contentEditorFeatures('@composius/payload-plugin-pages/client'),
+              features: contentEditorFeatures('@composius/payload-plugin-pages/client', {
+                emphasizeLinks: emphasizeEditorLinks,
+                fontSize: editorFontSize,
+              }),
             }),
           },
         ]

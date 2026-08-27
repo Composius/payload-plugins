@@ -7,6 +7,7 @@ import type {
 } from '@payloadcms/plugin-seo/types'
 import { seoPlugin } from '@payloadcms/plugin-seo'
 import type {
+  EditorFontSize,
   RevalidateEvent,
   RevalidateOptions,
   RevalidateProfile,
@@ -71,6 +72,37 @@ export type ComposiusPayloadPluginPagesConfig = {
    */
   content?: 'block' | 'field' | false
   disabled?: boolean
+  /**
+   * Adds a font size control to the content editor's toolbar, scaling the text
+   * of the admin editor between `small`, `normal`, `large` and `huge`. It is
+   * CSS over Payload's own sizes and nothing more: no size is written to the
+   * document, so a front end renders the content exactly as it did before.
+   *
+   * The value sets the size an editor opens at; whoever is writing can pick
+   * another from the toolbar, and their browser remembers it from then on.
+   * `false` leaves the control out, at Payload's own size.
+   *
+   * It reaches the built-in content block and the `content` field alike. A
+   * content block the host defines itself is theirs to configure, through
+   * `contentBlock({ fontSize })`.
+   * @default 'normal'
+   */
+  editorFontSize?: EditorFontSize | false
+  /**
+   * Draws the links in the content editor blue and continuously underlined,
+   * where Payload draws them green under a dotted border — more contrast
+   * against the surrounding prose, so links are easier to pick out while
+   * writing.
+   *
+   * CSS over the admin panel alone, scoped to this plugin's editor: nothing is
+   * written to a node, so a front end styles its links however it already did.
+   *
+   * It reaches the built-in content block and the `content` field alike. A
+   * content block the host defines itself is theirs to configure, through
+   * `contentBlock({ emphasizeLinks })`.
+   * @default false
+   */
+  emphasizeEditorLinks?: boolean
   /**
    * Builds the front-end URL of a page, used for admin preview and live preview.
    * Defaults to `${NEXT_PUBLIC_SERVER_URL || SERVER_URL || 'http://localhost:3000'}/${slug}`.
@@ -158,6 +190,8 @@ export const ComposiusPayloadPluginPages =
     const generateURL: GenerateURL = seoOverrides.generateURL ?? defaultGenerateURL(pageUrl)
 
     const content = pluginOptions.content ?? 'block'
+    const editorFontSize = pluginOptions.editorFontSize ?? 'normal'
+    const emphasizeEditorLinks = pluginOptions.emphasizeEditorLinks === true
     const givenReferences = pluginOptions.blockReferences ?? []
     const givenBlocks = pluginOptions.blocks ?? []
 
@@ -169,7 +203,12 @@ export const ComposiusPayloadPluginPages =
     )
 
     const layoutBlocks =
-      content === 'block' && !claimsContentSlug ? [contentBlock(), ...givenBlocks] : givenBlocks
+      content === 'block' && !claimsContentSlug
+        ? [
+            contentBlock({ emphasizeLinks: emphasizeEditorLinks, fontSize: editorFontSize }),
+            ...givenBlocks,
+          ]
+        : givenBlocks
 
     // `generate:importmap` walks `config.blocks` and a blocks field's `blocks`,
     // but never its `blockReferences` — a block object reachable only as a
@@ -199,6 +238,8 @@ export const ComposiusPayloadPluginPages =
         blockReferences,
         blocks,
         contentField: content === 'field',
+        editorFontSize,
+        emphasizeEditorLinks,
         pageUrl,
         revalidate,
         seo: seoEnabled
@@ -233,8 +274,9 @@ export const ComposiusPayloadPluginPages =
     return config
   }
 
-export type { RevalidateEvent, RevalidateOptions, RevalidateProfile }
+export type { EditorFontSize, RevalidateEvent, RevalidateOptions, RevalidateProfile }
 export type { VideoEmbed, VideoEmbedProvider }
 export { parseVideoEmbedUrl, VIDEO_EMBED_BLOCK_SLUG }
+export type { ContentBlockOptions } from './blocks/content.js'
 export { contentBlock, CONTENT_BLOCK_SLUG } from './blocks/content.js'
 export { pageIdTag, pageTag, PAGES_TAG } from './tags.js'

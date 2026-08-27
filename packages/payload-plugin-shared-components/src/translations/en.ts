@@ -1,4 +1,13 @@
 export const en = {
+  editorFontSize: {
+    sizes: {
+      huge: 'Huge',
+      large: 'Large',
+      normal: 'Normal',
+      small: 'Small',
+    },
+    tooltip: 'Font size in the editor only',
+  },
   videoEmbed: {
     errors: {
       titleUnavailable: 'The provider returned no title for this link',
