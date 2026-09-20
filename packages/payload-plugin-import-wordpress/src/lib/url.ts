@@ -64,11 +64,33 @@ export const deriveOriginalImageUrl = (url: string): string => {
   return query ? `${original}?${query}` : original
 }
 
-/** Basename of a URL path, used as the uploaded filename. */
+/**
+ * Basename of a URL path, used as the uploaded filename.
+ *
+ * The decoding happens before the basename is taken, because a segment can
+ * encode separators of its own: `%2F` and `%2E%2E` would otherwise turn back
+ * into `/` and `..` *after* the split, putting them in a name that is handed
+ * to the filesystem. Anything still separator-shaped after decoding is
+ * flattened, and a name that reduces to nothing falls back to `image`.
+ */
 export const filenameOf = (url: string): string => {
   const path = pathOf(url)
-  const base = path.split('/').filter(Boolean).pop() ?? 'image'
-  return decodeURIComponent(base) || 'image'
+
+  let decoded = path
+  try {
+    decoded = decodeURIComponent(path)
+  } catch {
+    // Malformed percent-encoding: keep the raw path, which is still sanitized
+    // below and is at worst an ugly filename.
+  }
+
+  const base = decoded.split(/[/\\]/).filter(Boolean).pop() ?? ''
+
+  // Leading dots would make a hidden file (or, doubled, climb a directory);
+  // the rest are characters no upload has business putting in a name.
+  const safe = base.replace(/[/\\]/g, '-').replace(/^\.+/, '').replace(/\0/g, '').trim()
+
+  return safe || 'image'
 }
 
 /** Named HTML entities WordPress commonly emits (beyond numeric references). */

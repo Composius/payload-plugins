@@ -117,8 +117,26 @@ export type FieldMap = {
 }
 
 export type RequestOptions = {
+  /**
+   * MIME types accepted from an image download. The source site declares the
+   * type of what it serves, so this is what keeps it from deciding what lands
+   * in the media collection.
+   *
+   * The list replaces the default rather than extending it, so spread it to
+   * add to it: `[...defaultAllowedImageMimeTypes, 'image/svg+xml']`. SVG is
+   * left out by default because it can carry scripts.
+   *
+   * @default defaultAllowedImageMimeTypes
+   */
+  allowedMimeTypes?: string[]
   /** Per-image download concurrency. @default 5 */
   concurrency?: number
+  /**
+   * Largest accepted image download, in bytes. A response over the limit is
+   * abandoned rather than buffered.
+   * @default 20 * 1024 * 1024
+   */
+  maxBytes?: number
   /** Per-request timeout in ms. @default 30000 */
   timeoutMs?: number
   /** User-Agent header sent to WordPress. */

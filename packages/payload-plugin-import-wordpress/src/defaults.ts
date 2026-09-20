@@ -9,6 +9,22 @@ export const authenticated: Access = ({ req: { user } }) => Boolean(user)
 /** Relative, so rewritten links and redirect targets stay valid on any host. */
 export const defaultArticleUrl = (slug?: null | string): string => `/articles/${slug ?? ''}`
 
+/**
+ * MIME types an image download may declare. Raster formats only: an SVG is a
+ * document that can carry script, and the importer uploads what it fetches
+ * under the type the source site claims for it.
+ */
+export const defaultAllowedImageMimeTypes = [
+  'image/avif',
+  'image/gif',
+  'image/jpeg',
+  'image/png',
+  'image/webp',
+]
+
+/** Largest accepted image download, in bytes. */
+export const defaultMaxImageBytes = 20 * 1024 * 1024
+
 /** Slug of the collection storing import jobs (the "form" + report surface). */
 export const JOBS_SLUG = 'wp-import-jobs'
 /** Slug of the collection storing source→target mappings for idempotency. */
@@ -70,7 +86,9 @@ export const resolveOptions = (
   },
   redirections: resolveRedirections(pluginOptions.redirections),
   request: {
+    allowedMimeTypes: pluginOptions.request?.allowedMimeTypes ?? defaultAllowedImageMimeTypes,
     concurrency: pluginOptions.request?.concurrency ?? 5,
+    maxBytes: pluginOptions.request?.maxBytes ?? defaultMaxImageBytes,
     timeoutMs: pluginOptions.request?.timeoutMs ?? 30000,
     userAgent: pluginOptions.request?.userAgent,
   },

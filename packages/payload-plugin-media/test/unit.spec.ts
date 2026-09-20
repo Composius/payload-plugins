@@ -8,7 +8,7 @@ import type {
 
 import { describe, expect, test } from 'vitest'
 
-import { anyone, authenticated, defaultImageSizes } from '../src/defaults.js'
+import { anyone, authenticated, defaultImageSizes, defaultMimeTypes } from '../src/defaults.js'
 import {
   buildPrefix,
   convertAvifToWebp,
@@ -251,10 +251,23 @@ describe('ComposiusPayloadPluginMedia', () => {
       adminThumbnail: 'thumbnail',
       formatOptions: { format: 'webp', options: { quality: 90 } },
       imageSizes: withWebpSizes(defaultImageSizes),
-      mimeTypes: ['image/*'],
+      mimeTypes: defaultMimeTypes,
       resizeOptions: { width: 2560, withoutEnlargement: true },
     })
 
+  })
+
+  test('SVG is not accepted by default', () => {
+    // `image/*` would match it, and uploads are publicly readable by default.
+    expect(defaultMimeTypes).not.toContain('image/svg+xml')
+    expect(defaultMimeTypes).not.toContain('image/*')
+  })
+
+  test('custom mimeTypes replace the defaults, so SVG can be opted back in', () => {
+    const mimeTypes = [...defaultMimeTypes, 'image/svg+xml']
+    const config = ComposiusPayloadPluginMedia({ mimeTypes })(baseConfig())
+
+    expect(upload(findMedia(config)).mimeTypes).toEqual(mimeTypes)
   })
 
   test('custom image sizes replace the defaults', () => {

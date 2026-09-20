@@ -1,4 +1,4 @@
-import type { Block, BlockSlug, Config } from 'payload'
+import type { Block, Config } from 'payload'
 import type {
   GenerateDescription,
   GenerateImage,
@@ -18,7 +18,7 @@ import {
   parseVideoEmbedUrl,
   VIDEO_EMBED_BLOCK_SLUG,
 } from '@composius/payload-plugin-shared-components'
-import type { PagesAccess } from './collections/Pages.js'
+import type { BlockReference, PagesAccess } from './collections/Pages.js'
 import { Pages } from './collections/Pages.js'
 import { contentBlock, CONTENT_BLOCK_SLUG } from './blocks/content.js'
 import {
@@ -48,7 +48,7 @@ export type ComposiusPayloadPluginPagesConfig = {
    * Combines with `blocks`; the field is only added when at least one of the
    * two carries something.
    */
-  blockReferences?: (Block | BlockSlug)[]
+  blockReferences?: BlockReference[]
   /**
    * Blocks a page can be laid out with, defined inline on the `layout` field.
    * They join the content block the plugin contributes by default.
@@ -151,7 +151,7 @@ export type ComposiusPayloadPluginPagesConfig = {
  * A slug already registered is left alone: the host's definition wins, and
  * Payload rejects a config that registers one slug twice.
  */
-const registerBlock = (config: Config, block: Block): string => {
+const registerBlock = (config: Config, block: Block): BlockReference => {
   config.blocks ??= []
 
   if (!config.blocks.some((registered) => registered.slug === block.slug)) {
@@ -260,15 +260,28 @@ export const ComposiusPayloadPluginPages =
     }
 
     if (seoEnabled) {
-      // Registers the /plugin-seo/generate-* endpoints the field buttons call.
-      // No collections are passed: the meta fields are added by Pages itself.
+      // `seoPlugin` does two things at once: it registers the
+      // /plugin-seo/generate-* endpoints the field buttons call, and it appends
+      // its own `meta` group to every collection it is listed for. Pages builds
+      // that group itself, so only the endpoints are wanted — but since
+      // @payloadcms/plugin-seo 3.90.0 those endpoints authorize the request
+      // against this very list and reject any slug missing from it, so the
+      // collection has to be listed. It is, and the group it appends is then
+      // dropped again by restoring the field list.
+      const fieldsBefore = config.collections.find(({ slug }) => slug === 'pages')?.fields
+
       config = seoPlugin({
-        collections: [],
+        collections: ['pages'],
         generateDescription,
         generateImage,
         generateTitle,
         generateURL,
       })(config)
+
+      const pages = config.collections?.find(({ slug }) => slug === 'pages')
+      if (pages && fieldsBefore) {
+        pages.fields = fieldsBefore
+      }
     }
 
     return config

@@ -2,6 +2,14 @@
 
 pnpm monorepo of [Payload CMS](https://payloadcms.com) plugins.
 
+> [!IMPORTANT]
+> All plugins require **`payload` ≥ 3.90.1** and, where Next.js is used,
+> **`next` ≥ 16.3.3**. Payload 3.90.0 shipped 22 security advisories, several
+> critical, and 3.90.1 is the current patch of that line; the Next.js floor is
+> the one Payload itself requires. Upgrading an existing app on a relational
+> database needs a migration for the new `resetPasswordRequestedAt` field — see
+> the [auth plugin README](packages/payload-plugin-auth#requirements).
+
 | Package                                                              | Version | Description                        |
 | -------------------------------------------------------------------- | ------- | ---------------------------------- |
 | [@composius/payload-plugin-articles](packages/payload-plugin-articles) | 1.11.0 | Articles and categories collections with drafts, live preview, and SEO |

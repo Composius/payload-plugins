@@ -17,7 +17,42 @@ Plus the file fields Payload adds to upload collections (`filename`,
 
 ## Uploads
 
-- Only images are accepted (`mimeTypes: ['image/*']`), up to `maxFileSize`
+- Only images are accepted, and only the raster formats this collection can
+  convert and resize:
+
+  | Default `mimeTypes` |
+  | ------------------- |
+  | `image/avif`        |
+  | `image/gif`         |
+  | `image/jpeg`        |
+  | `image/png`         |
+  | `image/webp`        |
+
+  This is deliberately narrower than `image/*`, which **also matches
+  `image/svg+xml`**. An SVG is a document that can carry script, and `read`
+  access here is public by default, so accepting one is a stored-XSS vector in a
+  way a JPEG is not. Payload sanitizes SVG content and hardens SVG delivery as
+  of 3.90.0 (GHSA-2pwp-2369-8fg3) — this default means you are not relying on
+  that alone.
+
+  `mimeTypes` **replaces** the list rather than extending it, so spread the
+  exported default to add to it:
+
+  ```ts
+  import { ComposiusPayloadPluginMedia, defaultMimeTypes } from '@composius/payload-plugin-media'
+
+  ComposiusPayloadPluginMedia({
+    // Only if you need SVG and are serving it safely.
+    mimeTypes: [...defaultMimeTypes, 'image/svg+xml'],
+  })
+  ```
+
+  Related and not covered by this option: Payload enables `upload.pasteURL` by
+  default, which lets an admin have **the server** fetch an arbitrary URL. Set
+  `upload: { pasteURL: false }` on the collection, or give it an `allowList` of
+  hosts, if you do not want that.
+
+- Uploads are capped at `maxFileSize`
   (5 MB by default). Payload has no per-collection size limit, so a
   `beforeOperation` hook rejects oversized uploads with a 413 before any image
   processing happens.
@@ -50,8 +85,9 @@ Plus the file fields Payload adds to upload collections (`filename`,
   never be stored.
 - Every upload is converted to WebP — the stored original at quality 90, the
   generated sizes at quality 80 — and the original is resized down to at most
-  2560px wide (never enlarged). Animated GIFs keep their frames. Formats sharp
-  cannot re-encode (SVG…) pass through untouched, without sizes.
+  2560px wide (never enlarged). Animated GIFs keep their frames. A format sharp
+  cannot re-encode passes through untouched, without sizes — which is what an
+  SVG would do if you add it to `mimeTypes`.
 - AVIF uploads are converted as well. Keeping them as AVIF is not worth it:
   Payload re-runs sharp on AVIF input no matter what, at a quality that cannot
   be configured alongside this conversion (sharp's default of 50, which halves
@@ -78,7 +114,7 @@ Plus the file fields Payload adds to upload collections (`filename`,
 
 The following dependencies are required to be installed in your project before using this plugin:
 
-- `payload` (`^3.84.1`)
+- `payload` (`^3.90.1`)
 
 ```bash
 pnpm add payload
@@ -116,6 +152,10 @@ ComposiusPayloadPluginMedia({
 
   // Largest accepted upload, in bytes (default: 5 MB).
   maxFileSize: 5 * 1024 * 1024,
+
+  // Accepted upload types. Replaces the default raster list (see Uploads
+  // above); spread `defaultMimeTypes` to extend it instead.
+  mimeTypes: defaultMimeTypes,
 
   // Storage key prefix for cloud storage plugins (default: disabled).
   // Either a full string used as-is…

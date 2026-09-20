@@ -98,7 +98,7 @@ in front of Payload absorbs most of the traffic. Set `endpoint.token` to require
 
 The following dependencies are required to be installed in your project before using this plugin:
 
-- `payload` (`^3.84.1`)
+- `payload` (`^3.90.1`)
 
 ```bash
 pnpm add payload

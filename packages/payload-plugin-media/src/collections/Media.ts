@@ -137,6 +137,7 @@ export const Media = ({
   access,
   imageSizes,
   maxFileSize,
+  mimeTypes,
   prefix,
   randomSuffix,
   staticDir,
@@ -192,7 +193,7 @@ export const Media = ({
       : imageSizes[0]?.name,
     formatOptions: originalFormat,
     imageSizes: withWebpSizes(imageSizes),
-    mimeTypes: ['image/*'],
+    mimeTypes,
     resizeOptions: { width: 2560, withoutEnlargement: true }, // cap the "original"
     ...(staticDir !== undefined && { staticDir }),
   },

@@ -95,13 +95,13 @@ await payload.update({
 
 The following dependencies are required to be installed in your project before using this plugin:
 
-- `payload` (`^3.84.1`)
+- `payload` (`^3.90.1`)
 
 ```bash
 pnpm add payload
 ```
 
-`next` (`^16.0.0`) is an optional peer dependency: it is only needed for cache
+`next` (`^16.3.3`) is an optional peer dependency: it is only needed for cache
 revalidation, and any Payload app already running inside Next.js has it.
 
 ## Usage

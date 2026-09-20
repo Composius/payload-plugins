@@ -7,6 +7,28 @@ export const restBase = (siteUrl: string): string => {
   return `${trimmed}/wp-json/wp/v2`
 }
 
+/** How many hops a request may follow before it is treated as a loop. */
+const MAX_REDIRECTS = 5
+
+/**
+ * Origin of a URL, or `null` when it cannot be parsed — which compares equal to
+ * nothing, so an unparseable location is treated as off-origin.
+ */
+const originOf = (url: string): null | string => {
+  try {
+    return new URL(url).origin.toLowerCase()
+  } catch {
+    return null
+  }
+}
+
+const isRedirect = (res: Response): boolean =>
+  res.status === 301 ||
+  res.status === 302 ||
+  res.status === 303 ||
+  res.status === 307 ||
+  res.status === 308
+
 /** WordPress user + application password (Users → Profile → Application Passwords). */
 export type WPCredentials = {
   applicationPassword?: null | string
@@ -57,11 +79,44 @@ export const createWPClient = (
     headers.Authorization = `Basic ${Buffer.from(`${username}:${applicationPassword}`).toString('base64')}`
   }
 
+  const origin = originOf(base)
+
+  /**
+   * Follows redirects by hand so the application password does not travel with
+   * them. `fetch` would replay every header at the new location, and the source
+   * site chooses that location — a redirect off-origin would hand the
+   * credential to whoever it names. Leaving the origin drops the header.
+   */
+  const fetchFollowing = async (url: string, signal: AbortSignal): Promise<Response> => {
+    let target = url
+    let carryAuth = true
+
+    for (let redirects = 0; redirects <= MAX_REDIRECTS; redirects += 1) {
+      const outgoing = { ...headers }
+      if (!carryAuth) {
+        delete outgoing.Authorization
+      }
+
+      const res = await fetchImpl(target, { headers: outgoing, redirect: 'manual', signal })
+
+      const location = isRedirect(res) ? res.headers.get('location') : null
+      if (!location) {
+        return res
+      }
+
+      const next = new URL(location, target)
+      carryAuth = carryAuth && originOf(next.href) === origin
+      target = next.href
+    }
+
+    throw new WPRequestError(`WordPress request failed: too many redirects ${url}`, 508)
+  }
+
   const get = async (path: string): Promise<{ body: unknown; totalPages: number }> => {
     const controller = new AbortController()
     const timer = setTimeout(() => controller.abort(), request.timeoutMs)
     try {
-      const res = await fetchImpl(`${base}${path}`, { headers, signal: controller.signal })
+      const res = await fetchFollowing(`${base}${path}`, controller.signal)
       if (!res.ok) {
         throw new WPRequestError(`WordPress request failed: ${res.status} ${path}`, res.status)
       }

@@ -3,7 +3,7 @@ import type { Config, ImageSize } from 'payload'
 import type { MediaAccess, MediaPrefix } from './types.js'
 
 import { Media } from './collections/Media.js'
-import { anyone, authenticated, defaultImageSizes, defaultMaxFileSize } from './defaults.js'
+import { anyone, authenticated, defaultImageSizes, defaultMaxFileSize, defaultMimeTypes } from './defaults.js'
 
 export {
   buildPrefix,
@@ -12,7 +12,7 @@ export {
   uniqueFilename,
   withWebpSizes,
 } from './collections/Media.js'
-export { defaultImageSizes, defaultMaxFileSize } from './defaults.js'
+export { defaultImageSizes, defaultMaxFileSize, defaultMimeTypes } from './defaults.js'
 export type { MediaAccess, MediaPrefix } from './types.js'
 
 export type ComposiusPayloadPluginMediaConfig = {
@@ -40,6 +40,18 @@ export type ComposiusPayloadPluginMediaConfig = {
    * answers with its own `responseOnLimit` message instead of this limit's.
    */
   maxFileSize?: number
+  /**
+   * Upload types the collection accepts. Defaults to the raster formats it can
+   * convert and resize: `image/avif`, `image/gif`, `image/jpeg`, `image/png`
+   * and `image/webp`.
+   *
+   * The list replaces the default rather than extending it, so spread it to
+   * add to it: `[...defaultMimeTypes, 'image/svg+xml']`. Note that `'image/*'`
+   * would also match `image/svg+xml`, and an SVG can carry script — with the
+   * default `read` access serving uploads to anyone, that is a stored-XSS
+   * vector a raster format is not.
+   */
+  mimeTypes?: string[]
   /**
    * Storage key prefix written to the document's `prefix` on create, read
    * by cloud storage plugins (e.g. @payloadcms/storage-s3) when building
@@ -80,6 +92,7 @@ export const ComposiusPayloadPluginMedia =
         access,
         imageSizes: pluginOptions.imageSizes ?? defaultImageSizes,
         maxFileSize: pluginOptions.maxFileSize ?? defaultMaxFileSize,
+        mimeTypes: pluginOptions.mimeTypes ?? defaultMimeTypes,
         prefix: pluginOptions.prefix,
         randomSuffix: pluginOptions.randomSuffix ?? true,
         staticDir: pluginOptions.staticDir,

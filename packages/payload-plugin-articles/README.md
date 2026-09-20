@@ -28,6 +28,15 @@ field (`useAsTitle`), then their `email`. This pairs with
 [`@composius/payload-plugin-auth`](../payload-plugin-auth), whose `users`
 collection has a required `name` and `useAsTitle: 'name'`.
 
+> [!NOTE]
+> `editor` is a relationship from a collection that is **publicly readable by
+> default** (published articles) into your auth collection. Payload 3.90.0
+> closed two ways a relationship like that could be used to learn about
+> documents the caller cannot read (GHSA-7c34-32v3-j575,
+> GHSA-fpww-c55p-cjv6), which is why this plugin requires `^3.90.1`. Keeping
+> the users collection's own `read` access restrictive is still worthwhile —
+> `@composius/payload-plugin-auth` defaults it to authenticated users.
+
 ### `authors`
 
 Opt-in — enable it with the `authors: true` option. When disabled (the default),
@@ -288,18 +297,18 @@ await payload.update({
 
 The following dependencies are required to be installed in your project before using this plugin:
 
-- `@payloadcms/plugin-nested-docs` (`^3.84.1`)
-- `@payloadcms/plugin-seo` (`^3.84.1`)
-- `@payloadcms/richtext-lexical` (`^3.84.1`)
-- `@payloadcms/ui` (`^3.84.1`)
-- `payload` (`^3.84.1`)
+- `@payloadcms/plugin-nested-docs` (`^3.90.1`)
+- `@payloadcms/plugin-seo` (`^3.90.1`)
+- `@payloadcms/richtext-lexical` (`^3.90.1`)
+- `@payloadcms/ui` (`^3.90.1`)
+- `payload` (`^3.90.1`)
 - `react` (`^19.0.0`)
 
 ```bash
 pnpm add @payloadcms/plugin-nested-docs @payloadcms/plugin-seo @payloadcms/richtext-lexical @payloadcms/ui payload react
 ```
 
-`next` (`^16.0.0`) is an optional peer dependency: it is only needed for cache
+`next` (`^16.3.3`) is an optional peer dependency: it is only needed for cache
 revalidation, and any Payload app already running inside Next.js has it.
 
 ## Usage

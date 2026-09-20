@@ -76,9 +76,9 @@ the job document — delete the job (or clear the field) once the import is done
 
 This plugin expects the following to be installed and configured in your project:
 
-- `payload` (`^3.84.1`)
-- `@payloadcms/richtext-lexical` (`^3.84.1`) — the target content field's editor.
-- `@payloadcms/ui` (`^3.84.1`) and `react` (`^19.0.0`) — the masked
+- `payload` (`^3.90.1`)
+- `@payloadcms/richtext-lexical` (`^3.90.1`) — the target content field's editor.
+- `@payloadcms/ui` (`^3.90.1`) and `react` (`^19.0.0`) — the masked
   application-password input in the admin form.
 - `@composius/payload-plugin-redirections` (`^1.0.0`) — required only when
   `redirections` is enabled (the default); optional otherwise.
@@ -137,8 +137,47 @@ curl /api/wp-import/status/<jobId>
 | `fieldMap`                | article field overrides                          | `title`/`slug`/`content`/`coverImage`/`category`/`publishedAt` | Article field names the importer writes to.                    |
 | `autoRun`                 | boolean \| `{ cron, queue }`                     | `true`                           | Auto-process queued imports on a schedule (every minute on the `default` queue). Pass `{ cron, queue }` to customize, or `false` to run the jobs queue yourself. |
 | `dryRunPageLimit`         | number                                           | `1`                              | REST pages a dry run samples.                                                                |
-| `request`                 | `{ concurrency, timeoutMs, userAgent }`          | `{ concurrency: 5, timeoutMs: 30000 }` | HTTP tuning for WordPress fetches and image downloads.                                 |
+| `request`                 | `{ allowedMimeTypes, concurrency, maxBytes, timeoutMs, userAgent }` | `{ concurrency: 5, maxBytes: 20MB, timeoutMs: 30000 }` | HTTP tuning and download limits for WordPress fetches and image downloads — see below. |
 | `disabled`                | boolean                                          | `false`                          | Keep the collections (schema consistency) but skip endpoints, the redirections plugin and auto-run.       |
+
+### What the importer accepts from the source site
+
+An import pulls bytes from a site you do not control, and the importer uploads them
+under the content type that site declares. That type is what an upload collection's
+`mimeTypes` is checked against — so without a limit, a source site choosing
+`image/svg+xml` puts a scriptable document into your media library through an
+`image/*` gate.
+
+Two `request` options bound that:
+
+| Option             | Default                                                    | What it does                                                               |
+| ------------------ | ---------------------------------------------------------- | -------------------------------------------------------------------------- |
+| `allowedMimeTypes` | `image/avif`, `image/gif`, `image/jpeg`, `image/png`, `image/webp` | Content types a download may declare. Anything else is refused and reported as a per-image error. |
+| `maxBytes`         | `20 * 1024 * 1024`                                          | Largest accepted download. A response past the limit is abandoned mid-stream rather than buffered. |
+
+`allowedMimeTypes` **replaces** the default list rather than extending it, so spread
+the exported default to add to it:
+
+```ts
+import {
+  ComposiusPayloadPluginImportWordpress,
+  defaultAllowedImageMimeTypes,
+} from '@composius/payload-plugin-import-wordpress'
+
+ComposiusPayloadPluginImportWordpress({
+  request: {
+    // Only do this if you trust the source site and serve SVGs safely.
+    allowedMimeTypes: [...defaultAllowedImageMimeTypes, 'image/svg+xml'],
+    maxBytes: 50 * 1024 * 1024,
+  },
+})
+```
+
+Two further things the importer does on your behalf, with nothing to configure:
+uploaded filenames are decoded before their basename is taken (so an encoded `%2F`
+or `%2E%2E` in the source URL cannot reach the filesystem as a separator), and the
+WordPress application password is dropped from any redirect that leaves the site's
+origin.
 
 ### Redirections: prefix rules, not one per post
 

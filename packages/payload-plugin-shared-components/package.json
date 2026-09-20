@@ -33,21 +33,21 @@
   "main": "./src/index.ts",
   "types": "./src/index.ts",
   "devDependencies": {
-    "@payloadcms/plugin-seo": "3.84.1",
-    "@payloadcms/richtext-lexical": "3.84.1",
-    "@payloadcms/ui": "3.84.1",
+    "@payloadcms/plugin-seo": "3.90.1",
+    "@payloadcms/richtext-lexical": "3.90.1",
+    "@payloadcms/ui": "3.90.1",
     "@types/react": "19.2.14",
-    "next": "16.2.6",
-    "payload": "3.84.1",
+    "next": "16.3.5",
+    "payload": "3.90.1",
     "react": "19.2.6",
     "slugify": "^1.6.9",
     "typescript": "5.7.3"
   },
   "peerDependencies": {
-    "@payloadcms/plugin-seo": "^3.84.1",
-    "@payloadcms/richtext-lexical": "^3.84.1",
-    "@payloadcms/ui": "^3.84.1",
-    "payload": "^3.84.1",
+    "@payloadcms/plugin-seo": "^3.90.1",
+    "@payloadcms/richtext-lexical": "^3.90.1",
+    "@payloadcms/ui": "^3.90.1",
+    "payload": "^3.90.1",
     "react": "^19.0.0"
   },
   "engines": {

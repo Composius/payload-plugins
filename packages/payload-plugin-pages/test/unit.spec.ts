@@ -66,7 +66,25 @@ describe('ComposiusPayloadPluginPages', () => {
     expect(config.endpoints?.some((endpoint) => endpoint.path.includes('generate'))).toBe(true)
   })
 
-  /** Runs the plugin's own generate-title endpoint, the way the SEO field does. */
+  test('the collection is registered with the SEO plugin without a second meta group', () => {
+    const config = ComposiusPayloadPluginPages()(baseConfig())
+    const pages = findPages(config)
+
+    // The plugin has to list `pages` with seoPlugin for the generate endpoints
+    // to authorize the request, which also makes seoPlugin append its own
+    // `meta` group on top of the one Pages builds. Exactly one must survive.
+    const metaFields = pages.fields.filter((field) => (field as { name?: string }).name === 'meta')
+    expect(metaFields).toHaveLength(1)
+  })
+
+  /**
+   * Runs the plugin's own generate-title endpoint, the way the SEO field does.
+   *
+   * Since @payloadcms/plugin-seo 3.90.0 these endpoints are admin-only and
+   * check the target document: the request needs a user whose collection
+   * matches `config.admin.user`, and a `collectionSlug` the plugin enabled —
+   * without them the handler answers Unauthorized/Forbidden.
+   */
   const generateTitle = async (config: Config, doc: Record<string, unknown>) => {
     const endpoint = config.endpoints?.find((route) =>
       route.path.includes('generate-title'),
@@ -74,7 +92,12 @@ describe('ComposiusPayloadPluginPages', () => {
     expect(endpoint).toBeDefined()
 
     const response = await endpoint!.handler({
-      json: () => Promise.resolve({ doc }),
+      json: () => Promise.resolve({ collectionSlug: 'pages', doc }),
+      payload: {
+        collections: { users: { config: {} } },
+        config: { admin: { user: 'users' } },
+      },
+      user: { collection: 'users', id: 1 },
     } as unknown as Parameters<NonNullable<typeof endpoint>['handler']>[0])
 
     return ((await (response as Response).json()) as { result: string }).result

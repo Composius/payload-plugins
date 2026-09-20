@@ -22,9 +22,11 @@ export type ResolveAuthorArgs = {
   authorsSlug: string
   defaultUserId?: number | string
   dryRun: boolean
+  allowedMimeTypes: string[]
   fetchImpl?: typeof fetch
   imageCache: Map<string, ImageImportResult>
   jobId: number | string
+  maxBytes: number
   mediaSlug: string
   site: string
   strategy: AuthorStrategy
@@ -156,10 +158,12 @@ export const resolveAuthor = async (
   let pictureId: null | string = null
   if (avatar) {
     const result = await importImage(payload, {
+      allowedMimeTypes: args.allowedMimeTypes,
       cache: args.imageCache,
       dryRun: args.dryRun,
       fetchImpl: args.fetchImpl,
       jobId: args.jobId,
+      maxBytes: args.maxBytes,
       mediaSlug: args.mediaSlug,
       site: args.site,
       timeoutMs: args.timeoutMs,

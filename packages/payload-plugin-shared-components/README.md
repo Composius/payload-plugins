@@ -14,9 +14,9 @@ Shared building blocks used by the Composius [Payload CMS](https://payloadcms.co
 
 The following dependencies are required to be installed in your project before using this plugin:
 
-- `@payloadcms/plugin-seo` (`^3.84.1`)
-- `@payloadcms/richtext-lexical` (`^3.84.1`)
-- `payload` (`^3.84.1`)
+- `@payloadcms/plugin-seo` (`^3.90.1`)
+- `@payloadcms/richtext-lexical` (`^3.90.1`)
+- `payload` (`^3.90.1`)
 
 ```bash
 pnpm add @payloadcms/plugin-seo @payloadcms/richtext-lexical payload

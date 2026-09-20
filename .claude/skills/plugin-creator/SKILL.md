@@ -67,7 +67,7 @@ src/exports/tags.ts
   components, mirror the template's subpath exports (`./rsc` for
   custom-panel/home-nav, `./client` + `./rsc` for umami) in BOTH the
   top-level `exports` and `publishConfig.exports`.
-- `"files": ["dist"]`, `peerDependencies` on `payload: "^3.84.1"`
+- `"files": ["dist"]`, `peerDependencies` on `payload: "^3.90.1"`
   (plus `@payloadcms/ui`, `react`, etc. if UI). Match the exact versions
   the template pins in `devDependencies`. A plugin doing cache revalidation
   adds a `./tags` export and an optional `next` peer — see that subsection.
@@ -158,7 +158,7 @@ Four things beyond the source have to line up:
 - **`package.json`** — `"./tags"` in BOTH `exports` and
   `publishConfig.exports`; `"@composius/payload-plugin-shared-components":
   "workspace:*"` and `next` (pinned like the template) in `devDependencies`;
-  and `next` as an **optional** peer, `"next": "^16.0.0"` in `peerDependencies`
+  and `next` as an **optional** peer, `"next": "^16.3.3"` in `peerDependencies`
   plus `"peerDependenciesMeta": { "next": { "optional": true } }`. Optional
   because the plugin works without Next — revalidation just becomes a no-op.
 - **`tsconfig.json`** — `paths` mapping both

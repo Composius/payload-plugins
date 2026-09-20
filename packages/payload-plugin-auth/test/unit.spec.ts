@@ -159,6 +159,32 @@ describe('ComposiusPayloadPluginAuth', () => {
     expect(role.access?.update?.(accessArgs({ id: 1, role: 'admin' }))).toBe(true)
   })
 
+  test('duplicating a user resets the role instead of copying it', () => {
+    const config = ComposiusPayloadPluginAuth()(baseConfig())
+    const role = findRole(findUsers(config))
+
+    // Field access is not consulted when a duplicate copies values across, so
+    // an admin's role would otherwise ride along onto the copy.
+    const beforeDuplicate = role.hooks?.beforeDuplicate
+    expect(beforeDuplicate).toHaveLength(1)
+    expect(
+      beforeDuplicate![0]!({ value: 'admin' } as unknown as Parameters<
+        NonNullable<typeof beforeDuplicate>[number]
+      >[0]),
+    ).toBe('viewer')
+  })
+
+  test('the reset role follows a configured defaultRole', () => {
+    const config = ComposiusPayloadPluginAuth({ defaultRole: 'editor' })(baseConfig())
+    const beforeDuplicate = findRole(findUsers(config)).hooks?.beforeDuplicate
+
+    expect(
+      beforeDuplicate![0]!({ value: 'admin' } as unknown as Parameters<
+        NonNullable<typeof beforeDuplicate>[number]
+      >[0]),
+    ).toBe('editor')
+  })
+
   test('default access: admins manage, any authenticated user reads, users update themselves', () => {
     const config = ComposiusPayloadPluginAuth()(baseConfig())
     const users = findUsers(config)

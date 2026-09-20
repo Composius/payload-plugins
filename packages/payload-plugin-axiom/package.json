@@ -33,13 +33,13 @@
     "pino": "^9.14.0"
   },
   "devDependencies": {
-    "payload": "3.84.1",
+    "payload": "3.90.1",
     "rimraf": "3.0.2",
     "tsup": "8.5.0",
     "typescript": "5.7.3"
   },
   "peerDependencies": {
-    "payload": "^3.84.1"
+    "payload": "^3.90.1"
   },
   "engines": {
     "node": ">=20.9.0",

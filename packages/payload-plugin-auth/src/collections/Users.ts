@@ -55,6 +55,14 @@ export const withUsersAuth = (
         create: adminFieldLevel,
         update: adminFieldLevel,
       },
+      hooks: {
+        // A duplicate copies field values straight off the source document,
+        // which would carry an admin's role onto the copy without ever going
+        // through the `create` access above (GHSA-vc4h-q48j-5hcx). Payload
+        // enforces field access on duplicate as of 3.90.0; resetting the value
+        // here keeps the guarantee from depending on that.
+        beforeDuplicate: [() => defaultRole],
+      },
     },
   ]
 

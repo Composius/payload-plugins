@@ -10,6 +10,7 @@ import { importWordpressTask } from './jobs/task.js'
 
 export type { ComposiusPayloadPluginImportWordpressConfig } from './types.js'
 export type { ImportProgress, ImportReport } from './types.js'
+export { defaultAllowedImageMimeTypes, defaultMaxImageBytes } from './defaults.js'
 
 const LOG_PREFIX = '@composius/payload-plugin-import-wordpress'
 

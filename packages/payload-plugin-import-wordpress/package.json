@@ -38,11 +38,11 @@
   },
   "devDependencies": {
     "@composius/payload-plugin-redirections": "workspace:*",
-    "@payloadcms/richtext-lexical": "3.84.1",
-    "@payloadcms/ui": "3.84.1",
+    "@payloadcms/richtext-lexical": "3.90.1",
+    "@payloadcms/ui": "3.90.1",
     "@types/jsdom": "21.1.7",
     "@types/react": "19.2.14",
-    "payload": "3.84.1",
+    "payload": "3.90.1",
     "react": "19.2.6",
     "rimraf": "3.0.2",
     "tsup": "8.5.0",
@@ -50,9 +50,9 @@
   },
   "peerDependencies": {
     "@composius/payload-plugin-redirections": "^1.0.0",
-    "@payloadcms/richtext-lexical": "^3.84.1",
-    "@payloadcms/ui": "^3.84.1",
-    "payload": "^3.84.1",
+    "@payloadcms/richtext-lexical": "^3.90.1",
+    "@payloadcms/ui": "^3.90.1",
+    "payload": "^3.90.1",
     "react": "^19.0.0"
   },
   "peerDependenciesMeta": {

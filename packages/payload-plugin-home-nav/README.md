@@ -29,8 +29,8 @@ resolved (a standalone bundle shipping no `package.json`, or one without a
 
 The following dependencies are required to be installed in your project before using this plugin:
 
-- `@payloadcms/ui` (`^3.84.1`)
-- `payload` (`^3.84.1`)
+- `@payloadcms/ui` (`^3.90.1`)
+- `payload` (`^3.90.1`)
 - `react` (`^19.0.0`)
 
 ```bash

@@ -237,11 +237,13 @@ export const runImport = async (payload: Payload, args: RunImportArgs): Promise<
         }
         if (featured?.source_url) {
           const result = await importImage(payload, {
+            allowedMimeTypes: options.request.allowedMimeTypes,
             alt: featured.alt_text,
             cache: imageCache,
             dryRun,
             fetchImpl: args.fetchImpl,
             jobId: args.jobId,
+            maxBytes: options.request.maxBytes,
             mediaSlug: slugs.media,
             site,
             sourceId: featured.id,
@@ -259,10 +261,12 @@ export const runImport = async (payload: Payload, args: RunImportArgs): Promise<
           html: post.content?.rendered ?? '',
           importContentImage: (src) =>
             importImage(payload, {
+              allowedMimeTypes: options.request.allowedMimeTypes,
               cache: imageCache,
               dryRun,
               fetchImpl: args.fetchImpl,
               jobId: args.jobId,
+              maxBytes: options.request.maxBytes,
               mediaSlug: slugs.media,
               site,
               timeoutMs: options.request.timeoutMs,
@@ -307,7 +311,9 @@ export const runImport = async (payload: Payload, args: RunImportArgs): Promise<
           dryRun,
           fetchImpl: args.fetchImpl,
           imageCache,
+          allowedMimeTypes: options.request.allowedMimeTypes,
           jobId: args.jobId,
+          maxBytes: options.request.maxBytes,
           mediaSlug: slugs.media,
           site,
           strategy: options.authorMapping.strategy,

@@ -23,10 +23,20 @@ export type PagesAccess = {
 
 export type PagesSeoGenerators = SeoGenerators
 
+/**
+ * A block, or the slug of one registered on the config.
+ *
+ * `BlockSlug` narrows to the slugs of the host's *generated* block types, which
+ * a plugin cannot know, so the `{} & string` arm keeps any slug assignable
+ * while still offering the generated ones as completions. This mirrors how
+ * Payload types the `blockReferences` field itself (`BlockSlugOrString`).
+ */
+export type BlockReference = ({} & string) | Block | BlockSlug
+
 export type PagesOptions = {
   access: Required<PagesAccess>
   /** Blocks of the `layout` field, referenced by slug from `config.blocks`. */
-  blockReferences: (Block | BlockSlug)[]
+  blockReferences: BlockReference[]
   /** Blocks defined inline on the `layout` field. */
   blocks: Block[]
   /** Adds the fixed `content` richText field, alongside any layout blocks. */
@@ -48,7 +58,7 @@ export type PagesOptions = {
  * only one list is ever set. The plugin decides which, and hands the blocks
  * over already sorted into it.
  */
-const layoutFields = (blocks: Block[], blockReferences: (Block | BlockSlug)[]): Field[] => {
+const layoutFields = (blocks: Block[], blockReferences: BlockReference[]): Field[] => {
   if (blocks.length === 0 && blockReferences.length === 0) {
     return []
   }
@@ -64,7 +74,11 @@ const layoutFields = (blocks: Block[], blockReferences: (Block | BlockSlug)[]): 
       name: 'layout',
       type: 'blocks',
       label: fieldLabel,
-      blockReferences: [...blockReferences, ...blocks],
+      // Payload types the field as `(Block | BlockSlug)[]`, and `BlockSlug`
+      // resolves to `never` until the host generates block types — so a slug
+      // a plugin was handed has no assignable type here, though the runtime
+      // takes any registered one. The cast is that gap, not a loosening.
+      blockReferences: [...blockReferences, ...blocks] as (Block | BlockSlug)[],
       blocks: [],
     },
   ]

@@ -27,17 +27,39 @@ Email and password are added by Payload's auth. The collection also sets:
   otherwise the default role would apply (role changes are admin-only) and nobody could
   ever manage users.
 - The **last admin cannot be deleted or demoted**; such operations fail with a 403.
+- **Duplicating a user resets its role** to `defaultRole` rather than copying it.
+  A duplicate copies field values straight off the source document, so without
+  this an admin's role would ride onto the copy without passing the admin-only
+  `create` access on the field (GHSA-vc4h-q48j-5hcx). Payload enforces field
+  access on duplicate as of 3.90.0; the reset means the guarantee does not
+  depend on that alone.
 - `adminRole`/`defaultRole` values that are not in `roles` throw at config build time.
 
 ## Requirements
 
 The following dependencies are required to be installed in your project before using this plugin:
 
-- `payload` (`^3.84.1`)
+- `payload` (`^3.90.1`)
 
 ```bash
 pnpm add payload
 ```
+
+> [!IMPORTANT]
+> **Upgrading to Payload 3.90.x needs a migration.** 3.90.0 throttles the
+> forgot-password flow so an unauthenticated caller can no longer hold an
+> account in lockout (GHSA-v5gf-vpjc-pc7w), and it tracks that with a new
+> `resetPasswordRequestedAt` field on auth collections. On a relational database
+> (Postgres, SQLite) generate and run a migration after upgrading:
+>
+> ```bash
+> pnpm payload migrate:create
+> pnpm payload migrate
+> ```
+>
+> MongoDB needs no migration. This matters here because the plugin turns account
+> lockout **on** by default (`maxLoginAttempts: 5`, `lockTime` 15 minutes), so
+> every app using it was exposed until 3.90.0.
 
 ## Usage
 

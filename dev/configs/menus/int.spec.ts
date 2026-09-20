@@ -1,5 +1,7 @@
 import type { Payload } from 'payload'
 
+import type { Menu } from './payload-types.js'
+
 import { getPayload } from 'payload'
 import { afterAll, beforeAll, describe, expect, test } from 'vitest'
 
@@ -20,6 +22,12 @@ const createUser = (email: string) =>
     collection: 'users',
     data: { email, password: 'test' },
   })
+
+type MenuLink = NonNullable<Menu['links']>[number]
+
+/** `anchor` only exists on the `internal` block, so narrow before reading it. */
+const internalLink = (link: MenuLink | undefined) =>
+  link?.blockType === 'internal' ? link : undefined
 
 describe('Plugin integration tests', () => {
   test('plugin adds the menus collection', () => {
@@ -134,9 +142,9 @@ describe('Plugin integration tests', () => {
       },
     })
 
-    expect(menu.links?.[0]?.anchor).toBe('contact')
-    expect(menu.links?.[1]?.anchor).toBe('pricing')
-    expect(menu.links?.[2]?.anchor).toBeFalsy()
+    expect(internalLink(menu.links?.[0])?.anchor).toBe('contact')
+    expect(internalLink(menu.links?.[1])?.anchor).toBe('pricing')
+    expect(internalLink(menu.links?.[2])?.anchor).toBeFalsy()
   })
 
   test('a custom title overrides the linked document title', async () => {

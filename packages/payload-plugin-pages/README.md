@@ -289,17 +289,17 @@ await payload.update({
 
 The following dependencies are required to be installed in your project before using this plugin:
 
-- `@payloadcms/plugin-seo` (`^3.84.1`)
-- `@payloadcms/richtext-lexical` (`^3.84.1`)
-- `@payloadcms/ui` (`^3.84.1`)
-- `payload` (`^3.84.1`)
+- `@payloadcms/plugin-seo` (`^3.90.1`)
+- `@payloadcms/richtext-lexical` (`^3.90.1`)
+- `@payloadcms/ui` (`^3.90.1`)
+- `payload` (`^3.90.1`)
 - `react` (`^19.0.0`)
 
 ```bash
 pnpm add @payloadcms/plugin-seo @payloadcms/richtext-lexical @payloadcms/ui payload react
 ```
 
-`next` (`^16.0.0`) is an optional peer dependency: it is only needed for cache
+`next` (`^16.3.3`) is an optional peer dependency: it is only needed for cache
 revalidation, and any Payload app already running inside Next.js has it.
 
 ## Usage

@@ -5,7 +5,13 @@ import { afterEach, describe, expect, test, vi } from 'vitest'
 import type { LexNode } from '../src/lib/lexical.js'
 import type { WPCategory, WPPost } from '../src/lib/wpTypes.js'
 
-import { authenticated, defaultArticleUrl, resolveOptions } from '../src/defaults.js'
+import {
+  authenticated,
+  defaultAllowedImageMimeTypes,
+  defaultArticleUrl,
+  defaultMaxImageBytes,
+  resolveOptions,
+} from '../src/defaults.js'
 import { ComposiusPayloadPluginImportWordpress } from '../src/index.js'
 import { sortCategoriesParentsFirst } from '../src/lib/categories.js'
 import {
@@ -61,6 +67,20 @@ describe('url helpers', () => {
     expect(pathOf('https://x.com/a/b/?q=1#h')).toBe('/a/b/')
     expect(pathOf('/a/b')).toBe('/a/b')
     expect(filenameOf('https://x.com/a/photo.jpg')).toBe('photo.jpg')
+  })
+
+  test('filenameOf flattens separators an encoded segment would smuggle in', () => {
+    // Decoded after the split, these would put `/` and `..` in a filename.
+    expect(filenameOf('https://x.com/a/%2E%2E%2Fevil.jpg')).toBe('evil.jpg')
+    expect(filenameOf('https://x.com/a/photo%2Fnested.jpg')).toBe('nested.jpg')
+    expect(filenameOf('https://x.com/a/%2E%2E%2F%2E%2E%2Fetc%2Fpasswd')).toBe('passwd')
+    expect(filenameOf('https://x.com/a/%2Ehidden.jpg')).toBe('hidden.jpg')
+  })
+
+  test('filenameOf keeps a usable name for the awkward cases', () => {
+    expect(filenameOf('https://x.com/a/caf%C3%A9.jpg')).toBe('café.jpg')
+    expect(filenameOf('https://x.com/')).toBe('image')
+    expect(filenameOf('https://x.com/a/%E0%A4%A.jpg')).toBe('%E0%A4%A.jpg') // malformed encoding
   })
 
   test('decodeEntities and stripHtml', () => {
@@ -120,6 +140,184 @@ describe('wpClient credentials', () => {
     await client.fetchUser(5)
     expect(calls[0].url).not.toContain('context=edit')
     expect(calls[0].headers.Authorization).toBeUndefined()
+  })
+
+  /** Answers one redirect to `location`, then a normal body. */
+  const redirectingFetch = (
+    location: string,
+    calls: Array<{ headers: Record<string, string>; url: string }>,
+  ) => {
+    let served = false
+    return (async (input: unknown, init?: { headers?: Record<string, string> }) => {
+      calls.push({ headers: init?.headers ?? {}, url: String(input) })
+      if (!served) {
+        served = true
+        return new Response(null, { headers: { location }, status: 302 })
+      }
+      return new Response(JSON.stringify({ id: 5, email: 'a@b.c' }), {
+        headers: { 'X-WP-TotalPages': '1' },
+      })
+    }) as unknown as typeof fetch
+  }
+
+  test('a redirect off-origin does not carry the application password', async () => {
+    const calls: Array<{ headers: Record<string, string>; url: string }> = []
+    const client = createWPClient(
+      'https://x.com',
+      { credentials: { applicationPassword: 'pw', username: 'admin' }, timeoutMs: 1000 },
+      redirectingFetch('https://attacker.test/collect', calls),
+    )
+
+    await client.fetchUser(5)
+
+    expect(calls).toHaveLength(2)
+    expect(calls[0].headers.Authorization).toBeDefined()
+    expect(calls[1].url).toBe('https://attacker.test/collect')
+    expect(calls[1].headers.Authorization).toBeUndefined()
+  })
+
+  test('a redirect within the site keeps the credential', async () => {
+    const calls: Array<{ headers: Record<string, string>; url: string }> = []
+    const client = createWPClient(
+      'https://x.com',
+      { credentials: { applicationPassword: 'pw', username: 'admin' }, timeoutMs: 1000 },
+      redirectingFetch('https://x.com/wp-json/wp/v2/users/5/', calls),
+    )
+
+    await client.fetchUser(5)
+
+    expect(calls).toHaveLength(2)
+    expect(calls[1].headers.Authorization).toBeDefined()
+  })
+
+  test('a redirect loop gives up instead of following forever', async () => {
+    const calls: Array<{ headers: Record<string, string>; url: string }> = []
+    const looping = (async (input: unknown, init?: { headers?: Record<string, string> }) => {
+      calls.push({ headers: init?.headers ?? {}, url: String(input) })
+      return new Response(null, { headers: { location: 'https://x.com/loop' }, status: 302 })
+    }) as unknown as typeof fetch
+
+    const client = createWPClient('https://x.com', { timeoutMs: 1000 }, looping)
+
+    // fetchUser swallows the failure and reports no user rather than hanging.
+    expect(await client.fetchUser(5)).toBe(null)
+    expect(calls.length).toBeLessThanOrEqual(7)
+  })
+})
+
+describe('importImage downloads', () => {
+  /** Collects what would be uploaded, so the created file can be asserted on. */
+  const stubPayload = () => {
+    const created: Array<Record<string, unknown>> = []
+    return {
+      created,
+      payload: {
+        create: async (args: Record<string, unknown>) => {
+          created.push(args)
+          return { id: 'media-1' }
+        },
+        find: async () => ({ docs: [], totalDocs: 0 }),
+      } as never,
+    }
+  }
+
+  const respondWith = (body: string, contentType: string) =>
+    (async () =>
+      new Response(body, { headers: { 'content-type': contentType } })) as unknown as typeof fetch
+
+  const importArgs = (fetchImpl: typeof fetch, overrides: Record<string, unknown> = {}) => ({
+    allowedMimeTypes: defaultAllowedImageMimeTypes,
+    cache: new Map(),
+    dryRun: false,
+    fetchImpl,
+    jobId: 1,
+    maxBytes: defaultMaxImageBytes,
+    mediaSlug: 'media',
+    site: 'x.com',
+    timeoutMs: 1000,
+    url: 'https://x.com/a/photo.jpg',
+    ...overrides,
+  })
+
+  test('an allowed content type is uploaded under the type the response declared', async () => {
+    const { importImage } = await import('../src/lib/media.js')
+    const { created, payload } = stubPayload()
+
+    const result = await importImage(payload, importArgs(respondWith('bytes', 'image/png')))
+
+    expect(result.error).toBeUndefined()
+    expect(result.mediaId).toBe('media-1')
+    expect((created[0].file as { mimetype: string }).mimetype).toBe('image/png')
+  })
+
+  test('a content type outside the allowlist is refused', async () => {
+    const { importImage } = await import('../src/lib/media.js')
+    const { created, payload } = stubPayload()
+
+    // The source site declares this, and it is what the media collection's
+    // `mimeTypes` gate would be checked against — so an SVG would otherwise
+    // pass an `image/*` gate.
+    const result = await importImage(payload, importArgs(respondWith('<svg/>', 'image/svg+xml')))
+
+    expect(result.mediaId).toBe(null)
+    expect(result.error).toContain('unsupported content type')
+    expect(created).toHaveLength(0)
+  })
+
+  test('an HTML error page served with 200 is refused', async () => {
+    const { importImage } = await import('../src/lib/media.js')
+    const { payload } = stubPayload()
+
+    const result = await importImage(payload, importArgs(respondWith('<html>', 'text/html')))
+
+    expect(result.error).toContain('unsupported content type')
+  })
+
+  test('the allowlist is configurable, so SVG can be opted back in', async () => {
+    const { importImage } = await import('../src/lib/media.js')
+    const { created, payload } = stubPayload()
+
+    const result = await importImage(
+      payload,
+      importArgs(respondWith('<svg/>', 'image/svg+xml'), {
+        allowedMimeTypes: [...defaultAllowedImageMimeTypes, 'image/svg+xml'],
+      }),
+    )
+
+    expect(result.error).toBeUndefined()
+    expect((created[0].file as { mimetype: string }).mimetype).toBe('image/svg+xml')
+  })
+
+  test('a body over the cap is abandoned rather than buffered', async () => {
+    const { importImage } = await import('../src/lib/media.js')
+    const { created, payload } = stubPayload()
+
+    const result = await importImage(
+      payload,
+      importArgs(respondWith('x'.repeat(5000), 'image/png'), { maxBytes: 1000 }),
+    )
+
+    expect(result.mediaId).toBe(null)
+    expect(result.error).toContain('exceeds the 1000 byte limit')
+    expect(created).toHaveLength(0)
+  })
+
+  test('a declared length over the cap is refused before the body is read', async () => {
+    const { importImage } = await import('../src/lib/media.js')
+    const { payload } = stubPayload()
+
+    let read = false
+    const lying = (async () => {
+      read = true
+      return new Response('x'.repeat(10), {
+        headers: { 'content-length': '999999999', 'content-type': 'image/png' },
+      })
+    }) as unknown as typeof fetch
+
+    const result = await importImage(payload, importArgs(lying, { maxBytes: 1000 }))
+
+    expect(result.error).toContain('exceeds the 1000 limit')
+    expect(read).toBe(true) // the response was fetched, but its body never buffered
   })
 })
 
@@ -261,10 +459,12 @@ describe('resolveAuthor without email', () => {
   } as never
 
   const baseArgs = {
+    allowedMimeTypes: defaultAllowedImageMimeTypes,
     authorsSlug: 'authors',
     dryRun: false,
     imageCache: new Map(),
     jobId: 1,
+    maxBytes: defaultMaxImageBytes,
     mediaSlug: 'media',
     site: 'site.com',
     strategy: 'users' as const,
