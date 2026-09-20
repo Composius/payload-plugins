@@ -23,7 +23,7 @@ const getEndpoint = (config: Config, path = '/health'): Endpoint => {
 }
 
 const invoke = async (config: Config, path = '/health') => {
-  const response = (await getEndpoint(config, path).handler(request)) as Response
+  const response = (await getEndpoint(config, path).handler(request))
   return { body: (await response.json()) as HealthResponse, response }
 }
 
@@ -45,9 +45,9 @@ describe('ComposiusPayloadPluginHealth', () => {
   test('preserves pre-existing endpoints', () => {
     const config = baseConfig()
     const existing: Endpoint = {
-      path: '/existing',
-      method: 'get',
       handler: async () => Response.json({}),
+      method: 'get',
+      path: '/existing',
     }
     config.endpoints = [existing]
 
@@ -70,11 +70,11 @@ describe('ComposiusPayloadPluginHealth', () => {
 
   test('responds 200 with per-check results when every check passes', async () => {
     const config = ComposiusPayloadPluginHealth({
-      database: false,
       checks: {
-        async database() {},
         cache() {},
+        async database() {},
       },
+      database: false,
     })(baseConfig())
     const { body, response } = await invoke(config)
 
@@ -99,7 +99,7 @@ describe('ComposiusPayloadPluginHealth', () => {
       },
     } as unknown as PayloadRequest
 
-    const response = (await getEndpoint(config).handler(req)) as Response
+    const response = (await getEndpoint(config).handler(req))
     const body = (await response.json()) as HealthResponse
 
     expect(response.status).toBe(200)
@@ -118,11 +118,11 @@ describe('ComposiusPayloadPluginHealth', () => {
       },
     } as unknown as PayloadRequest
 
-    const response = (await getEndpoint(config).handler(req)) as Response
+    const response = (await getEndpoint(config).handler(req))
     const body = (await response.json()) as HealthResponse
 
     expect(response.status).toBe(503)
-    expect(body.checks?.database).toEqual({ status: 'error', error: 'connection refused' })
+    expect(body.checks?.database).toEqual({ error: 'connection refused', status: 'error' })
   })
 
   test('an explicit database check overrides the built-in one', async () => {
@@ -144,10 +144,10 @@ describe('ComposiusPayloadPluginHealth', () => {
   test('responds 503 with the failing check message when a check throws', async () => {
     const config = ComposiusPayloadPluginHealth({
       checks: {
-        database() {},
         async cache() {
           throw new Error('connection refused')
         },
+        database() {},
       },
     })(baseConfig())
     const { body, response } = await invoke(config)
@@ -155,7 +155,7 @@ describe('ComposiusPayloadPluginHealth', () => {
     expect(response.status).toBe(503)
     expect(body.status).toBe('error')
     expect(body.checks).toEqual({
-      cache: { status: 'error', error: 'connection refused' },
+      cache: { error: 'connection refused', status: 'error' },
       database: { status: 'ok' },
     })
   })
@@ -164,6 +164,9 @@ describe('ComposiusPayloadPluginHealth', () => {
     const config = ComposiusPayloadPluginHealth({
       checks: {
         cache() {
+          // Throwing a non-Error is the case under test: the plugin has to
+          // stringify whatever it catches.
+          // eslint-disable-next-line @typescript-eslint/only-throw-error
           throw 'boom'
         },
       },
@@ -171,7 +174,7 @@ describe('ComposiusPayloadPluginHealth', () => {
     const { body, response } = await invoke(config)
 
     expect(response.status).toBe(503)
-    expect(body.checks?.cache).toEqual({ status: 'error', error: 'boom' })
+    expect(body.checks?.cache).toEqual({ error: 'boom', status: 'error' })
   })
 
   test('checks receive the request', async () => {

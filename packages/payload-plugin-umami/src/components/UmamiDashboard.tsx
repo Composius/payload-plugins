@@ -33,16 +33,16 @@ type StatDef = {
 
 // Labels come from translations (t.umami.stats[id]).
 const STAT_DEFS: Record<UmamiStatId, StatDef> = {
-  visitors: { period: 'current', value: (s) => s.visitors },
-  visitorsPrev: { period: 'prev', value: (s) => s.visitors },
-  views: { period: 'current', value: (s) => s.pageviews },
-  viewsPrev: { period: 'prev', value: (s) => s.pageviews },
-  visits: { period: 'current', value: (s) => s.visits },
-  visitsPrev: { period: 'prev', value: (s) => s.visits },
   bounces: { period: 'current', value: (s) => s.bounces },
   bouncesPrev: { period: 'prev', value: (s) => s.bounces },
   duration: { format: 'duration', period: 'current', value: avgDuration },
   durationPrev: { format: 'duration', period: 'prev', value: avgDuration },
+  views: { period: 'current', value: (s) => s.pageviews },
+  viewsPrev: { period: 'prev', value: (s) => s.pageviews },
+  visitors: { period: 'current', value: (s) => s.visitors },
+  visitorsPrev: { period: 'prev', value: (s) => s.visitors },
+  visits: { period: 'current', value: (s) => s.visits },
+  visitsPrev: { period: 'prev', value: (s) => s.visits },
 }
 
 /**
@@ -65,7 +65,7 @@ export const UmamiDashboard = ({
   const countryName = useMemo(() => {
     const regionNames = new Intl.DisplayNames([i18n.language, 'en'], { type: 'region' })
     return (code: string): string => {
-      if (!code) return code
+      if (!code) {return code}
       try {
         return regionNames.of(code.toUpperCase()) ?? code
       } catch {

@@ -5,10 +5,10 @@ import React from 'react'
 import type { UmamiPoint } from '../types.js'
 
 export type TopListProps = {
-  title: string
-  items: UmamiPoint[]
   /** Message shown when there is no data in the range. */
   emptyLabel: string
+  items: UmamiPoint[]
+  title: string
 }
 
 const full = new Intl.NumberFormat()

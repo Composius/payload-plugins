@@ -41,7 +41,7 @@ const iconStyles = `
 }
 `
 
-export type HomeNavIconProps = ServerProps & {
+export type HomeNavIconProps = {
   /**
    * The `admin.components.graphics.Icon` the project had configured before
    * the plugin took the slot over — re-rendered next to the label so custom
@@ -50,7 +50,7 @@ export type HomeNavIconProps = ServerProps & {
   icon?: PayloadComponent
   /** Label override from the plugin options, plain or per-language. */
   label?: LocalizedText
-}
+} & ServerProps
 
 /**
  * Server component for the `admin.components.graphics.Icon` slot: the

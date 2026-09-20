@@ -1,9 +1,9 @@
 import type { Payload } from 'payload'
 
 import { getPayload } from 'payload'
+import { afterAll, beforeAll, describe, expect, test } from 'vitest'
 
 import config from './config.js'
-import { afterAll, beforeAll, describe, expect, test } from 'vitest'
 
 let payload: Payload
 
@@ -49,12 +49,12 @@ describe('Plugin integration tests', () => {
       collection: 'pages',
       data: {
         slug: 'with-layout',
-        title: 'With Layout',
         layout: [
           { blockType: 'hero', heading: 'Welcome' },
           { blockType: 'content' },
           { blockType: 'callToAction', href: '/contact', label: 'Say hi' },
         ],
+        title: 'With Layout',
       },
     })
 
@@ -89,17 +89,17 @@ describe('Plugin integration tests', () => {
   test('publishing and deleting survive without a Next.js runtime', async () => {
     const page = await payload.create({
       collection: 'pages',
-      data: { _status: 'published', slug: 'cached', title: 'Cached' },
+      data: { slug: 'cached', _status: 'published', title: 'Cached' },
     })
 
     const renamed = await payload.update({
-      collection: 'pages',
       id: page.id,
+      collection: 'pages',
       data: { slug: 'cached-renamed' },
     })
     expect(renamed.slug).toBe('cached-renamed')
 
-    await payload.delete({ collection: 'pages', id: page.id })
+    await payload.delete({ id: page.id, collection: 'pages' })
 
     const remaining = await payload.find({
       collection: 'pages',

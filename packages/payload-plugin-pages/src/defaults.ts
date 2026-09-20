@@ -1,5 +1,7 @@
 import type { GenerateDescription } from '@payloadcms/plugin-seo/types'
+
 import { defaultGenerateDescription as describeRichText } from '@composius/payload-plugin-shared-components'
+
 import { CONTENT_BLOCK_SLUG } from './blocks/content.js'
 
 export {
@@ -13,7 +15,7 @@ export {
 } from '@composius/payload-plugin-shared-components'
 
 /** Pages live at the site root, unlike articles which live under /articles/. */
-export const defaultPageUrl = (slug?: string | null) =>
+export const defaultPageUrl = (slug?: null | string) =>
   `${process.env.NEXT_PUBLIC_SERVER_URL || process.env.SERVER_URL || 'http://localhost:3000'}/${slug ?? ''}`
 
 /** The rich text of the first content block of a layout, if it holds one. */

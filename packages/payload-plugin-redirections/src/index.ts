@@ -71,10 +71,10 @@ export const ComposiusPayloadPluginRedirections =
 
     config.collections.push(
       Redirections({
+        slug,
         access,
         endpoints,
         hidden: pluginOptions.hidden ?? false,
-        slug,
       }),
     )
 

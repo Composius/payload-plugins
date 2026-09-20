@@ -4,8 +4,8 @@ import { convertHTMLToLexical } from '@payloadcms/richtext-lexical'
 import { JSDOM } from 'jsdom'
 
 import type { LinkMapping } from '../types.js'
-import type { ImageImportResult } from './media.js'
 import type { LexNode } from './lexical.js'
+import type { ImageImportResult } from './media.js'
 
 import { imageToken, replaceImageTokens, rewriteLinkNodes } from './lexical.js'
 

@@ -9,7 +9,7 @@ export type UmamiAccess = {
   read?: Access
 }
 
-export type UmamiRange = '24h' | '7d' | '30d' | '90d'
+export type UmamiRange = '7d' | '24h' | '30d' | '90d'
 
 export const UMAMI_RANGES: UmamiRange[] = ['24h', '7d', '30d', '90d']
 
@@ -21,11 +21,11 @@ export type UmamiPoint = {
 
 /** Response of `GET /websites/:id/stats`. */
 export type UmamiStats = {
+  bounces: number
   pageviews: number
+  totaltime: number
   visitors: number
   visits: number
-  bounces: number
-  totaltime: number
 }
 
 /** Response of `GET /websites/:id/pageviews`. */
@@ -38,13 +38,13 @@ export type UmamiSeries = {
 
 /** The combined payload returned by the `/plugin-umami/report` endpoint. */
 export type UmamiReport = {
-  range: UmamiRange
-  stats: UmamiStats
   /** Same stats over the period immediately before the selected range. */
   prevStats: UmamiStats
-  topPages: UmamiPoint[]
-  topCountries: UmamiPoint[]
+  range: UmamiRange
   series: UmamiSeries
+  stats: UmamiStats
+  topCountries: UmamiPoint[]
+  topPages: UmamiPoint[]
 }
 
 /**

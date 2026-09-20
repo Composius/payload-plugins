@@ -3,10 +3,10 @@
 import React from 'react'
 
 export type DashboardSkeletonProps = {
-  /** How many stat cards the loaded dashboard will show. */
-  statCount: number
   /** Announced to screen readers while the report is in flight. */
   label: string
+  /** How many stat cards the loaded dashboard will show. */
+  statCount: number
 }
 
 /**

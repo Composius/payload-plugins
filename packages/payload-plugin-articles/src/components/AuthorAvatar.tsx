@@ -1,8 +1,9 @@
 'use client'
 
 import type { UIFieldClientComponent } from 'payload'
-import Avatar from 'boring-avatars'
+
 import { useFormFields } from '@payloadcms/ui'
+import Avatar from 'boring-avatars'
 import React from 'react'
 
 /**
@@ -21,7 +22,7 @@ export const AuthorAvatar: UIFieldClientComponent = () => {
 
   return (
     <div className="field-type">
-      <Avatar name={name || 'Author'} variant="beam" size={80} square={false} />
+      <Avatar name={name || 'Author'} size={80} square={false} variant="beam" />
     </div>
   )
 }

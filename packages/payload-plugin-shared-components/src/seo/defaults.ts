@@ -72,6 +72,6 @@ export const withSiteName = (
 }
 
 export const defaultGenerateURL =
-  (documentUrl: (slug?: string | null) => string): GenerateURL =>
+  (documentUrl: (slug?: null | string) => string): GenerateURL =>
   ({ doc }) =>
     documentUrl(doc?.slug)

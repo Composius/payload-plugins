@@ -1,4 +1,9 @@
 import type {
+  EditorFontSize,
+  RevalidateOptions,
+  SeoGenerators,
+} from '@composius/payload-plugin-shared-components'
+import type {
   Access,
   CollectionConfig,
   CollectionSlug,
@@ -6,19 +11,16 @@ import type {
   FieldHook,
   PayloadRequest,
 } from 'payload'
-import { slugField } from 'payload'
-import { lexicalEditor } from '@payloadcms/richtext-lexical'
-import type {
-  EditorFontSize,
-  RevalidateOptions,
-  SeoGenerators,
-} from '@composius/payload-plugin-shared-components'
+
 import {
   contentEditorFeatures,
   revalidateHooks,
   seoField,
   slugify,
 } from '@composius/payload-plugin-shared-components'
+import { lexicalEditor } from '@payloadcms/richtext-lexical'
+import { slugField } from 'payload'
+
 import { label } from '../translations/index.js'
 
 export type ArticlesAccess = {
@@ -32,18 +34,18 @@ export type ArticlesSeoGenerators = SeoGenerators
 
 export type ArticlesOptions = {
   access: Required<ArticlesAccess>
-  articleUrl: (slug?: string | null) => string
+  articleUrl: (slug?: null | string) => string
   /** Adds the `author` relationship to the `authors` collection. */
   authors: boolean
   /** Font size control on the content editor's toolbar. `false` leaves it out. */
   editorFontSize: EditorFontSize | false
-  /** Draws the content editor's links blue and continuously underlined. */
-  emphasizeEditorLinks: boolean
   /** Field-level access controlling who may change the `editor` field. */
   editorUpdateAccess: FieldAccess
+  /** Draws the content editor's links blue and continuously underlined. */
+  emphasizeEditorLinks: boolean
   /** Next.js cache invalidation on save and delete. `false` turns it off. */
   revalidate: false | RevalidateOptions
-  seo: false | ArticlesSeoGenerators
+  seo: ArticlesSeoGenerators | false
   /**
    * Falls back to the category flagged as default whenever an article is saved
    * without one.
@@ -102,33 +104,21 @@ export const Articles = ({
   usersSlug,
 }: ArticlesOptions): CollectionConfig => ({
   slug: 'articles',
-  labels: {
-    singular: label((t) => t.articles.singular),
-    plural: label((t) => t.articles.plural),
+  access: {
+    create: access.create,
+    delete: access.delete,
+    read: access.read,
+    update: access.update,
   },
   admin: {
-    useAsTitle: 'title',
     defaultColumns: ['title', 'category', '_status', 'editor', 'publishedAt', 'updatedAt'],
     livePreview: {
       url: ({ data }) => articleUrl(data?.slug as string | undefined),
     },
     preview: (data) => articleUrl(data?.slug as string | undefined),
+    useAsTitle: 'title',
   },
   defaultSort: '-publishedAt',
-  access: {
-    read: access.read,
-    create: access.create,
-    update: access.update,
-    delete: access.delete,
-  },
-  versions: {
-    drafts: {
-      autosave: true,
-    },
-  },
-  hooks: {
-    ...revalidateHooks({ collection: 'articles', drafts: true, fields: ['slug'] }, revalidate),
-  },
   fields: [
     {
       name: 'title',
@@ -151,10 +141,10 @@ export const Articles = ({
           }
         : {}),
       admin: {
-        position: 'sidebar',
         components: {
           Field: '@composius/payload-plugin-articles/client#CategoryFieldClient',
         },
+        position: 'sidebar',
       },
     },
     ...(authors
@@ -162,43 +152,42 @@ export const Articles = ({
           {
             name: 'author',
             type: 'relationship',
-            label: label((t) => t.articles.fields.author),
-            relationTo: 'authors',
             admin: {
               position: 'sidebar',
             },
+            label: label((t) => t.articles.fields.author),
+            relationTo: 'authors',
           },
         ] as const)
       : []),
     {
       name: 'coverImage',
       type: 'upload',
-      label: label((t) => t.articles.fields.coverImage),
-      relationTo: 'media',
       admin: {
         position: 'sidebar',
       },
+      label: label((t) => t.articles.fields.coverImage),
+      relationTo: 'media',
     },
     {
       name: 'content',
       type: 'richText',
-      label: label((t) => t.articles.fields.content),
       editor: lexicalEditor({
         features: contentEditorFeatures('@composius/payload-plugin-articles/client', {
           emphasizeLinks: emphasizeEditorLinks,
           fontSize: editorFontSize,
         }),
       }),
+      label: label((t) => t.articles.fields.content),
     },
     {
       name: 'publishedAt',
       type: 'date',
-      label: label((t) => t.articles.fields.publishedAt),
       admin: {
-        position: 'sidebar',
         date: {
           pickerAppearance: 'dayAndTime',
         },
+        position: 'sidebar',
       },
       hooks: {
         beforeChange: [
@@ -210,20 +199,19 @@ export const Articles = ({
           },
         ],
       },
+      label: label((t) => t.articles.fields.publishedAt),
     },
     {
       name: 'editor',
       type: 'relationship',
-      label: label((t) => t.articles.fields.editor),
-      relationTo: usersSlug,
       access: {
         update: editorUpdateAccess,
       },
       admin: {
-        position: 'sidebar',
         components: {
           Cell: '@composius/payload-plugin-articles/client#EditorCell',
         },
+        position: 'sidebar',
       },
       hooks: {
         beforeChange: [
@@ -236,6 +224,8 @@ export const Articles = ({
           },
         ],
       },
+      label: label((t) => t.articles.fields.editor),
+      relationTo: usersSlug,
     },
     ...(seo
       ? [
@@ -249,4 +239,16 @@ export const Articles = ({
         ]
       : []),
   ],
+  hooks: {
+    ...revalidateHooks({ collection: 'articles', drafts: true, fields: ['slug'] }, revalidate),
+  },
+  labels: {
+    plural: label((t) => t.articles.plural),
+    singular: label((t) => t.articles.singular),
+  },
+  versions: {
+    drafts: {
+      autosave: true,
+    },
+  },
 })

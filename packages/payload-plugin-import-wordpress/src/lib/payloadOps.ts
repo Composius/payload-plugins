@@ -7,7 +7,7 @@ import type { Payload } from 'payload'
  * instead of scattering them across every call site.
  */
 
-export type AnyDoc = { id: number | string; [key: string]: unknown }
+export type AnyDoc = { [key: string]: unknown; id: number | string }
 
 type CreateArgs = {
   collection: string

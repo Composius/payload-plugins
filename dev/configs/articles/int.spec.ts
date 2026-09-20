@@ -1,9 +1,9 @@
 import type { Payload } from 'payload'
 
 import { getPayload, ValidationError } from 'payload'
+import { afterAll, afterEach, beforeAll, describe, expect, test, vi } from 'vitest'
 
 import config from './config.js'
-import { afterAll, afterEach, beforeAll, describe, expect, test, vi } from 'vitest'
 
 let payload: Payload
 
@@ -11,18 +11,18 @@ let payload: Payload
 const videoContent = (url: string) => ({
   root: {
     type: 'root',
+    children: [
+      {
+        type: 'block',
+        fields: { blockType: 'videoEmbed', url },
+        format: '' as const,
+        version: 2,
+      },
+    ],
     direction: null,
     format: '' as const,
     indent: 0,
     version: 1,
-    children: [
-      {
-        type: 'block',
-        format: '' as const,
-        version: 2,
-        fields: { blockType: 'videoEmbed', url },
-      },
-    ],
   },
 })
 
@@ -95,8 +95,8 @@ describe('Plugin integration tests', () => {
       collection: 'articles',
       data: {
         slug: 'watch-this',
-        title: 'Watch this',
         content: videoContent('https://youtu.be/dQw4w9WgXcQ'),
+        title: 'Watch this',
       },
     })
 
@@ -110,8 +110,8 @@ describe('Plugin integration tests', () => {
         collection: 'articles',
         data: {
           slug: 'watch-that',
-          title: 'Watch that',
           content: videoContent('https://example.com/not-a-video'),
+          title: 'Watch that',
         },
       })
       .catch((error: unknown) => error)
@@ -131,8 +131,8 @@ describe('Plugin integration tests', () => {
       collection: 'articles',
       data: {
         slug: 'titled-video',
-        title: 'Titled video',
         content: videoContent('https://youtu.be/dQw4w9WgXcQ'),
+        title: 'Titled video',
       },
     })
 
@@ -142,23 +142,23 @@ describe('Plugin integration tests', () => {
     // second lookup — not the autosaves an editor's keystrokes trigger, and not
     // the publish, whose previous value comes from another version.
     await payload.update({
-      collection: 'articles',
       id: article.id,
+      collection: 'articles',
       data: { title: 'Retitled' },
       draft: true,
     })
 
     await payload.update({
+      id: article.id,
       autosave: true,
       collection: 'articles',
-      id: article.id,
       data: { content: article.content },
       draft: true,
     })
 
     const published = await payload.update({
-      collection: 'articles',
       id: article.id,
+      collection: 'articles',
       data: { _status: 'published', content: article.content },
     })
 
@@ -167,8 +167,8 @@ describe('Plugin integration tests', () => {
 
     // Only a link that actually changes is asked about again.
     const moved = await payload.update({
-      collection: 'articles',
       id: article.id,
+      collection: 'articles',
       data: { content: videoContent('https://vimeo.com/1084537') },
     })
 
@@ -183,8 +183,8 @@ describe('Plugin integration tests', () => {
       collection: 'articles',
       data: {
         slug: 'untitled-video',
-        title: 'Untitled video',
         content: videoContent('https://youtu.be/aaaaaaaaaaa'),
+        title: 'Untitled video',
       },
     })
 
@@ -235,8 +235,8 @@ describe('Plugin integration tests', () => {
       collection: 'articles',
       data: {
         slug: 'categorized-article',
-        title: 'Categorized Article',
         category: guides.id,
+        title: 'Categorized Article',
       },
     })
 
@@ -262,8 +262,8 @@ describe('Plugin integration tests', () => {
       collection: 'articles',
       data: {
         slug: 'attributed-article',
-        title: 'Attributed Article',
         author: author.id,
+        title: 'Attributed Article',
       },
       // Simulates an authenticated request so the editor default hook fires.
       req: { user } as Parameters<typeof payload.create>[0]['req'],
@@ -279,24 +279,24 @@ describe('Plugin integration tests', () => {
   test('publishing, renaming and deleting survive without a Next.js runtime', async () => {
     const article = await payload.create({
       collection: 'articles',
-      data: { _status: 'published', slug: 'cached', title: 'Cached' },
+      data: { slug: 'cached', _status: 'published', title: 'Cached' },
     })
 
     const renamed = await payload.update({
-      collection: 'articles',
       id: article.id,
+      collection: 'articles',
       data: { slug: 'cached-renamed' },
     })
     expect(renamed.slug).toBe('cached-renamed')
 
     const unpublished = await payload.update({
-      collection: 'articles',
       id: article.id,
+      collection: 'articles',
       data: { _status: 'draft' },
     })
     expect(unpublished._status).toBe('draft')
 
-    await payload.delete({ collection: 'articles', id: article.id })
+    await payload.delete({ id: article.id, collection: 'articles' })
 
     const remaining = await payload.find({
       collection: 'articles',
@@ -317,7 +317,7 @@ describe('Plugin integration tests', () => {
       data: { name: 'Opinion', slug: 'opinion', isDefault: true },
     })
 
-    const previous = await payload.findByID({ collection: 'categories', id: featured.id })
+    const previous = await payload.findByID({ id: featured.id, collection: 'categories' })
     expect(previous.isDefault).toBe(false)
 
     const defaults = await payload.find({
@@ -333,7 +333,7 @@ describe('Plugin integration tests', () => {
       collection: 'categories',
       where: { isDefault: { equals: true } },
     })
-    const fallback = docs[0]!
+    const fallback = docs[0]
 
     const article = await payload.create({
       collection: 'articles',
@@ -349,15 +349,15 @@ describe('Plugin integration tests', () => {
     })
 
     const recategorized = await payload.update({
-      collection: 'articles',
       id: article.id,
+      collection: 'articles',
       data: { category: guides.id },
     })
     expect(recategorized.category).toMatchObject({ id: guides.id })
 
     const cleared = await payload.update({
-      collection: 'articles',
       id: article.id,
+      collection: 'articles',
       data: { category: null },
     })
     expect(cleared.category).toMatchObject({ id: fallback.id })
@@ -374,8 +374,8 @@ describe('Plugin integration tests', () => {
     })
 
     const renamed = await payload.update({
-      collection: 'categories',
       id: parent.id,
+      collection: 'categories',
       data: { slug: 'cache-renamed' },
     })
 

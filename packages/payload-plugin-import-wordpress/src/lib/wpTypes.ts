@@ -3,11 +3,16 @@
 export type WPRendered = { rendered?: string }
 
 export type WPPost = {
+  _embedded?: {
+    author?: WPUser[]
+    'wp:featuredmedia'?: WPMedia[]
+    'wp:term'?: WPCategory[][]
+  }
   author?: number
   categories?: number[]
   content?: WPRendered
-  date_gmt?: string
   date?: string
+  date_gmt?: string
   excerpt?: WPRendered
   featured_media?: number
   id: number
@@ -15,11 +20,6 @@ export type WPPost = {
   slug?: string
   status?: string
   title?: WPRendered
-  _embedded?: {
-    author?: WPUser[]
-    'wp:featuredmedia'?: WPMedia[]
-    'wp:term'?: WPCategory[][]
-  }
 }
 
 export type WPCategory = {

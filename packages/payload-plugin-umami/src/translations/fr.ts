@@ -2,12 +2,16 @@ import type { Translation } from './index.js'
 
 export const fr: Translation = {
   umami: {
-    title: 'Statistiques',
-    timeRange: 'Période',
     chartMetric: 'Métrique du graphique',
+    messages: {
+      error: 'Impossible de charger les statistiques. Vérifiez la configuration Umami.',
+      loading: 'Chargement des statistiques…',
+      noCountries: 'Aucun pays sur cette période.',
+      noPages: 'Aucune page sur cette période.',
+    },
     ranges: {
-      '24h': 'Dernières 24 heures',
       '7d': '7 derniers jours',
+      '24h': 'Dernières 24 heures',
       '30d': '30 derniers jours',
       '90d': '90 derniers jours',
     },
@@ -23,13 +27,9 @@ export const fr: Translation = {
       visits: 'Visites',
       visitsPrev: 'Visites (période précédente)',
     },
-    topPages: 'Pages les plus vues',
+    timeRange: 'Période',
+    title: 'Statistiques',
     topCountries: 'Principaux pays',
-    messages: {
-      error: 'Impossible de charger les statistiques. Vérifiez la configuration Umami.',
-      loading: 'Chargement des statistiques…',
-      noCountries: 'Aucun pays sur cette période.',
-      noPages: 'Aucune page sur cette période.',
-    },
+    topPages: 'Pages les plus vues',
   },
 }

@@ -29,5 +29,5 @@ export const defaultImageSizes: ImageSize[] = [
   { name: 'small', width: 600 },
   { name: 'medium', width: 900 },
   { name: 'large', width: 1400 },
-  { name: 'og', width: 1200, height: 630, crop: 'center' }, // social sharing
+  { name: 'og', crop: 'center', height: 630, width: 1200 }, // social sharing
 ]

@@ -1,11 +1,3 @@
-import type { Block, Config } from 'payload'
-import type {
-  GenerateDescription,
-  GenerateImage,
-  GenerateTitle,
-  GenerateURL,
-} from '@payloadcms/plugin-seo/types'
-import { seoPlugin } from '@payloadcms/plugin-seo'
 import type {
   EditorFontSize,
   RevalidateEvent,
@@ -14,13 +6,24 @@ import type {
   VideoEmbed,
   VideoEmbedProvider,
 } from '@composius/payload-plugin-shared-components'
+import type {
+  GenerateDescription,
+  GenerateImage,
+  GenerateTitle,
+  GenerateURL,
+} from '@payloadcms/plugin-seo/types'
+import type { Block, Config } from 'payload'
+
 import {
   parseVideoEmbedUrl,
   VIDEO_EMBED_BLOCK_SLUG,
 } from '@composius/payload-plugin-shared-components'
+import { seoPlugin } from '@payloadcms/plugin-seo'
+
 import type { BlockReference, PagesAccess } from './collections/Pages.js'
+
+import { CONTENT_BLOCK_SLUG, contentBlock } from './blocks/content.js'
 import { Pages } from './collections/Pages.js'
-import { contentBlock, CONTENT_BLOCK_SLUG } from './blocks/content.js'
 import {
   authenticated,
   authenticatedOrPublished,
@@ -28,8 +31,8 @@ import {
   defaultGenerateImage,
   defaultGenerateTitle,
   defaultGenerateURL,
-  withSiteName,
   defaultPageUrl,
+  withSiteName,
 } from './defaults.js'
 
 export type ComposiusPayloadPluginPagesConfig = {
@@ -107,7 +110,7 @@ export type ComposiusPayloadPluginPagesConfig = {
    * Builds the front-end URL of a page, used for admin preview and live preview.
    * Defaults to `${NEXT_PUBLIC_SERVER_URL || SERVER_URL || 'http://localhost:3000'}/${slug}`.
    */
-  pageUrl?: (slug?: string | null) => string
+  pageUrl?: (slug?: null | string) => string
   /**
    * Invalidates the Next.js cache tags of the pages collection whenever a page
    * is saved or deleted, so a `'use cache'` front end picks the change up. The
@@ -129,7 +132,6 @@ export type ComposiusPayloadPluginPagesConfig = {
    * @default true
    */
   seo?:
-    | boolean
     | {
         generateDescription?: GenerateDescription
         generateImage?: GenerateImage
@@ -144,6 +146,7 @@ export type ComposiusPayloadPluginPagesConfig = {
          */
         siteName?: string
       }
+    | boolean
 }
 
 /**
@@ -291,5 +294,5 @@ export type { EditorFontSize, RevalidateEvent, RevalidateOptions, RevalidateProf
 export type { VideoEmbed, VideoEmbedProvider }
 export { parseVideoEmbedUrl, VIDEO_EMBED_BLOCK_SLUG }
 export type { ContentBlockOptions } from './blocks/content.js'
-export { contentBlock, CONTENT_BLOCK_SLUG } from './blocks/content.js'
-export { pageIdTag, pageTag, PAGES_TAG } from './tags.js'
+export { CONTENT_BLOCK_SLUG, contentBlock } from './blocks/content.js'
+export { pageIdTag, PAGES_TAG, pageTag } from './tags.js'

@@ -60,8 +60,8 @@ export class WPRequestError extends Error {
 
 export const createWPClient = (
   siteUrl: string,
-  request: Pick<Required<RequestOptions>, 'timeoutMs'> &
-    Pick<RequestOptions, 'userAgent'> & { credentials?: null | WPCredentials },
+  request: { credentials?: null | WPCredentials } &
+    Pick<RequestOptions, 'userAgent'> & Pick<Required<RequestOptions>, 'timeoutMs'>,
   fetchImpl: typeof fetch = fetch,
 ): WPClient => {
   const base = restBase(siteUrl)
@@ -130,22 +130,6 @@ export const createWPClient = (
 
   return {
     authenticated,
-    fetchPostsPage: async ({ after, before, page, perPage }) => {
-      const params = new URLSearchParams({
-        _embed: '1',
-        page: String(page),
-        per_page: String(perPage),
-        status: 'publish',
-      })
-      if (after) {
-        params.set('after', after)
-      }
-      if (before) {
-        params.set('before', before)
-      }
-      const { body, totalPages } = await get(`/posts?${params.toString()}`)
-      return { posts: (body as WPPost[]) ?? [], totalPages }
-    },
     fetchCategories: async () => {
       const all: WPCategory[] = []
       let page = 1
@@ -165,6 +149,22 @@ export const createWPClient = (
       } catch {
         return null
       }
+    },
+    fetchPostsPage: async ({ after, before, page, perPage }) => {
+      const params = new URLSearchParams({
+        _embed: '1',
+        page: String(page),
+        per_page: String(perPage),
+        status: 'publish',
+      })
+      if (after) {
+        params.set('after', after)
+      }
+      if (before) {
+        params.set('before', before)
+      }
+      const { body, totalPages } = await get(`/posts?${params.toString()}`)
+      return { posts: (body as WPPost[]) ?? [], totalPages }
     },
     fetchUser: async (id) => {
       // context=edit exposes non-public fields (email) but needs auth.

@@ -11,5 +11,5 @@ export {
   withSiteName,
 } from '@composius/payload-plugin-shared-components'
 
-export const defaultArticleUrl = (slug?: string | null) =>
+export const defaultArticleUrl = (slug?: null | string) =>
   `${process.env.NEXT_PUBLIC_SERVER_URL || process.env.SERVER_URL || 'http://localhost:3000'}/articles/${slug ?? ''}`

@@ -5,6 +5,7 @@ import type {
   FeatureProviderProviderClient,
   ToolbarGroup,
 } from '@payloadcms/richtext-lexical'
+
 import {
   BlockquoteFeatureClient,
   ChecklistFeatureClient,

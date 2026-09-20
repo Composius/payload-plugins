@@ -29,8 +29,8 @@ const createUser = (email: string, role?: 'admin' | 'editor' | 'viewer') =>
   payload.create({
     collection: 'users',
     data: {
-      email,
       name: email,
+      email,
       password: 'test',
       ...(role ? { role } : {}),
     } as RequiredDataFromCollectionSlug<'users'>,
@@ -59,7 +59,7 @@ describe('Plugin integration tests', () => {
     await expect(
       payload.create({
         collection: 'users',
-        data: { email: 'sneaky@example.com', name: 'Sneaky', password: 'test', role: 'viewer' },
+        data: { name: 'Sneaky', email: 'sneaky@example.com', password: 'test', role: 'viewer' },
         overrideAccess: false,
         user: editor,
       }),
@@ -92,8 +92,8 @@ describe('Plugin integration tests', () => {
     const editor = await findByEmail('editor@payloadcms.com')
 
     const updated = await payload.update({
-      collection: 'users',
       id: editor.id,
+      collection: 'users',
       data: { name: 'Renamed Editor', role: 'admin' },
       overrideAccess: false,
       user: editor,
@@ -109,8 +109,8 @@ describe('Plugin integration tests', () => {
     const user = await createUser('promoted@example.com')
 
     const updated = await payload.update({
-      collection: 'users',
       id: user.id,
+      collection: 'users',
       data: { role: 'editor' },
       overrideAccess: false,
       user: dev,
@@ -124,8 +124,8 @@ describe('Plugin integration tests', () => {
 
     await expect(
       payload.update({
-        collection: 'users',
         id: dev.id,
+        collection: 'users',
         data: { role: 'viewer' },
       }),
     ).rejects.toThrow(/last admin/)
@@ -134,7 +134,7 @@ describe('Plugin integration tests', () => {
   test('the last admin cannot be deleted', async () => {
     const dev = await findByEmail(devUser.email)
 
-    await expect(payload.delete({ collection: 'users', id: dev.id })).rejects.toThrow(
+    await expect(payload.delete({ id: dev.id, collection: 'users' })).rejects.toThrow(
       /last admin/,
     )
   })
@@ -143,14 +143,14 @@ describe('Plugin integration tests', () => {
     const second = await createUser('admin2@example.com', 'admin')
 
     const demoted = await payload.update({
-      collection: 'users',
       id: second.id,
+      collection: 'users',
       data: { role: 'viewer' },
     })
     expect(demoted.role).toBe('viewer')
 
-    await payload.update({ collection: 'users', id: second.id, data: { role: 'admin' } })
-    await payload.delete({ collection: 'users', id: second.id })
+    await payload.update({ id: second.id, collection: 'users', data: { role: 'admin' } })
+    await payload.delete({ id: second.id, collection: 'users' })
 
     const { totalDocs } = await payload.count({
       collection: 'users',

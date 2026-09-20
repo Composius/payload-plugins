@@ -1,7 +1,9 @@
-import type { Block } from 'payload'
-import { lexicalEditor } from '@payloadcms/richtext-lexical'
 import type { EditorFontSize } from '@composius/payload-plugin-shared-components'
+import type { Block } from 'payload'
+
 import { contentEditorFeatures } from '@composius/payload-plugin-shared-components'
+import { lexicalEditor } from '@payloadcms/richtext-lexical'
+
 import { label } from '../translations/index.js'
 
 export const CONTENT_BLOCK_SLUG = 'content'
@@ -63,21 +65,21 @@ export const contentBlock = ({
       },
     },
   },
-  labels: {
-    singular: label((t) => t.blocks.content.singular),
-    plural: label((t) => t.blocks.content.plural),
-  },
   fields: [
     {
       name: 'content',
       type: 'richText',
-      label: label((t) => t.fields.content),
       editor: lexicalEditor({
         features: contentEditorFeatures('@composius/payload-plugin-pages/client', {
           emphasizeLinks,
           fontSize,
         }),
       }),
+      label: label((t) => t.fields.content),
     },
   ],
+  labels: {
+    plural: label((t) => t.blocks.content.plural),
+    singular: label((t) => t.blocks.content.singular),
+  },
 })

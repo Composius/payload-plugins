@@ -1,3 +1,4 @@
+import type { RevalidateOptions } from '@composius/payload-plugin-shared-components'
 import type {
   Access,
   Block,
@@ -7,9 +8,9 @@ import type {
   Field,
   PayloadRequest,
 } from 'payload'
-import type { RevalidateOptions } from '@composius/payload-plugin-shared-components'
 
 import { revalidateHooks } from '@composius/payload-plugin-shared-components'
+
 import { label } from '../translations/index.js'
 
 export type MenusAccess = {
@@ -41,7 +42,6 @@ const newTab: Field = {
 const anchor: Field = {
   name: 'anchor',
   type: 'text',
-  label: label((t) => t.fields.anchor),
   admin: {
     description: label((t) => t.links.anchorDescription),
   },
@@ -59,14 +59,11 @@ const anchor: Field = {
       },
     ],
   },
+  label: label((t) => t.fields.anchor),
 }
 
 const externalLink: Block = {
   slug: 'external',
-  labels: {
-    singular: label((t) => t.links.external),
-    plural: label((t) => t.links.externalPlural),
-  },
   fields: [
     {
       name: 'title',
@@ -82,39 +79,60 @@ const externalLink: Block = {
     },
     newTab,
   ],
+  labels: {
+    plural: label((t) => t.links.externalPlural),
+    singular: label((t) => t.links.external),
+  },
 }
 
 const internalLink = (collections: CollectionSlug[]): Block => ({
   slug: 'internal',
-  labels: {
-    singular: label((t) => t.links.internal),
-    plural: label((t) => t.links.internalPlural),
-  },
   fields: [
     {
       name: 'doc',
       type: 'relationship',
-      relationTo: collections,
       label: label((t) => t.fields.document),
+      relationTo: collections,
       required: true,
     },
     {
       name: 'title',
       type: 'text',
-      label: label((t) => t.fields.title),
       admin: {
         description: label((t) => t.links.titleDescription),
       },
+      label: label((t) => t.fields.title),
     },
     anchor,
     newTab,
   ],
+  labels: {
+    plural: label((t) => t.links.internalPlural),
+    singular: label((t) => t.links.internal),
+  },
 })
 
 type InternalLinkBlock = {
   blockType: 'internal'
   doc?: { relationTo: CollectionSlug; value: unknown } | null
   title?: null | string
+}
+
+/**
+ * Reads `useAsTitle` off a document as a title.
+ *
+ * `useAsTitle` is only supposed to name a text field, but nothing enforces
+ * that — point it at a group, an upload or a relationship and a plain
+ * `String()` would put the literal text `[object Object]` in the menu. Only a
+ * primitive is a usable title; anything else is treated as absent.
+ */
+const titleOf = (doc: null | Record<string, unknown> | undefined, useAsTitle: string): string => {
+  const raw = doc?.[useAsTitle]
+
+  if (typeof raw === 'string') {
+    return raw
+  }
+  return typeof raw === 'number' || typeof raw === 'boolean' ? String(raw) : ''
 }
 
 const resolveDocTitle = async (
@@ -129,16 +147,16 @@ const resolveDocTitle = async (
   const useAsTitle = relatedCollection.config.admin?.useAsTitle ?? 'id'
 
   if (typeof value === 'object') {
-    return String((value as Record<string, unknown>)[useAsTitle] ?? '')
+    return titleOf(value as Record<string, unknown>, useAsTitle)
   }
 
   const relatedDoc = await req.payload.findByID({
-    collection: relationTo,
     id: value as number | string,
+    collection: relationTo,
     depth: 0,
     req,
   })
-  return String((relatedDoc as unknown as Record<string, unknown>)?.[useAsTitle] ?? '')
+  return titleOf(relatedDoc as unknown as Record<string, unknown>, useAsTitle)
 }
 
 export const Menus = ({
@@ -148,21 +166,48 @@ export const Menus = ({
   revalidate,
 }: MenusOptions): CollectionConfig => ({
   slug: 'menus',
-  labels: {
-    singular: label((t) => t.menus.singular),
-    plural: label((t) => t.menus.plural),
+  access: {
+    create: access.create,
+    delete: access.delete,
+    read: access.read,
+    update: access.update,
   },
   admin: {
-    useAsTitle: 'name',
     defaultColumns: ['name', 'linksCount', 'updatedAt'],
     hidden,
+    useAsTitle: 'name',
   },
-  access: {
-    read: access.read,
-    create: access.create,
-    update: access.update,
-    delete: access.delete,
-  },
+  fields: [
+    {
+      name: 'name',
+      type: 'text',
+      label: label((t) => t.fields.name),
+      required: true,
+    },
+    {
+      name: 'links',
+      type: 'blocks',
+      blocks: [...(collections.length > 0 ? [internalLink(collections)] : []), externalLink],
+      label: label((t) => t.fields.links),
+    },
+    {
+      name: 'linksCount',
+      type: 'number',
+      admin: {
+        // List-view column only: never rendered in the edit form.
+        condition: () => false,
+        disableListFilter: true,
+      },
+      hooks: {
+        afterRead: [
+          ({ siblingData }) =>
+            Array.isArray(siblingData?.links) ? siblingData.links.length : 0,
+        ],
+      },
+      label: label((t) => t.fields.linksCount),
+      virtual: true,
+    },
+  ],
   hooks: {
     ...revalidateHooks({ collection: 'menus', fields: ['name'] }, revalidate),
     afterRead: [
@@ -205,35 +250,8 @@ export const Menus = ({
       },
     ],
   },
-  fields: [
-    {
-      name: 'name',
-      type: 'text',
-      label: label((t) => t.fields.name),
-      required: true,
-    },
-    {
-      name: 'links',
-      type: 'blocks',
-      label: label((t) => t.fields.links),
-      blocks: [...(collections.length > 0 ? [internalLink(collections)] : []), externalLink],
-    },
-    {
-      name: 'linksCount',
-      type: 'number',
-      virtual: true,
-      label: label((t) => t.fields.linksCount),
-      admin: {
-        // List-view column only: never rendered in the edit form.
-        condition: () => false,
-        disableListFilter: true,
-      },
-      hooks: {
-        afterRead: [
-          ({ siblingData }) =>
-            Array.isArray(siblingData?.links) ? siblingData.links.length : 0,
-        ],
-      },
-    },
-  ],
+  labels: {
+    plural: label((t) => t.menus.plural),
+    singular: label((t) => t.menus.singular),
+  },
 })

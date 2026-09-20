@@ -1,6 +1,7 @@
 'use client'
 
 import type { DefaultCellComponentProps } from 'payload'
+
 import { useConfig } from '@payloadcms/ui'
 import React, { useEffect, useState } from 'react'
 

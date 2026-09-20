@@ -33,8 +33,6 @@ const assertAccess = async (
  * via `overrideAccess: false`.
  */
 export const startEndpoint = (access: Required<ImportAccess>): Endpoint => ({
-  path: '/wp-import/start',
-  method: 'post',
   handler: async (req: PayloadRequest): Promise<Response> => {
     if (!req.user) {
       throw new APIError('Unauthorized', 401)
@@ -62,6 +60,8 @@ export const startEndpoint = (access: Required<ImportAccess>): Endpoint => ({
 
     return Response.json({ jobId: job.id }, { status: 202 })
   },
+  method: 'post',
+  path: '/wp-import/start',
 })
 
 /**
@@ -69,8 +69,6 @@ export const startEndpoint = (access: Required<ImportAccess>): Endpoint => ({
  * Gated by the plugin's `access.read` option and the collection's read access.
  */
 export const statusEndpoint = (access: Required<ImportAccess>): Endpoint => ({
-  path: '/wp-import/status/:id',
-  method: 'get',
   handler: async (req: PayloadRequest): Promise<Response> => {
     if (!req.user) {
       throw new APIError('Unauthorized', 401)
@@ -79,8 +77,8 @@ export const statusEndpoint = (access: Required<ImportAccess>): Endpoint => ({
 
     const id = req.routeParams?.id as number | string
     const job = (await req.payload.findByID({
-      collection: JOBS_SLUG,
       id,
+      collection: JOBS_SLUG,
       overrideAccess: false,
       req,
       user: req.user,
@@ -100,4 +98,6 @@ export const statusEndpoint = (access: Required<ImportAccess>): Endpoint => ({
       status: job.status,
     })
   },
+  method: 'get',
+  path: '/wp-import/status/:id',
 })

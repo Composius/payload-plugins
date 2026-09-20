@@ -11,12 +11,12 @@ export type ImportAccess = {
 export type TargetCollections = {
   /** Target content collection for posts. @default 'articles' */
   articles?: string
+  /** Authors collection (used when `authorMapping.strategy` is `'authors'`). @default 'authors' */
+  authors?: string
   /** Taxonomy collection for categories. @default 'categories' */
   categories?: string
   /** Uploads collection for images. @default 'media' */
   media?: string
-  /** Authors collection (used when `authorMapping.strategy` is `'authors'`). @default 'authors' */
-  authors?: string
   /** Users collection (used when `authorMapping.strategy` is `'users'`). @default 'users' */
   users?: string
 }
@@ -24,6 +24,8 @@ export type TargetCollections = {
 export type AuthorStrategy = 'authors' | 'fixed' | 'users'
 
 export type AuthorMapping = {
+  /** User id assigned when `strategy` is `fixed` (or as a fallback when an author has no email). */
+  defaultUserId?: number | string
   /**
    * How WordPress authors are mapped:
    * - `users` (default): find-or-create in the users collection (matched by email),
@@ -33,8 +35,6 @@ export type AuthorMapping = {
    * - `fixed`: assign every imported article to `defaultUserId`.
    */
   strategy?: AuthorStrategy
-  /** User id assigned when `strategy` is `fixed` (or as a fallback when an author has no email). */
-  defaultUserId?: number | string
   /**
    * The public WordPress REST API does not expose author emails, so with the
    * `users` strategy an email is synthesized as `<author-slug>@<domain>`.
@@ -55,7 +55,7 @@ export type RedirectionStatus = '301' | '302' | '307' | '308'
 export type RedirectionsPluginOptions = {
   access?: Record<string, unknown>
   endpoint?: false | Record<string, unknown>
-  hidden?: boolean | ((args: { user: unknown }) => boolean)
+  hidden?: ((args: { user: unknown }) => boolean) | boolean
   slug?: string
 }
 
@@ -102,18 +102,18 @@ export type AutoRunConfig = {
 }
 
 export type FieldMap = {
-  /** Article field the post title maps to. @default 'title' */
-  title?: string
-  /** Article field the post slug maps to. @default 'slug' */
-  slug?: string
+  /** Article relationship field the primary category maps to. @default 'category' */
+  category?: string
   /** Article rich text field the post content maps to. @default 'content' */
   content?: string
   /** Article upload field the featured image maps to. @default 'coverImage' */
   coverImage?: string
-  /** Article relationship field the primary category maps to. @default 'category' */
-  category?: string
   /** Article date field the publish date maps to. @default 'publishedAt' */
   publishedAt?: string
+  /** Article field the post slug maps to. @default 'slug' */
+  slug?: string
+  /** Article field the post title maps to. @default 'title' */
+  title?: string
 }
 
 export type RequestOptions = {
@@ -149,8 +149,6 @@ export type ComposiusPayloadPluginImportWordpressConfig = {
    * Defaults: `read`/`create`/`update`/`delete` require an authenticated user.
    */
   access?: ImportAccess
-  /** Target collection slugs. Defaults: articles/categories/media/authors/users. */
-  collections?: TargetCollections
   /**
    * Builds the front-end URL of an imported article from its slug. Used to
    * rewrite internal links and as the target of created redirects.
@@ -160,8 +158,22 @@ export type ComposiusPayloadPluginImportWordpressConfig = {
   articleUrl?: (slug?: null | string) => string
   /** How WordPress authors are mapped. @default { strategy: 'users' } */
   authorMapping?: AuthorMapping
+  /**
+   * Automatically process queued imports on a schedule so creating a job runs
+   * it without an external worker. Pass a cron/queue config to customize the
+   * schedule, or `false` to disable it and run the jobs queue yourself.
+   * @default true (an every-minute schedule on the `default` queue)
+   */
+  autoRun?: AutoRunConfig | boolean
+  /** Target collection slugs. Defaults: articles/categories/media/authors/users. */
+  collections?: TargetCollections
+  disabled?: boolean
+  /** Number of REST pages a dry run samples. @default 1 */
+  dryRunPageLimit?: number
   /** Map the WordPress excerpt onto the article SEO meta.description. @default true */
   excerptToSeoDescription?: boolean
+  /** Override the article field names the importer writes to. */
+  fieldMap?: FieldMap
   /**
    * When a post has no usable featured image, promote the first in-content
    * image to the cover field and remove it from the content (themes often lead
@@ -179,28 +191,16 @@ export type ComposiusPayloadPluginImportWordpressConfig = {
    * @default true
    */
   redirections?: boolean | RedirectionsConfig
-  /** Override the article field names the importer writes to. */
-  fieldMap?: FieldMap
-  /**
-   * Automatically process queued imports on a schedule so creating a job runs
-   * it without an external worker. Pass a cron/queue config to customize the
-   * schedule, or `false` to disable it and run the jobs queue yourself.
-   * @default true (an every-minute schedule on the `default` queue)
-   */
-  autoRun?: AutoRunConfig | boolean
-  /** Number of REST pages a dry run samples. @default 1 */
-  dryRunPageLimit?: number
   /** HTTP request tuning for WordPress fetches and image downloads. */
   request?: RequestOptions
-  disabled?: boolean
 }
 
 /** Fully-resolved options passed around internally. */
 export type ResolvedOptions = {
   access: Required<ImportAccess>
   articleUrl: (slug?: null | string) => string
-  authorMapping: Required<Pick<AuthorMapping, 'strategy' | 'syntheticEmailDomain'>> &
-    Pick<AuthorMapping, 'defaultUserId'>
+  authorMapping: Pick<AuthorMapping, 'defaultUserId'> &
+    Required<Pick<AuthorMapping, 'strategy' | 'syntheticEmailDomain'>>
   collections: Required<TargetCollections>
   dryRunPageLimit: number
   excerptToSeoDescription: boolean
@@ -215,7 +215,7 @@ export type ResolvedOptions = {
     status: RedirectionStatus
     strategy: 'exact' | 'prefix'
   }
-  request: Required<Omit<RequestOptions, 'userAgent'>> & Pick<RequestOptions, 'userAgent'>
+  request: Pick<RequestOptions, 'userAgent'> & Required<Omit<RequestOptions, 'userAgent'>>
 }
 
 // ---- Report / progress shapes stored on the wp-import-jobs document ----
@@ -281,6 +281,7 @@ export type ImportReport = {
 export type ImportProgress = {
   currentPhase: string
   cursorPage: number
+  failedPosts: number
   importedAuthors: number
   importedCategories: number
   importedMedia: number
@@ -290,6 +291,5 @@ export type ImportProgress = {
   redirectsCreated: number
   reusedMedia: number
   skippedPosts: number
-  failedPosts: number
   totalPosts: number
 }

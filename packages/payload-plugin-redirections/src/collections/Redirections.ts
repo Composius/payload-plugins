@@ -184,32 +184,32 @@ const fields: Field[] = [
 ]
 
 export const Redirections = ({
+  slug,
   access,
   endpoints,
   hidden,
-  slug,
 }: RedirectionsOptions): CollectionConfig => ({
   slug,
-  labels: {
-    singular: label((m) => m.redirections.singular),
-    plural: label((m) => m.redirections.plural),
-  },
   access: {
-    read: access.read,
     create: access.create,
-    update: access.update,
     delete: access.delete,
+    read: access.read,
+    update: access.update,
   },
   admin: {
-    useAsTitle: 'from',
     defaultColumns: ['from', 'matchType', 'to', 'status', 'enabled', 'updatedAt'],
-    listSearchableFields: ['from', 'to'],
     hidden,
+    listSearchableFields: ['from', 'to'],
+    useAsTitle: 'from',
   },
   endpoints,
   fields,
   hooks: {
     beforeValidate: [rejectDuplicates(slug)],
+  },
+  labels: {
+    plural: label((m) => m.redirections.plural),
+    singular: label((m) => m.redirections.singular),
   },
   // The same path is a legitimate exact rule *and* prefix rule, so `from`
   // alone cannot be unique — the pair is what must not repeat.

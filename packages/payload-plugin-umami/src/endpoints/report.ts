@@ -25,8 +25,6 @@ export const reportEndpoint = (
   const client = createUmamiClient(credentials)
 
   return {
-    path: REPORT_PATH,
-    method: 'get',
     handler: async (req: PayloadRequest): Promise<Response> => {
       if (!req.user) {
         throw new APIError('Unauthorized', 401)
@@ -52,7 +50,7 @@ export const reportEndpoint = (
           client.getSeries(startAt, endAt, unit),
         ])
 
-        const report: UmamiReport = { range, stats, prevStats, topPages, topCountries, series }
+        const report: UmamiReport = { prevStats, range, series, stats, topCountries, topPages }
         return Response.json(report)
       } catch (error) {
         const status = error instanceof UmamiError ? error.status : 502
@@ -63,5 +61,7 @@ export const reportEndpoint = (
         return Response.json({ error: 'Failed to fetch Umami analytics' }, { status })
       }
     },
+    method: 'get',
+    path: REPORT_PATH,
   }
 }

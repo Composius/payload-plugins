@@ -338,12 +338,12 @@ describe('category ordering', () => {
 
 describe('post helpers', () => {
   test('selectPrimaryCategoryId returns the first category', () => {
-    expect(selectPrimaryCategoryId({ categories: [7, 8], id: 1 } as WPPost)).toBe(7)
+    expect(selectPrimaryCategoryId({ id: 1, categories: [7, 8] } as WPPost)).toBe(7)
     expect(selectPrimaryCategoryId({ id: 1 } as WPPost)).toBe(null)
   })
 
   test('publishDate prefers GMT and returns ISO', () => {
-    expect(publishDate({ date_gmt: '2021-06-01T10:00:00', id: 1 } as WPPost)).toBe(
+    expect(publishDate({ id: 1, date_gmt: '2021-06-01T10:00:00' } as WPPost)).toBe(
       '2021-06-01T10:00:00.000Z',
     )
   })
@@ -381,7 +381,7 @@ describe('lexical transforms', () => {
   })
 
   test('buildUploadNode shape', () => {
-    expect(buildUploadNode(5, 'media')).toMatchObject({ relationTo: 'media', type: 'upload', value: 5 })
+    expect(buildUploadNode(5, 'media')).toMatchObject({ type: 'upload', relationTo: 'media', value: 5 })
   })
 
   test('takeFirstUploadNode removes and returns the first upload in document order', () => {
@@ -389,8 +389,8 @@ describe('lexical transforms', () => {
       type: 'root',
       children: [
         { type: 'paragraph', children: [{ type: 'text', text: 'Intro' }] },
-        { type: 'upload', value: 'media-1', relationTo: 'media' },
-        { type: 'upload', value: 'media-2', relationTo: 'media' },
+        { type: 'upload', relationTo: 'media', value: 'media-1' },
+        { type: 'upload', relationTo: 'media', value: 'media-2' },
       ],
     }
     expect(takeFirstUploadNode(root)).toBe('media-1')
@@ -404,7 +404,7 @@ describe('lexical transforms', () => {
       type: 'root',
       children: [
         { type: 'paragraph', children: [{ type: 'text', text: '  ' }] },
-        { type: 'upload', value: 7, relationTo: 'media' },
+        { type: 'upload', relationTo: 'media', value: 7 },
         { type: 'paragraph', children: [{ type: 'text', text: 'Body' }] },
       ],
     }
@@ -415,7 +415,7 @@ describe('lexical transforms', () => {
       type: 'root',
       children: [
         { type: 'paragraph', children: [{ type: 'text', text: 'Body first' }] },
-        { type: 'upload', value: 7, relationTo: 'media' },
+        { type: 'upload', relationTo: 'media', value: 7 },
       ],
     }
     expect(removeLeadingUploadNode(inline, 7)).toBe(false)
@@ -423,7 +423,7 @@ describe('lexical transforms', () => {
 
     const otherImage: LexNode = {
       type: 'root',
-      children: [{ type: 'upload', value: 8, relationTo: 'media' }],
+      children: [{ type: 'upload', relationTo: 'media', value: 8 }],
     }
     expect(removeLeadingUploadNode(otherImage, 7)).toBe(false)
   })
@@ -432,9 +432,9 @@ describe('lexical transforms', () => {
     const root: LexNode = {
       type: 'root',
       children: [
-        { type: 'link', fields: { linkType: 'custom', url: 'https://site.com/kept-post/' }, children: [] },
-        { type: 'link', fields: { linkType: 'custom', url: 'https://site.com/gone/' }, children: [] },
-        { type: 'link', fields: { linkType: 'custom', url: 'https://external.com/x' }, children: [] },
+        { type: 'link', children: [], fields: { linkType: 'custom', url: 'https://site.com/kept-post/' } },
+        { type: 'link', children: [], fields: { linkType: 'custom', url: 'https://site.com/gone/' } },
+        { type: 'link', children: [], fields: { linkType: 'custom', url: 'https://external.com/x' } },
       ],
     }
     const links = rewriteLinkNodes(root, {
@@ -514,9 +514,9 @@ describe('redirection rule planning', () => {
 
   test('collapses posts sharing a folder into one prefix rule', () => {
     const rules = plan([
-      { path: '/blog/hello', slug: 'hello' },
-      { path: '/blog/world', slug: 'world' },
-      { path: '/blog/deep/nested', slug: 'nested' },
+      { slug: 'hello', path: '/blog/hello' },
+      { slug: 'world', path: '/blog/world' },
+      { slug: 'nested', path: '/blog/deep/nested' },
     ])
 
     expect(rules).toEqual([
@@ -528,9 +528,9 @@ describe('redirection rule planning', () => {
   test('falls back to exact rules at the site root and for changed slugs', () => {
     const rules = plan([
       // Root permalink: a prefix rule on `/` would swallow the whole site.
-      { path: '/hello', slug: 'hello' },
+      { slug: 'hello', path: '/hello' },
       // The slug changed during the import, so the folder mapping wouldn't hold.
-      { path: '/blog/old-name', slug: 'new-name' },
+      { slug: 'new-name', path: '/blog/old-name' },
     ])
 
     expect(rules).toEqual([
@@ -542,8 +542,8 @@ describe('redirection rule planning', () => {
   test('the exact strategy emits one rule per post', () => {
     const rules = plan(
       [
-        { path: '/blog/hello', slug: 'hello' },
-        { path: '/blog/world', slug: 'world' },
+        { slug: 'hello', path: '/blog/hello' },
+        { slug: 'world', path: '/blog/world' },
       ],
       'exact',
     )
@@ -554,9 +554,9 @@ describe('redirection rule planning', () => {
 
   test('date-based permalinks collapse per year/month folder', () => {
     const rules = plan([
-      { path: '/2021/06/a', slug: 'a' },
-      { path: '/2021/06/b', slug: 'b' },
-      { path: '/2021/07/c', slug: 'c' },
+      { slug: 'a', path: '/2021/06/a' },
+      { slug: 'b', path: '/2021/06/b' },
+      { slug: 'c', path: '/2021/07/c' },
     ])
 
     expect(rules).toEqual([
@@ -567,15 +567,15 @@ describe('redirection rule planning', () => {
 
   test('skips rules that would point at themselves', () => {
     // The permalink folder already is the destination.
-    expect(plan([{ path: '/articles/hello', slug: 'hello' }])).toEqual([])
+    expect(plan([{ slug: 'hello', path: '/articles/hello' }])).toEqual([])
     // An exact rule whose source equals its destination.
-    expect(plan([{ path: '/articles/hello', slug: 'hello' }], 'exact')).toEqual([])
+    expect(plan([{ slug: 'hello', path: '/articles/hello' }], 'exact')).toEqual([])
   })
 
   test('normalizes trailing slashes and duplicates', () => {
     const rules = plan([
-      { path: '/blog/hello/', slug: 'hello' },
-      { path: '//blog//world/', slug: 'world' },
+      { slug: 'hello', path: '/blog/hello/' },
+      { slug: 'world', path: '//blog//world/' },
     ])
     expect(rules).toEqual([{ covers: 2, from: '/blog', matchType: 'prefix', to: '/articles' }])
   })
@@ -657,10 +657,10 @@ describe('resolveOptions', () => {
     expect(options.excerptToSeoDescription).toBe(true)
     expect(options.firstImageAsCover).toBe(true)
     expect(options.redirections).toEqual({
+      slug: 'redirections',
       enabled: true,
       manage: undefined,
       pluginOptions: {},
-      slug: 'redirections',
       status: '301',
       strategy: 'prefix',
     })
@@ -730,7 +730,7 @@ describe('ComposiusPayloadPluginImportWordpress', () => {
 
   test('forwards pluginOptions and a custom slug to the redirections plugin', async () => {
     const config = await ComposiusPayloadPluginImportWordpress({
-      redirections: { pluginOptions: { hidden: true }, slug: 'wp-redirections' },
+      redirections: { slug: 'wp-redirections', pluginOptions: { hidden: true } },
     })(baseConfig())
 
     const redirections = config.collections?.find((c) => c.slug === 'wp-redirections')
@@ -769,8 +769,11 @@ describe('ComposiusPayloadPluginImportWordpress', () => {
     const enabled = await ComposiusPayloadPluginImportWordpress()(baseConfig())
     const disabled = await ComposiusPayloadPluginImportWordpress({ disabled: true })(baseConfig())
 
-    const jobsOf = (config: Config) =>
-      config.collections?.find((c) => c.slug === 'wp-import-jobs')!
+    const jobsOf = (config: Config) => {
+      const jobs = config.collections?.find((c) => c.slug === 'wp-import-jobs')
+      expect(jobs).toBeDefined()
+      return jobs!
+    }
 
     expect(jobsOf(enabled).admin?.hidden).toBe(false)
     expect(jobsOf(enabled).hooks?.afterChange).toHaveLength(1)

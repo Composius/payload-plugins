@@ -168,7 +168,7 @@ describe('ComposiusPayloadPluginAuth', () => {
     const beforeDuplicate = role.hooks?.beforeDuplicate
     expect(beforeDuplicate).toHaveLength(1)
     expect(
-      beforeDuplicate![0]!({ value: 'admin' } as unknown as Parameters<
+      beforeDuplicate![0]({ value: 'admin' } as unknown as Parameters<
         NonNullable<typeof beforeDuplicate>[number]
       >[0]),
     ).toBe('viewer')
@@ -179,7 +179,7 @@ describe('ComposiusPayloadPluginAuth', () => {
     const beforeDuplicate = findRole(findUsers(config)).hooks?.beforeDuplicate
 
     expect(
-      beforeDuplicate![0]!({ value: 'admin' } as unknown as Parameters<
+      beforeDuplicate![0]({ value: 'admin' } as unknown as Parameters<
         NonNullable<typeof beforeDuplicate>[number]
       >[0]),
     ).toBe('editor')

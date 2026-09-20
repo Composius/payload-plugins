@@ -11,11 +11,11 @@ import { describe, expect, test } from 'vitest'
 import { anyone, authenticated, defaultImageSizes, defaultMimeTypes } from '../src/defaults.js'
 import {
   buildPrefix,
+  ComposiusPayloadPluginMedia,
   convertAvifToWebp,
   enforceMaxFileSize,
   uniqueFilename,
   withWebpSizes,
-  ComposiusPayloadPluginMedia,
 } from '../src/index.js'
 
 const accessArgs = (user: unknown) => ({ req: { user } }) as Parameters<Access>[0]
@@ -149,9 +149,9 @@ describe('convertAvifToWebp', () => {
   }
 
   const file = (overrides: Partial<{ mimetype: string; name: string }> = {}) => ({
+    name: 'photo.avif',
     data: Buffer.from('avif-bytes'),
     mimetype: 'image/avif',
-    name: 'photo.avif',
     size: 10,
     ...overrides,
   })
@@ -169,9 +169,9 @@ describe('convertAvifToWebp', () => {
     await convertAvifToWebp(hookArgs(uploaded, sharp))
 
     expect(uploaded).toMatchObject({
+      name: 'photo.webp',
       data: webpData,
       mimetype: 'image/webp',
-      name: 'photo.webp',
       size: webpData.length,
     })
     expect(calls).toEqual([
@@ -195,11 +195,11 @@ describe('convertAvifToWebp', () => {
 
   test('other formats are left to formatOptions', async () => {
     const { calls, sharp } = sharpStub()
-    const uploaded = file({ mimetype: 'image/jpeg', name: 'photo.jpg' })
+    const uploaded = file({ name: 'photo.jpg', mimetype: 'image/jpeg' })
 
     await convertAvifToWebp(hookArgs(uploaded, sharp))
 
-    expect(uploaded).toMatchObject({ mimetype: 'image/jpeg', name: 'photo.jpg' })
+    expect(uploaded).toMatchObject({ name: 'photo.jpg', mimetype: 'image/jpeg' })
     expect(calls).toHaveLength(0)
   })
 
@@ -210,7 +210,7 @@ describe('convertAvifToWebp', () => {
     await convertAvifToWebp(hookArgs(undefined, sharp))
     await convertAvifToWebp(hookArgs(uploaded, undefined))
 
-    expect(uploaded).toMatchObject({ mimetype: 'image/avif', name: 'photo.avif' })
+    expect(uploaded).toMatchObject({ name: 'photo.avif', mimetype: 'image/avif' })
   })
 })
 
@@ -219,15 +219,15 @@ describe('withWebpSizes', () => {
 
   test('every size is encoded as WebP', () => {
     expect(withWebpSizes([{ name: 'hero', width: 1920 }])).toEqual([
-      { formatOptions: webp, name: 'hero', width: 1920 },
+      { name: 'hero', formatOptions: webp, width: 1920 },
     ])
   })
 
   test('a size that asks for its own format keeps it', () => {
     const avif = { format: 'avif' as const, options: { quality: 60 } }
 
-    expect(withWebpSizes([{ formatOptions: avif, name: 'hero', width: 1920 }])).toEqual([
-      { formatOptions: avif, name: 'hero', width: 1920 },
+    expect(withWebpSizes([{ name: 'hero', formatOptions: avif, width: 1920 }])).toEqual([
+      { name: 'hero', formatOptions: avif, width: 1920 },
     ])
   })
 
@@ -299,17 +299,17 @@ describe('ComposiusPayloadPluginMedia', () => {
     expect(media.access?.read).toBe(anyone)
   })
 
-  test('renames uploaded files on create by default', () => {
+  test('renames uploaded files on create by default', async () => {
     const config = ComposiusPayloadPluginMedia()(baseConfig())
     const [, , hook] = findMedia(config).hooks?.beforeOperation ?? []
     expect(hook).toBeDefined()
 
     const req = { file: { name: 'photo.png' } }
-    hook!({ operation: 'create', req } as Parameters<CollectionBeforeOperationHook>[0])
+    await hook({ operation: 'create', req } as Parameters<CollectionBeforeOperationHook>[0])
     expect(req.file.name).toMatch(/^photo-[0-9a-f]{8}\.png$/)
 
     const untouched = { file: { name: 'photo.png' } }
-    hook!({ operation: 'read', req: untouched } as Parameters<CollectionBeforeOperationHook>[0])
+    await hook({ operation: 'read', req: untouched } as Parameters<CollectionBeforeOperationHook>[0])
     expect(untouched.file.name).toBe('photo.png')
   })
 
@@ -329,8 +329,8 @@ describe('ComposiusPayloadPluginMedia', () => {
         CollectionBeforeOperationHook
       >[0]
 
-    expect(() => hook!(args(5 * 1024 * 1024))).not.toThrow()
-    expect(() => hook!(args(5 * 1024 * 1024 + 1))).toThrow(/5 MB/)
+    expect(() => hook(args(5 * 1024 * 1024))).not.toThrow()
+    expect(() => hook(args(5 * 1024 * 1024 + 1))).toThrow(/5 MB/)
   })
 
   test('maxFileSize overrides the default', () => {
@@ -341,8 +341,8 @@ describe('ComposiusPayloadPluginMedia', () => {
         CollectionBeforeOperationHook
       >[0]
 
-    expect(() => hook!(args(500))).not.toThrow()
-    expect(() => hook!(args(501))).toThrow()
+    expect(() => hook(args(500))).not.toThrow()
+    expect(() => hook(args(501))).toThrow()
   })
 
   test('prefix option sets data.prefix on create', () => {
@@ -351,11 +351,11 @@ describe('ComposiusPayloadPluginMedia', () => {
     expect(hook).toBeDefined()
 
     const data: { prefix?: string } = {}
-    hook!({ data, operation: 'create' } as Parameters<CollectionBeforeValidateHook>[0])
+    hook({ data, operation: 'create' } as Parameters<CollectionBeforeValidateHook>[0])
     expect(data.prefix).toBe('uploads/site')
 
     const update: { prefix?: string } = {}
-    hook!({ data: update, operation: 'update' } as Parameters<CollectionBeforeValidateHook>[0])
+    hook({ data: update, operation: 'update' } as Parameters<CollectionBeforeValidateHook>[0])
     expect(update.prefix).toBeUndefined()
   })
 

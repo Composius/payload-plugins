@@ -137,7 +137,7 @@ export const decodeEntities = (value: string): string =>
   value
     .replace(/&#x([0-9a-f]+);/gi, (_, hex: string) => String.fromCodePoint(parseInt(hex, 16)))
     .replace(/&#(\d+);/g, (_, dec: string) => String.fromCodePoint(Number(dec)))
-    .replace(/&([a-zA-Z]+);/g, (match, name: string) => NAMED_ENTITIES[name.toLowerCase()] ?? match)
+    .replace(/&([a-z]+);/gi, (match, name: string) => NAMED_ENTITIES[name.toLowerCase()] ?? match)
     .trim()
 
 /** Strips HTML tags (for excerpt → plain-text SEO description). */

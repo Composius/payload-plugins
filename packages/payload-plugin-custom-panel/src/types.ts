@@ -4,7 +4,7 @@ import type { Access } from 'payload'
  * A plain string, or a per-language record keyed by admin language code
  * (e.g. `{ en: 'Welcome', fr: 'Bienvenue' }`).
  */
-export type LocalizedText = string | Record<string, string>
+export type LocalizedText = Record<string, string> | string
 
 export type CustomPanelLink = {
   /**

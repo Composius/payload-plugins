@@ -32,25 +32,234 @@ const queueImport = async (req: PayloadRequest, jobId: number | string): Promise
  */
 export const ImportJobs = ({ access, disabled }: ImportJobsOptions): CollectionConfig => ({
   slug: 'wp-import-jobs',
-  labels: {
-    singular: label((t) => t.jobs.singular),
-    plural: label((t) => t.jobs.plural),
+  access: {
+    create: access.create,
+    delete: access.delete,
+    read: access.read,
+    update: access.update,
   },
   admin: {
-    useAsTitle: 'sourceUrl',
     defaultColumns: ['sourceUrl', 'status', 'dryRun', 'updatedAt'],
     group: 'WordPress import',
+    useAsTitle: 'sourceUrl',
     // Hidden (with its nav group) once the plugin is disabled, while the
     // collection itself stays registered so the schema is unchanged.
     hidden: disabled,
   },
-  access: {
-    read: access.read,
-    create: access.create,
-    update: access.update,
-    delete: access.delete,
+  labels: {
+    plural: label((t) => t.jobs.plural),
+    singular: label((t) => t.jobs.singular),
   },
   // A disabled plugin must not start imports, so the queueing hook is omitted.
+  fields: [
+    // Unnamed tabs keep their fields at the top level of the document data —
+    // one tab per import step, so each step's outcome reads in its own tab.
+    {
+      type: 'tabs',
+      tabs: [
+        {
+          fields: [
+            {
+              name: 'sourceUrl',
+              type: 'text',
+              admin: {
+                description: label((t) => t.jobs.fields.sourceUrlDescription),
+              },
+              label: label((t) => t.jobs.fields.sourceUrl),
+              required: true,
+            },
+            {
+              name: 'credentials',
+              type: 'group',
+              admin: {
+                description: label((t) => t.jobs.fields.credentialsDescription),
+              },
+              fields: [
+                {
+                  type: 'row',
+                  fields: [
+                    {
+                      name: 'username',
+                      type: 'text',
+                      admin: { width: '50%' },
+                      label: label((t) => t.jobs.fields.username),
+                    },
+                    {
+                      name: 'applicationPassword',
+                      type: 'text',
+                      admin: {
+                        components: {
+                          // Masked (•••) input instead of plain text.
+                          Field:
+                            '@composius/payload-plugin-import-wordpress/client#ApplicationPasswordFieldClient',
+                        },
+                        description: label((t) => t.jobs.fields.applicationPasswordDescription),
+                        width: '50%',
+                      },
+                      label: label((t) => t.jobs.fields.applicationPassword),
+                    },
+                  ],
+                },
+              ],
+              label: label((t) => t.jobs.fields.credentials),
+            },
+            {
+              type: 'row',
+              fields: [
+                {
+                  name: 'dateFrom',
+                  type: 'date',
+                  admin: { date: { pickerAppearance: 'dayOnly' }, width: '50%' },
+                  label: label((t) => t.jobs.fields.dateFrom),
+                },
+                {
+                  name: 'dateTo',
+                  type: 'date',
+                  admin: { date: { pickerAppearance: 'dayOnly' }, width: '50%' },
+                  label: label((t) => t.jobs.fields.dateTo),
+                },
+              ],
+            },
+            {
+              name: 'limit',
+              type: 'number',
+              admin: {
+                description: label((t) => t.jobs.fields.limitDescription),
+              },
+              label: label((t) => t.jobs.fields.limit),
+              min: 1,
+            },
+            {
+              name: 'dryRun',
+              type: 'checkbox',
+              admin: {
+                description: label((t) => t.jobs.fields.dryRunDescription),
+              },
+              defaultValue: false,
+              label: label((t) => t.jobs.fields.dryRun),
+            },
+            {
+              name: 'resume',
+              type: 'checkbox',
+              admin: {
+                description: label((t) => t.jobs.fields.resumeDescription),
+              },
+              defaultValue: false,
+              label: label((t) => t.jobs.fields.resume),
+            },
+          ],
+          label: label((t) => t.jobs.tabs.configuration),
+        },
+        {
+          fields: [
+            {
+              name: 'authorsReport',
+              type: 'json',
+              admin: { readOnly: true },
+              label: label((t) => t.jobs.fields.authorsReport),
+            },
+          ],
+          label: label((t) => t.jobs.tabs.authors),
+        },
+        {
+          fields: [
+            {
+              name: 'categoriesReport',
+              type: 'json',
+              admin: { readOnly: true },
+              label: label((t) => t.jobs.fields.categoriesReport),
+            },
+          ],
+          label: label((t) => t.jobs.tabs.categories),
+        },
+        {
+          fields: [
+            {
+              name: 'mediaReport',
+              type: 'json',
+              admin: { readOnly: true },
+              label: label((t) => t.jobs.fields.mediaReport),
+            },
+          ],
+          label: label((t) => t.jobs.tabs.media),
+        },
+        {
+          fields: [
+            {
+              name: 'postsReport',
+              type: 'json',
+              admin: { readOnly: true },
+              label: label((t) => t.jobs.fields.postsReport),
+            },
+          ],
+          label: label((t) => t.jobs.tabs.posts),
+        },
+        {
+          fields: [
+            {
+              name: 'linksReport',
+              type: 'json',
+              admin: { readOnly: true },
+              label: label((t) => t.jobs.fields.linksReport),
+            },
+          ],
+          label: label((t) => t.jobs.tabs.links),
+        },
+        {
+          fields: [
+            {
+              name: 'runs',
+              type: 'json',
+              admin: { readOnly: true },
+              label: label((t) => t.jobs.fields.runs),
+            },
+            {
+              name: 'progress',
+              type: 'json',
+              admin: { readOnly: true },
+              label: label((t) => t.jobs.fields.progress),
+            },
+            {
+              name: 'errorsReport',
+              type: 'json',
+              admin: { readOnly: true },
+              label: label((t) => t.jobs.fields.errorsReport),
+            },
+          ],
+          label: label((t) => t.jobs.tabs.report),
+        },
+      ],
+    },
+    {
+      name: 'status',
+      type: 'select',
+      admin: {
+        position: 'sidebar',
+        readOnly: true,
+      },
+      defaultValue: 'queued',
+      label: label((t) => t.jobs.fields.status),
+      options: [
+        { label: label((t) => t.jobs.status.queued), value: 'queued' },
+        { label: label((t) => t.jobs.status.running), value: 'running' },
+        { label: label((t) => t.jobs.status.paused), value: 'paused' },
+        { label: label((t) => t.jobs.status.completed), value: 'completed' },
+        { label: label((t) => t.jobs.status.failed), value: 'failed' },
+      ],
+    },
+    {
+      name: 'startedAt',
+      type: 'date',
+      admin: { date: { pickerAppearance: 'dayAndTime' }, position: 'sidebar', readOnly: true },
+      label: label((t) => t.jobs.fields.startedAt),
+    },
+    {
+      name: 'finishedAt',
+      type: 'date',
+      admin: { date: { pickerAppearance: 'dayAndTime' }, position: 'sidebar', readOnly: true },
+      label: label((t) => t.jobs.fields.finishedAt),
+    },
+  ],
   hooks: disabled
     ? {}
     : {
@@ -69,10 +278,10 @@ export const ImportJobs = ({ access, disabled }: ImportJobsOptions): CollectionC
             // A user toggled "resume" on an existing job → re-queue and clear the flag.
             if (operation === 'update' && doc.resume) {
               await req.payload.update({
-                collection: 'wp-import-jobs',
                 id: doc.id as number | string,
-                data: { resume: false, status: 'queued' },
+                collection: 'wp-import-jobs',
                 context: { wpImport: true },
+                data: { resume: false, status: 'queued' },
                 req,
               })
               await queueImport(req, doc.id as number | string)
@@ -82,213 +291,4 @@ export const ImportJobs = ({ access, disabled }: ImportJobsOptions): CollectionC
           },
         ],
       },
-  fields: [
-    // Unnamed tabs keep their fields at the top level of the document data —
-    // one tab per import step, so each step's outcome reads in its own tab.
-    {
-      type: 'tabs',
-      tabs: [
-        {
-          label: label((t) => t.jobs.tabs.configuration),
-          fields: [
-            {
-              name: 'sourceUrl',
-              type: 'text',
-              label: label((t) => t.jobs.fields.sourceUrl),
-              required: true,
-              admin: {
-                description: label((t) => t.jobs.fields.sourceUrlDescription),
-              },
-            },
-            {
-              name: 'credentials',
-              type: 'group',
-              label: label((t) => t.jobs.fields.credentials),
-              admin: {
-                description: label((t) => t.jobs.fields.credentialsDescription),
-              },
-              fields: [
-                {
-                  type: 'row',
-                  fields: [
-                    {
-                      name: 'username',
-                      type: 'text',
-                      label: label((t) => t.jobs.fields.username),
-                      admin: { width: '50%' },
-                    },
-                    {
-                      name: 'applicationPassword',
-                      type: 'text',
-                      label: label((t) => t.jobs.fields.applicationPassword),
-                      admin: {
-                        width: '50%',
-                        description: label((t) => t.jobs.fields.applicationPasswordDescription),
-                        components: {
-                          // Masked (•••) input instead of plain text.
-                          Field:
-                            '@composius/payload-plugin-import-wordpress/client#ApplicationPasswordFieldClient',
-                        },
-                      },
-                    },
-                  ],
-                },
-              ],
-            },
-            {
-              type: 'row',
-              fields: [
-                {
-                  name: 'dateFrom',
-                  type: 'date',
-                  label: label((t) => t.jobs.fields.dateFrom),
-                  admin: { width: '50%', date: { pickerAppearance: 'dayOnly' } },
-                },
-                {
-                  name: 'dateTo',
-                  type: 'date',
-                  label: label((t) => t.jobs.fields.dateTo),
-                  admin: { width: '50%', date: { pickerAppearance: 'dayOnly' } },
-                },
-              ],
-            },
-            {
-              name: 'limit',
-              type: 'number',
-              label: label((t) => t.jobs.fields.limit),
-              min: 1,
-              admin: {
-                description: label((t) => t.jobs.fields.limitDescription),
-              },
-            },
-            {
-              name: 'dryRun',
-              type: 'checkbox',
-              label: label((t) => t.jobs.fields.dryRun),
-              defaultValue: false,
-              admin: {
-                description: label((t) => t.jobs.fields.dryRunDescription),
-              },
-            },
-            {
-              name: 'resume',
-              type: 'checkbox',
-              label: label((t) => t.jobs.fields.resume),
-              defaultValue: false,
-              admin: {
-                description: label((t) => t.jobs.fields.resumeDescription),
-              },
-            },
-          ],
-        },
-        {
-          label: label((t) => t.jobs.tabs.authors),
-          fields: [
-            {
-              name: 'authorsReport',
-              type: 'json',
-              label: label((t) => t.jobs.fields.authorsReport),
-              admin: { readOnly: true },
-            },
-          ],
-        },
-        {
-          label: label((t) => t.jobs.tabs.categories),
-          fields: [
-            {
-              name: 'categoriesReport',
-              type: 'json',
-              label: label((t) => t.jobs.fields.categoriesReport),
-              admin: { readOnly: true },
-            },
-          ],
-        },
-        {
-          label: label((t) => t.jobs.tabs.media),
-          fields: [
-            {
-              name: 'mediaReport',
-              type: 'json',
-              label: label((t) => t.jobs.fields.mediaReport),
-              admin: { readOnly: true },
-            },
-          ],
-        },
-        {
-          label: label((t) => t.jobs.tabs.posts),
-          fields: [
-            {
-              name: 'postsReport',
-              type: 'json',
-              label: label((t) => t.jobs.fields.postsReport),
-              admin: { readOnly: true },
-            },
-          ],
-        },
-        {
-          label: label((t) => t.jobs.tabs.links),
-          fields: [
-            {
-              name: 'linksReport',
-              type: 'json',
-              label: label((t) => t.jobs.fields.linksReport),
-              admin: { readOnly: true },
-            },
-          ],
-        },
-        {
-          label: label((t) => t.jobs.tabs.report),
-          fields: [
-            {
-              name: 'runs',
-              type: 'json',
-              label: label((t) => t.jobs.fields.runs),
-              admin: { readOnly: true },
-            },
-            {
-              name: 'progress',
-              type: 'json',
-              label: label((t) => t.jobs.fields.progress),
-              admin: { readOnly: true },
-            },
-            {
-              name: 'errorsReport',
-              type: 'json',
-              label: label((t) => t.jobs.fields.errorsReport),
-              admin: { readOnly: true },
-            },
-          ],
-        },
-      ],
-    },
-    {
-      name: 'status',
-      type: 'select',
-      label: label((t) => t.jobs.fields.status),
-      defaultValue: 'queued',
-      options: [
-        { label: label((t) => t.jobs.status.queued), value: 'queued' },
-        { label: label((t) => t.jobs.status.running), value: 'running' },
-        { label: label((t) => t.jobs.status.paused), value: 'paused' },
-        { label: label((t) => t.jobs.status.completed), value: 'completed' },
-        { label: label((t) => t.jobs.status.failed), value: 'failed' },
-      ],
-      admin: {
-        position: 'sidebar',
-        readOnly: true,
-      },
-    },
-    {
-      name: 'startedAt',
-      type: 'date',
-      label: label((t) => t.jobs.fields.startedAt),
-      admin: { position: 'sidebar', readOnly: true, date: { pickerAppearance: 'dayAndTime' } },
-    },
-    {
-      name: 'finishedAt',
-      type: 'date',
-      label: label((t) => t.jobs.fields.finishedAt),
-      admin: { position: 'sidebar', readOnly: true, date: { pickerAppearance: 'dayAndTime' } },
-    },
-  ],
 })

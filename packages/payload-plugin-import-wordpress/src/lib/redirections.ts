@@ -88,7 +88,7 @@ export const planRedirectionRules = ({
   const prefixes = new Map<string, number>()
   const exact = new Map<string, PlannedRule>()
 
-  const addExact = ({ path, slug }: ImportedPermalink): void => {
+  const addExact = ({ slug, path }: ImportedPermalink): void => {
     const from = normalizePath(path)
     const to = articleUrl(slug)
     // A rule pointing at its own source would be rejected on save.
@@ -118,7 +118,7 @@ export const planRedirectionRules = ({
 
     const parent = parentOf(path)
     // The folder already *is* the destination — nothing to redirect.
-    if (parent === normalizePath(articleBase!)) {
+    if (parent === normalizePath(articleBase)) {
       continue
     }
     prefixes.set(parent, (prefixes.get(parent) ?? 0) + 1)

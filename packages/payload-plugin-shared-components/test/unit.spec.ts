@@ -1,5 +1,5 @@
-import type { Access } from 'payload'
 import type { GenerateTitle } from '@payloadcms/plugin-seo/types'
+import type { Access } from 'payload'
 
 import { describe, expect, test } from 'vitest'
 

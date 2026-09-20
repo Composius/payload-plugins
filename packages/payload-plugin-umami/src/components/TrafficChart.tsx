@@ -8,10 +8,10 @@ import type { UmamiRange, UmamiSeries } from '../types.js'
 import { bucketGrid, floorToBucket, rangeToWindow } from '../range.js'
 
 export type TrafficChartProps = {
-  series: UmamiSeries
-  range: UmamiRange
   /** Accessible label for the stat dropdown. */
   metricLabel: string
+  range: UmamiRange
+  series: UmamiSeries
   viewsLabel: string
   visitorsLabel: string
 }
@@ -44,8 +44,8 @@ const mergeSeries = (series: UmamiSeries, range: UmamiRange): Row[] => {
     }
     return row
   }
-  for (const point of series.pageviews) ensure(point.x).views = point.y
-  for (const point of series.sessions) ensure(point.x).visitors = point.y
+  for (const point of series.pageviews) {ensure(point.x).views = point.y}
+  for (const point of series.sessions) {ensure(point.x).visitors = point.y}
   return [...byTime.values()].sort((a, b) => a.t - b.t)
 }
 
@@ -113,7 +113,7 @@ export const TrafficChart = ({
         </select>
       </div>
       <ResponsiveContainer height={280} width="100%">
-        <BarChart data={data} margin={{ top: 8, right: 12, bottom: 0, left: -8 }}>
+        <BarChart data={data} margin={{ bottom: 0, left: -8, right: 12, top: 8 }}>
           <CartesianGrid stroke="var(--umami-grid)" vertical={false} />
           <XAxis
             dataKey="t"

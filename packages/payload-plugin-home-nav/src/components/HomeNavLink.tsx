@@ -18,12 +18,12 @@ const linkStyles = `
 }
 `
 
-export type HomeNavLinkProps = ServerProps & {
+export type HomeNavLinkProps = {
   /** Destination from the plugin options. Default: the admin dashboard. */
   href?: string
   /** Label override from the plugin options, plain or per-language. */
   label?: LocalizedText
-}
+} & ServerProps
 
 /**
  * Server component for the `admin.components.beforeNavLinks` slot: a "Home"

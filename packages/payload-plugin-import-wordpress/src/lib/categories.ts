@@ -1,12 +1,12 @@
 import type { Payload } from 'payload'
 
-import type { ImportError, ImportedItem } from '../types.js'
+import type { ImportedItem, ImportError } from '../types.js'
 import type { WPCategory } from './wpTypes.js'
 
 import { coerceId } from './id.js'
 import { createDoc } from './payloadOps.js'
-import { decodeEntities } from './url.js'
 import { findDoneRecord, saveRecord } from './records.js'
+import { decodeEntities } from './url.js'
 
 /**
  * Orders categories so every parent precedes its children (WordPress `parent`
@@ -49,9 +49,9 @@ export type ImportCategoriesArgs = {
 
 export type ImportCategoriesResult = {
   errors: ImportError[]
-  imported: ImportedItem[]
   /** WordPress category id → Payload category id. */
   idMap: Map<number, number | string>
+  imported: ImportedItem[]
 }
 
 /** Imports categories preserving hierarchy; idempotent via import records. */

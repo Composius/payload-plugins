@@ -1,4 +1,4 @@
-import { en } from './en.js'
+import type { en } from './en.js'
 
 export type Translation = typeof en
 

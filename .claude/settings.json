@@ -1,5 +1,5 @@
 {
   "permissions": {
-    "allow": ["Edit(**/*.spec.ts)", "Bash(pnpm vitest *)", "Bash(pnpm test*)"]
+    "allow": ["Edit(**/*.spec.ts)", "Bash(pnpm vitest *)", "Bash(pnpm test*)", "Bash(pnpm lint *)"]
   }
 }

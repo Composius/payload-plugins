@@ -1,5 +1,7 @@
 import type { Config } from 'payload'
 
+import type { ComposiusPayloadPluginAuthConfig, Role, UsersAccess } from './types.js'
+
 import {
   hasRole,
   hasRoleFieldLevel,
@@ -14,7 +16,6 @@ import {
 } from './access.js'
 import { withUsersAuth } from './collections/Users.js'
 import { label } from './translations/index.js'
-import type { Role, UsersAccess, ComposiusPayloadPluginAuthConfig } from './types.js'
 
 export {
   hasRole,
@@ -27,7 +28,7 @@ export {
   isAuthenticated,
   isAuthenticatedOrPublished,
 }
-export type { Role, UsersAccess, ComposiusPayloadPluginAuthConfig }
+export type { ComposiusPayloadPluginAuthConfig, Role, UsersAccess }
 
 const defaultRoles: Role[] = [
   { label: label((t) => t.roles.admin), value: 'admin' },
@@ -76,7 +77,7 @@ export const ComposiusPayloadPluginAuth =
     const existingIndex = config.collections.findIndex((collection) => collection.slug === slug)
     const users = withUsersAuth(
       existingIndex === -1 ? undefined : config.collections[existingIndex],
-      { access, adminRole, defaultRole, roles, slug },
+      { slug, access, adminRole, defaultRole, roles },
     )
 
     if (existingIndex === -1) {

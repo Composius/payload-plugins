@@ -34,8 +34,8 @@ const content = (...blocks: Record<string, unknown>[]) => ({
     type: 'root',
     children: blocks.map((fields) => ({
       type: 'block',
-      version: 2,
       fields: { blockType: 'videoEmbed', ...fields },
+      version: 2,
     })),
   },
 })
@@ -44,7 +44,7 @@ const fill = async (value: unknown, previousValue?: unknown) =>
   (await fillVideoEmbedTitles({ previousValue, value } as never)) as ReturnType<typeof content>
 
 const fieldsOf = (tree: ReturnType<typeof content>, index = 0) =>
-  tree.root.children[index]!.fields as Record<string, unknown>
+  tree.root.children[index].fields as Record<string, unknown>
 
 describe('fetchVideoTitle', () => {
   test('asks YouTube for the watch link, which is the only one its oEmbed answers', async () => {
@@ -195,7 +195,7 @@ describe('fillVideoEmbedTitles', () => {
     }
 
     const filled = (await fillVideoEmbedTitles({ value: nested } as never)) as typeof nested
-    const inner = filled.root.children[0]!.fields.body as ReturnType<typeof content>
+    const inner = filled.root.children[0].fields.body
 
     expect(fieldsOf(inner).title).toBe('Nested')
   })

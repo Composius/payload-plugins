@@ -8,12 +8,12 @@ import React from 'react'
 
 import type { UmamiDashboardProps } from '../types.js'
 
-export type UmamiWidgetProps = UmamiDashboardProps & {
+export type UmamiWidgetProps = {
   /** `access.read` resolved by the plugin, evaluated per request. */
   access: Access
   /** Injected by Payload when rendering dashboard widgets. */
   req: PayloadRequest
-}
+} & UmamiDashboardProps
 
 /**
  * Server-component gate around the dashboard: evaluates the plugin's `read`

@@ -1,9 +1,9 @@
 import type { Payload } from 'payload'
 
-import type { Menu } from './payload-types.js'
-
 import { getPayload } from 'payload'
 import { afterAll, beforeAll, describe, expect, test } from 'vitest'
+
+import type { Menu } from './payload-types.js'
 
 import config from './config.js'
 
@@ -96,7 +96,7 @@ describe('Plugin integration tests', () => {
 
     expect(menu.links?.[0]?.title).toBe('internal@example.com')
 
-    const shallow = await payload.findByID({ collection: 'menus', id: menu.id, depth: 0 })
+    const shallow = await payload.findByID({ id: menu.id, collection: 'menus', depth: 0 })
     expect(shallow.links?.[0]?.title).toBe('internal@example.com')
   })
 
@@ -111,12 +111,12 @@ describe('Plugin integration tests', () => {
     })
 
     await payload.update({
-      collection: 'users',
       id: user.id,
+      collection: 'users',
       data: { email: 'after@example.com' },
     })
 
-    const updated = await payload.findByID({ collection: 'menus', id: menu.id })
+    const updated = await payload.findByID({ id: menu.id, collection: 'menus' })
     expect(updated.links?.[0]?.title).toBe('after@example.com')
   })
 
@@ -166,12 +166,12 @@ describe('Plugin integration tests', () => {
     expect(menu.links?.[0]?.title).toBe('Custom title')
 
     await payload.update({
-      collection: 'users',
       id: user.id,
+      collection: 'users',
       data: { email: 'renamed-override@example.com' },
     })
 
-    const updated = await payload.findByID({ collection: 'menus', id: menu.id })
+    const updated = await payload.findByID({ id: menu.id, collection: 'menus' })
     expect(updated.links?.[0]?.title).toBe('Custom title')
   })
 
@@ -187,8 +187,8 @@ describe('Plugin integration tests', () => {
 
     // The admin form echoes the title resolved by afterRead back on save.
     await payload.update({
-      collection: 'menus',
       id: menu.id,
+      collection: 'menus',
       data: {
         links: [
           {
@@ -201,12 +201,12 @@ describe('Plugin integration tests', () => {
     })
 
     await payload.update({
-      collection: 'users',
       id: user.id,
+      collection: 'users',
       data: { email: 'echo-renamed@example.com' },
     })
 
-    const updated = await payload.findByID({ collection: 'menus', id: menu.id })
+    const updated = await payload.findByID({ id: menu.id, collection: 'menus' })
     expect(updated.links?.[0]?.title).toBe('echo-renamed@example.com')
   })
 
@@ -220,13 +220,13 @@ describe('Plugin integration tests', () => {
     })
 
     const renamed = await payload.update({
-      collection: 'menus',
       id: menu.id,
+      collection: 'menus',
       data: { name: 'Cached menu renamed' },
     })
     expect(renamed.name).toBe('Cached menu renamed')
 
-    await payload.delete({ collection: 'menus', id: menu.id })
+    await payload.delete({ id: menu.id, collection: 'menus' })
 
     const remaining = await payload.find({
       collection: 'menus',

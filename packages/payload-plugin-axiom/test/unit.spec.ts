@@ -100,7 +100,7 @@ describe('ComposiusPayloadPluginAxiom', () => {
     const config = await ComposiusPayloadPluginAxiom({
       ...credentials,
       level: 'debug',
-      loggerOptions: { level: 'trace', name: 'my-app' },
+      loggerOptions: { name: 'my-app', level: 'trace' },
     })(baseConfig())
 
     const options = getLogger(config).options

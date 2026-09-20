@@ -18,8 +18,8 @@ const COVER = 'https://site.com/wp-content/uploads/2021/06/cover.jpg'
 const SHARED = 'https://site.com/wp-content/uploads/2021/06/shared-1024x768.jpg'
 
 const categories = [
-  { id: 1, name: 'News', parent: 0, slug: 'news' },
-  { id: 2, name: 'Sub', parent: 1, slug: 'sub' },
+  { id: 1, name: 'News', slug: 'news', parent: 0 },
+  { id: 2, name: 'Sub', slug: 'sub', parent: 1 },
 ]
 
 const embedded = {
@@ -30,6 +30,8 @@ const embedded = {
 const posts = [
   {
     id: 10,
+    slug: 'first-post',
+    _embedded: embedded,
     author: 5,
     categories: [1],
     content: {
@@ -44,16 +46,16 @@ const posts = [
     excerpt: { rendered: '<p>First&rsquo;s excerpt&hellip;</p>' },
     featured_media: 99,
     link: 'https://site.com/blog/first-post/',
-    slug: 'first-post',
     status: 'publish',
     title: { rendered: 'First &amp; Post' },
-    _embedded: embedded,
   },
   {
     id: 11,
     author: 5,
     categories: [2],
     // No featured media: the leading content image is promoted to the cover.
+    slug: 'second-post',
+    _embedded: { author: embedded.author },
     content: {
       rendered:
         '<img src="' +
@@ -64,10 +66,8 @@ const posts = [
     excerpt: { rendered: '<p>Second excerpt</p>' },
     featured_media: 0,
     link: 'https://site.com/blog/second-post/',
-    slug: 'second-post',
     status: 'publish',
     title: { rendered: 'Second Post' },
-    _embedded: { author: embedded.author },
   },
 ]
 
@@ -75,6 +75,8 @@ const posts = [
 const SITE3 = 'https://site3.com'
 const site3Posts = [20, 21].map((id) => ({
   id,
+  slug: `post-${id}`,
+  _embedded: { author: embedded.author },
   author: 5,
   categories: [],
   content: { rendered: `<p>Body of post ${id}</p>` },
@@ -82,10 +84,8 @@ const site3Posts = [20, 21].map((id) => ({
   excerpt: { rendered: '' },
   featured_media: 0,
   link: `https://site3.com/post-${id}/`,
-  slug: `post-${id}`,
   status: 'publish',
   title: { rendered: `Post ${id}` },
-  _embedded: { author: embedded.author },
 }))
 
 const jsonResponse = (body: unknown): Response =>
@@ -95,7 +95,9 @@ const jsonResponse = (body: unknown): Response =>
 
 /** Routes WordPress REST + image requests to canned responses. */
 const wpFetch = vi.fn(async (input: RequestInfo | URL): Promise<Response> => {
-  const url = typeof input === 'string' ? input : input.toString()
+  // A `Request` has no useful `toString()` — it stringifies to "[object
+  // Object]" — so take its `url` rather than coercing it.
+  const url = typeof input === 'string' ? input : input instanceof URL ? input.href : input.url
   if (url.includes('/wp-content/uploads/')) {
     return new Response(PNG, { headers: { 'content-type': 'image/png' } })
   }
@@ -118,8 +120,8 @@ const runJob = async (data: Record<string, unknown>): Promise<Record<string, unk
   const job = await payload.create({ collection: 'wp-import-jobs', data } as never)
   await payload.jobs.run()
   return (await payload.findByID({
-    collection: 'wp-import-jobs',
     id: job.id,
+    collection: 'wp-import-jobs',
     depth: 0,
   })) as unknown as Record<string, unknown>
 }
@@ -213,8 +215,8 @@ describe('WordPress import', () => {
     // A post's content has an upload node and a rewritten internal link.
     const first = await payload.find({
       collection: 'articles',
-      where: { slug: { equals: 'first-post' } },
       depth: 0,
+      where: { slug: { equals: 'first-post' } },
     })
     const content = JSON.stringify((first.docs[0] as { content?: unknown }).content)
     expect(content).toContain('"type":"upload"')
@@ -237,8 +239,8 @@ describe('WordPress import', () => {
     // the cover and removed from the content.
     const second = await payload.find({
       collection: 'articles',
-      where: { slug: { equals: 'second-post' } },
       depth: 0,
+      where: { slug: { equals: 'second-post' } },
     })
     expect((second.docs[0] as { coverImage?: unknown }).coverImage).toBeTruthy()
     const secondContent = JSON.stringify((second.docs[0] as { content?: unknown }).content)
@@ -268,15 +270,15 @@ describe('WordPress import', () => {
 
     // Resume with a higher limit → run 2 imports the second post.
     await payload.update({
-      collection: 'wp-import-jobs',
       id: job.id,
+      collection: 'wp-import-jobs',
       data: { limit: 2, resume: true },
     } as never)
     await payload.jobs.run()
 
     const updated = (await payload.findByID({
-      collection: 'wp-import-jobs',
       id: job.id,
+      collection: 'wp-import-jobs',
       depth: 0,
     })) as unknown as Record<string, unknown>
 
@@ -296,15 +298,15 @@ describe('WordPress import', () => {
     // would swallow the whole site — so each gets an exact rule instead.
     const rootRules = await payload.find({
       collection: 'redirections',
-      where: { from: { like: '/post-2' } },
       depth: 0,
+      where: { from: { like: '/post-2' } },
     })
     expect(rootRules.totalDocs).toBe(2)
     expect(rootRules.docs.every((d) => (d as { matchType?: string }).matchType === 'exact')).toBe(
       true,
     )
-    expect(imported[0]).toMatchObject({ run: 1, slug: 'post-20' })
-    expect(imported[1]).toMatchObject({ run: 2, slug: 'post-21' })
+    expect(imported[0]).toMatchObject({ slug: 'post-20', run: 1 })
+    expect(imported[1]).toMatchObject({ slug: 'post-21', run: 2 })
   })
 
   test('credentials authenticate requests and fetch author emails', async () => {

@@ -15,8 +15,8 @@ export default buildDevConfig({
       // Umami Cloud: pass an API key. Self-hosted: pass baseUrl + username/password.
       apiKey: process.env.UMAMI_API_KEY,
       baseUrl: process.env.UMAMI_BASE_URL,
-      username: process.env.UMAMI_USERNAME,
       password: process.env.UMAMI_PASSWORD,
+      username: process.env.UMAMI_USERNAME,
     }),
   ],
   seed,

@@ -46,7 +46,7 @@ export const clearRegexCache = (): void => {
  * slash, no repeated slashes, and no trailing slash (except for the root).
  */
 export const normalizePath = (input: string): string => {
-  let path = input.split('#')[0]!.split('?')[0]!
+  let path = input.split('#')[0].split('?')[0]
 
   if (!path.startsWith('/')) {
     path = `/${path}`
@@ -72,7 +72,7 @@ export const normalizeSearch = (search: string): string => {
 
 /** True for `scheme://host…` and protocol-relative `//host…` destinations. */
 export const isAbsoluteUrl = (value: string): boolean =>
-  value.startsWith('//') || /^[a-zA-Z][a-zA-Z\d+\-.]*:\/\//.test(value)
+  value.startsWith('//') || /^[a-z][a-z\d+\-.]*:\/\//i.test(value)
 
 /** Splits a destination into its path, `?query` and `#hash` parts. */
 export const splitDestination = (to: string): { base: string; hash: string; query: string } => {

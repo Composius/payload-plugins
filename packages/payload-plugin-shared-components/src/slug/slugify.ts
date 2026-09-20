@@ -1,4 +1,5 @@
 import type { Slugify } from 'payload/shared'
+
 import slugifyString from 'slugify'
 
 /**

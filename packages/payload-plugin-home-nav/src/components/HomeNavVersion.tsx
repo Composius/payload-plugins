@@ -27,12 +27,12 @@ const versionStyles = `
 }
 `
 
-export type HomeNavVersionProps = ServerProps & {
+export type HomeNavVersionProps = {
   /** Label shown in front of the number. Default: "Version" / "Version". */
   versionLabel?: LocalizedText
   /** Version override from the plugin options. Default: the app's own. */
   versionNumber?: string
-}
+} & ServerProps
 
 /**
  * Server component for the `admin.components.afterNavLinks` slot: the app's

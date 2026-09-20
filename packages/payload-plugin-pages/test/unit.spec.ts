@@ -1,16 +1,16 @@
-import type { Access, Block, BlocksField, CollectionConfig, Config, Field } from 'payload'
 import type { GenerateDescription } from '@payloadcms/plugin-seo/types'
+import type { Access, Block, BlocksField, CollectionConfig, Config, Field } from 'payload'
 
 import { afterEach, describe, expect, test, vi } from 'vitest'
 
 import { authenticatedOrPublished, defaultGenerateDescription, defaultPageUrl } from '../src/defaults.js'
 import {
   ComposiusPayloadPluginPages,
-  contentBlock,
   CONTENT_BLOCK_SLUG,
+  contentBlock,
   pageIdTag,
-  pageTag,
   PAGES_TAG,
+  pageTag,
 } from '../src/index.js'
 
 const baseConfig = (): Config => ({ collections: [] }) as unknown as Config
@@ -97,10 +97,10 @@ describe('ComposiusPayloadPluginPages', () => {
         collections: { users: { config: {} } },
         config: { admin: { user: 'users' } },
       },
-      user: { collection: 'users', id: 1 },
+      user: { id: 1, collection: 'users' },
     } as unknown as Parameters<NonNullable<typeof endpoint>['handler']>[0])
 
-    return ((await (response as Response).json()) as { result: string }).result
+    return ((await (response).json()) as { result: string }).result
   }
 
   test('meta titles are the document title by default', async () => {
@@ -337,7 +337,7 @@ describe('content', () => {
 
 describe('defaultGenerateDescription', () => {
   const richText = (text: string) => ({
-    root: { children: [{ children: [{ text, type: 'text' }], type: 'paragraph' }], type: 'root' },
+    root: { type: 'root', children: [{ type: 'paragraph', children: [{ type: 'text', text }] }] },
   })
 
   const metaDescription = (doc: Record<string, unknown>) =>

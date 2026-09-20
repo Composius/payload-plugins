@@ -1,8 +1,10 @@
 'use client'
 
 import type { TextFieldClientComponent } from 'payload'
+
 import { TextField, useField, useFormFields, useTranslation } from '@payloadcms/ui'
 import { useEffect, useRef } from 'react'
+
 import { en } from '../../translations/en.js'
 import { fr } from '../../translations/fr.js'
 import { parseVideoEmbedUrl } from './providers.js'

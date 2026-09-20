@@ -112,7 +112,7 @@ export const convertAvifToWebp: CollectionBeforeOperationHook = async ({ req }) 
 
   // Payload crops before it resizes, using pixel values the admin measured on
   // the file as uploaded, so downscaling first would move the crop box
-  const uploadEdits = req.query?.uploadEdits as undefined | { crop?: unknown }
+  const uploadEdits = req.query?.uploadEdits as { crop?: unknown } | undefined
   if (!uploadEdits?.crop) {
     image.resize(resizeOptions)
   }
@@ -143,16 +143,19 @@ export const Media = ({
   staticDir,
 }: MediaOptions): CollectionConfig => ({
   slug: 'media',
-  labels: {
-    singular: label((t) => t.media.singular),
-    plural: label((t) => t.media.plural),
-  },
   access: {
-    read: access.read,
     create: access.create,
-    update: access.update,
     delete: access.delete,
+    read: access.read,
+    update: access.update,
   },
+  fields: [
+    {
+      name: 'alt',
+      type: 'text',
+      label: label((t) => t.fields.alt),
+    },
+  ],
   hooks: {
     beforeOperation: [
       enforceMaxFileSize(maxFileSize), // reject before doing any work on the file
@@ -180,13 +183,10 @@ export const Media = ({
       ],
     }),
   },
-  fields: [
-    {
-      name: 'alt',
-      type: 'text',
-      label: label((t) => t.fields.alt),
-    },
-  ],
+  labels: {
+    plural: label((t) => t.media.plural),
+    singular: label((t) => t.media.singular),
+  },
   upload: {
     adminThumbnail: imageSizes.some((size) => size.name === 'thumbnail')
       ? 'thumbnail'

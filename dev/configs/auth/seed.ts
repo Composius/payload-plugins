@@ -36,8 +36,8 @@ export const seed = async (payload: Payload) => {
     await payload.create({
       collection: 'users',
       data: {
-        email: 'editor@payloadcms.com',
         name: 'Editor User',
+        email: 'editor@payloadcms.com',
         password: 'test',
         role: 'editor',
       },

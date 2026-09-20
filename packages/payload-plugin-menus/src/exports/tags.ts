@@ -3,4 +3,4 @@
  * code can build a tag without loading the CMS.
  */
 
-export { menuIdTag, menuTag, MENUS_TAG } from '../tags.js'
+export { menuIdTag, MENUS_TAG, menuTag } from '../tags.js'

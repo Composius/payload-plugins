@@ -1,17 +1,17 @@
 import type { UmamiPoint, UmamiSeries, UmamiStats } from '../types.js'
 
 export type UmamiCredentials = {
-  websiteId: string
   /** Umami Cloud API key (`x-umami-api-key`). Takes precedence over username/password. */
   apiKey?: string
-  /** Self-hosted username (used with `password`). */
-  username?: string
-  /** Self-hosted password. */
-  password?: string
   /** API base URL. Defaults to Umami Cloud (`https://api.umami.is`). */
   baseUrl?: string
+  /** Self-hosted password. */
+  password?: string
   /** IANA timezone for time-series buckets. Defaults to the server timezone. */
   timezone?: string
+  /** Self-hosted username (used with `password`). */
+  username?: string
+  websiteId: string
 }
 
 const CLOUD_BASE = 'https://api.umami.is'
@@ -32,14 +32,14 @@ export class UmamiError extends Error {
 }
 
 export type UmamiClient = {
-  getStats: (startAt: number, endAt: number) => Promise<UmamiStats>
-  getTopPages: (startAt: number, endAt: number, limit?: number) => Promise<UmamiPoint[]>
-  getTopCountries: (startAt: number, endAt: number, limit?: number) => Promise<UmamiPoint[]>
   getSeries: (
     startAt: number,
     endAt: number,
-    unit: 'hour' | 'day',
+    unit: 'day' | 'hour',
   ) => Promise<UmamiSeries>
+  getStats: (startAt: number, endAt: number) => Promise<UmamiStats>
+  getTopCountries: (startAt: number, endAt: number, limit?: number) => Promise<UmamiPoint[]>
+  getTopPages: (startAt: number, endAt: number, limit?: number) => Promise<UmamiPoint[]>
 }
 
 /**
@@ -55,13 +55,13 @@ export const createUmamiClient = (credentials: UmamiCredentials): UmamiClient =>
   const root = `${(baseUrl ?? CLOUD_BASE).replace(/\/$/, '')}${isCloud ? '/v1' : '/api'}`
   const tz = timezone ?? Intl.DateTimeFormat().resolvedOptions().timeZone
 
-  let token: string | null = null
+  let token: null | string = null
 
   const login = async (): Promise<string> => {
     const response = await fetch(`${(baseUrl ?? CLOUD_BASE).replace(/\/$/, '')}/api/auth/login`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ password, username }),
+      headers: { 'Content-Type': 'application/json' },
+      method: 'POST',
     })
     if (!response.ok) {
       throw new UmamiError(`Umami login failed (${response.status})`, response.status)
@@ -81,7 +81,7 @@ export const createUmamiClient = (credentials: UmamiCredentials): UmamiClient =>
     return { Authorization: `Bearer ${token}` }
   }
 
-  const request = async <T>(path: string, params: Record<string, string | number>): Promise<T> => {
+  const request = async <T>(path: string, params: Record<string, number | string>): Promise<T> => {
     const query = new URLSearchParams(
       Object.entries(params).map(([key, value]) => [key, String(value)]),
     ).toString()
@@ -106,12 +106,12 @@ export const createUmamiClient = (credentials: UmamiCredentials): UmamiClient =>
   }
 
   return {
-    getStats: (startAt, endAt) => request<UmamiStats>('/stats', { startAt, endAt }),
-    getTopPages: (startAt, endAt, limit = 5) =>
-      request<UmamiPoint[]>('/metrics', { startAt, endAt, type: TOP_PAGES_METRIC, limit }),
-    getTopCountries: (startAt, endAt, limit = 5) =>
-      request<UmamiPoint[]>('/metrics', { startAt, endAt, type: 'country', limit }),
     getSeries: (startAt, endAt, unit) =>
-      request<UmamiSeries>('/pageviews', { startAt, endAt, unit, timezone: tz }),
+      request<UmamiSeries>('/pageviews', { endAt, startAt, timezone: tz, unit }),
+    getStats: (startAt, endAt) => request<UmamiStats>('/stats', { endAt, startAt }),
+    getTopCountries: (startAt, endAt, limit = 5) =>
+      request<UmamiPoint[]>('/metrics', { type: 'country', endAt, limit, startAt }),
+    getTopPages: (startAt, endAt, limit = 5) =>
+      request<UmamiPoint[]>('/metrics', { type: TOP_PAGES_METRIC, endAt, limit, startAt }),
   }
 }

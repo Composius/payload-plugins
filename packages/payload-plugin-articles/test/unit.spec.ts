@@ -17,13 +17,13 @@ import {
 } from '../src/defaults.js'
 import {
   articleIdTag,
-  articleTag,
   ARTICLES_TAG,
+  articleTag,
   authorIdTag,
   AUTHORS_TAG,
+  CATEGORIES_TAG,
   categoryIdTag,
   categoryTag,
-  CATEGORIES_TAG,
   ComposiusPayloadPluginArticles,
 } from '../src/index.js'
 
@@ -345,10 +345,10 @@ describe('ComposiusPayloadPluginArticles', () => {
         collections: { users: { config: {} } },
         config: { admin: { user: 'users' } },
       },
-      user: { collection: 'users', id: 1 },
+      user: { id: 1, collection: 'users' },
     } as unknown as Parameters<NonNullable<typeof endpoint>['handler']>[0])
 
-    return ((await (response as Response).json()) as { result: string }).result
+    return ((await (response).json()) as { result: string }).result
   }
 
   test('meta titles are the document title by default', async () => {
@@ -519,13 +519,13 @@ describe('ComposiusPayloadPluginArticles', () => {
     }
     const hook = editor.hooks.beforeChange[0]
 
-    expect(hook({ operation: 'create', value: undefined, req: { user: { id: 7 } } })).toBe(7)
+    expect(hook({ operation: 'create', req: { user: { id: 7 } }, value: undefined })).toBe(7)
     // Keeps an explicit choice, and never overrides on update.
-    expect(hook({ operation: 'create', value: 3, req: { user: { id: 7 } } })).toBe(3)
-    expect(hook({ operation: 'update', value: undefined, req: { user: { id: 7 } } })).toBe(
+    expect(hook({ operation: 'create', req: { user: { id: 7 } }, value: 3 })).toBe(3)
+    expect(hook({ operation: 'update', req: { user: { id: 7 } }, value: undefined })).toBe(
       undefined,
     )
-    expect(hook({ operation: 'create', value: undefined, req: {} })).toBe(undefined)
+    expect(hook({ operation: 'create', req: {}, value: undefined })).toBe(undefined)
   })
 })
 

@@ -1,11 +1,12 @@
-import type { CollectionAdminOptions, CollectionSlug, Config } from 'payload'
 import type {
   RevalidateEvent,
   RevalidateOptions,
   RevalidateProfile,
 } from '@composius/payload-plugin-shared-components'
+import type { CollectionAdminOptions, CollectionSlug, Config } from 'payload'
 
 import type { MenusAccess } from './collections/Menus.js'
+
 import { Menus } from './collections/Menus.js'
 import { anyone, authenticated } from './defaults.js'
 
@@ -86,4 +87,4 @@ export const ComposiusPayloadPluginMenus =
   }
 
 export type { RevalidateEvent, RevalidateOptions, RevalidateProfile }
-export { menuIdTag, menuTag, MENUS_TAG } from './tags.js'
+export { menuIdTag, MENUS_TAG, menuTag } from './tags.js'

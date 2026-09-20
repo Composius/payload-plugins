@@ -2,11 +2,11 @@ import type { Translation } from './index.js'
 
 export const fr: Translation = {
   fields: {
+    name: 'Nom',
     anchor: 'Ancre',
     document: 'Document',
     links: 'Liens',
     linksCount: 'Nombre de liens',
-    name: 'Nom',
     newTab: 'Ouvrir dans un nouvel onglet',
     title: 'Titre',
     url: 'URL',

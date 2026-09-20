@@ -5,11 +5,11 @@
 
 export {
   articleIdTag,
-  articleTag,
   ARTICLES_TAG,
+  articleTag,
   authorIdTag,
   AUTHORS_TAG,
+  CATEGORIES_TAG,
   categoryIdTag,
   categoryTag,
-  CATEGORIES_TAG,
 } from '../tags.js'

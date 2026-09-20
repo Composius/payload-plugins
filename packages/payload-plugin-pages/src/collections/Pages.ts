@@ -1,17 +1,19 @@
-import type { Access, Block, BlockSlug, CollectionConfig, Field } from 'payload'
-import { slugField } from 'payload'
-import { lexicalEditor } from '@payloadcms/richtext-lexical'
 import type {
   EditorFontSize,
   RevalidateOptions,
   SeoGenerators,
 } from '@composius/payload-plugin-shared-components'
+import type { Access, Block, BlockSlug, CollectionConfig, Field } from 'payload'
+
 import {
   contentEditorFeatures,
   revalidateHooks,
   seoField,
   slugify,
 } from '@composius/payload-plugin-shared-components'
+import { lexicalEditor } from '@payloadcms/richtext-lexical'
+import { slugField } from 'payload'
+
 import { label } from '../translations/index.js'
 
 export type PagesAccess = {
@@ -45,7 +47,7 @@ export type PagesOptions = {
   editorFontSize: EditorFontSize | false
   /** Draws the content editor's links blue and continuously underlined. */
   emphasizeEditorLinks: boolean
-  pageUrl: (slug?: string | null) => string
+  pageUrl: (slug?: null | string) => string
   /** Next.js cache invalidation on save and delete. `false` turns it off. */
   revalidate: false | RevalidateOptions
   seo: false | PagesSeoGenerators
@@ -66,7 +68,7 @@ const layoutFields = (blocks: Block[], blockReferences: BlockReference[]): Field
   const fieldLabel = label((t) => t.fields.layout)
 
   if (blockReferences.length === 0) {
-    return [{ name: 'layout', type: 'blocks', label: fieldLabel, blocks }]
+    return [{ name: 'layout', type: 'blocks', blocks, label: fieldLabel }]
   }
 
   return [
@@ -96,33 +98,21 @@ export const Pages = ({
   seo,
 }: PagesOptions): CollectionConfig => ({
   slug: 'pages',
-  labels: {
-    singular: label((t) => t.pages.singular),
-    plural: label((t) => t.pages.plural),
+  access: {
+    create: access.create,
+    delete: access.delete,
+    read: access.read,
+    update: access.update,
   },
   admin: {
-    useAsTitle: 'title',
     defaultColumns: ['title', 'slug', '_status', 'publishedAt', 'updatedAt'],
     livePreview: {
       url: ({ data }) => pageUrl(data?.slug as string | undefined),
     },
     preview: (data) => pageUrl(data?.slug as string | undefined),
+    useAsTitle: 'title',
   },
   defaultSort: '-publishedAt',
-  access: {
-    read: access.read,
-    create: access.create,
-    update: access.update,
-    delete: access.delete,
-  },
-  versions: {
-    drafts: {
-      autosave: true,
-    },
-  },
-  hooks: {
-    ...revalidateHooks({ collection: 'pages', drafts: true, fields: ['slug'] }, revalidate),
-  },
   fields: [
     {
       name: 'title',
@@ -134,24 +124,24 @@ export const Pages = ({
     {
       name: 'coverImage',
       type: 'upload',
-      label: label((t) => t.fields.coverImage),
-      relationTo: 'media',
       admin: {
         position: 'sidebar',
       },
+      label: label((t) => t.fields.coverImage),
+      relationTo: 'media',
     },
     ...(contentField
       ? [
           {
             name: 'content',
             type: 'richText' as const,
-            label: label((t) => t.fields.content),
             editor: lexicalEditor({
               features: contentEditorFeatures('@composius/payload-plugin-pages/client', {
                 emphasizeLinks: emphasizeEditorLinks,
                 fontSize: editorFontSize,
               }),
             }),
+            label: label((t) => t.fields.content),
           },
         ]
       : []),
@@ -159,12 +149,11 @@ export const Pages = ({
     {
       name: 'publishedAt',
       type: 'date',
-      label: label((t) => t.fields.publishedAt),
       admin: {
-        position: 'sidebar',
         date: {
           pickerAppearance: 'dayAndTime',
         },
+        position: 'sidebar',
       },
       hooks: {
         beforeChange: [
@@ -176,6 +165,7 @@ export const Pages = ({
           },
         ],
       },
+      label: label((t) => t.fields.publishedAt),
     },
     ...(seo
       ? [
@@ -189,4 +179,16 @@ export const Pages = ({
         ]
       : []),
   ],
+  hooks: {
+    ...revalidateHooks({ collection: 'pages', drafts: true, fields: ['slug'] }, revalidate),
+  },
+  labels: {
+    plural: label((t) => t.pages.plural),
+    singular: label((t) => t.pages.singular),
+  },
+  versions: {
+    drafts: {
+      autosave: true,
+    },
+  },
 })

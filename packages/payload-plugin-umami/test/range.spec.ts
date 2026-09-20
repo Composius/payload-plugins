@@ -47,13 +47,13 @@ describe('bucketGrid', () => {
     expect(grid).toHaveLength(8)
     expect(grid[0]).toBe(new Date(2023, 10, 7).getTime())
     expect(grid.at(-1)).toBe(new Date(2023, 10, 14).getTime())
-    for (const t of grid) expect(new Date(t).getHours()).toBe(0)
+    for (const t of grid) {expect(new Date(t).getHours()).toBe(0)}
   })
 
   test('longer ranges stay aligned to midnight across a DST change', () => {
     const grid = bucketGrid('90d', now)
     expect(grid).toHaveLength(91)
-    for (const t of grid) expect(new Date(t).getHours()).toBe(0)
+    for (const t of grid) {expect(new Date(t).getHours()).toBe(0)}
   })
 })
 

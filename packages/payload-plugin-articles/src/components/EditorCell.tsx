@@ -1,13 +1,14 @@
 'use client'
 
 import type { DefaultCellComponentProps } from 'payload'
+
 import { useConfig, useListRelationships, useTranslation } from '@payloadcms/ui'
 import React, { useEffect, useState } from 'react'
 
 type UserDoc = {
+  [key: string]: unknown
   email?: null | string
   name?: null | string
-  [key: string]: unknown
 }
 
 const asString = (value: unknown): string => (typeof value === 'string' && value ? value : '')
@@ -39,7 +40,7 @@ export const EditorCell: React.FC<DefaultCellComponentProps> = ({ cellData, fiel
   const id =
     cellData && typeof cellData === 'object'
       ? (cellData as { id?: number | string }).id
-      : (cellData as number | string | null)
+      : (cellData as null | number | string)
 
   const [requested, setRequested] = useState(false)
 

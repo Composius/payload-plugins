@@ -1,4 +1,5 @@
 import type { FeatureProviderServer, LexicalEditorProps } from '@payloadcms/richtext-lexical'
+
 import {
   BlockquoteFeature,
   BlocksFeature,
@@ -7,7 +8,9 @@ import {
   OrderedListFeature,
   UnorderedListFeature,
 } from '@payloadcms/richtext-lexical'
+
 import type { EditorFontSize } from '../fontSize/sizes.js'
+
 import { EditorFontSizeFeature } from '../fontSize/server.js'
 import { EditorLinkEmphasisFeature } from '../linkEmphasis/server.js'
 import { videoEmbedBlock } from '../videoEmbed/block.js'

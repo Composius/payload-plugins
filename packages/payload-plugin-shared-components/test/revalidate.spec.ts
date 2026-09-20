@@ -40,9 +40,9 @@ const changeArgs = (args: {
 
 const deleteArgs = (args: { context?: Record<string, unknown>; doc: Record<string, unknown> }) =>
   ({
+    id: args.doc.id,
     context: args.context ?? {},
     doc: args.doc,
-    id: args.doc.id,
     req: makeReq(),
   }) as unknown as Parameters<CollectionAfterDeleteHook>[0]
 
@@ -118,7 +118,7 @@ describe('revalidateAfterChange', () => {
   test('invalidates the collection and the document', async () => {
     const hook = revalidateAfterChange(articles)
 
-    await hook(changeArgs({ doc: { _status: 'published', id: 7, slug: 'hello' } }))
+    await hook(changeArgs({ doc: { id: 7, slug: 'hello', _status: 'published' } }))
 
     expect(invalidated()).toEqual(['articles', 'articles:id:7', 'articles:slug:hello'])
   })
@@ -126,7 +126,7 @@ describe('revalidateAfterChange', () => {
   test('expires at once by default, so the next request is served fresh', async () => {
     const hook = revalidateAfterChange(articles)
 
-    await hook(changeArgs({ doc: { _status: 'published', id: 7 } }))
+    await hook(changeArgs({ doc: { id: 7, _status: 'published' } }))
 
     expect(revalidateTag).toHaveBeenCalledWith('articles', { expire: 0 })
   })
@@ -134,7 +134,7 @@ describe('revalidateAfterChange', () => {
   test('honours a cache profile', async () => {
     const hook = revalidateAfterChange(articles, { profile: 'max' })
 
-    await hook(changeArgs({ doc: { _status: 'published', id: 7 } }))
+    await hook(changeArgs({ doc: { id: 7, _status: 'published' } }))
 
     expect(revalidateTag).toHaveBeenCalledWith('articles', 'max')
   })
@@ -144,8 +144,8 @@ describe('revalidateAfterChange', () => {
 
     await hook(
       changeArgs({
-        doc: { _status: 'published', id: 7, slug: 'new' },
-        previousDoc: { _status: 'published', id: 7, slug: 'old' },
+        doc: { id: 7, slug: 'new', _status: 'published' },
+        previousDoc: { id: 7, slug: 'old', _status: 'published' },
       }),
     )
 
@@ -179,7 +179,7 @@ describe('revalidateAfterChange', () => {
       },
     })
 
-    await hook(changeArgs({ doc: { _status: 'published', id: 7 }, operation: 'create' }))
+    await hook(changeArgs({ doc: { id: 7, _status: 'published' }, operation: 'create' }))
 
     expect(invalidated()).toContain('sitemap')
     expect(seen[0]).toMatchObject({ collection: 'articles', operation: 'create' })
@@ -190,8 +190,8 @@ describe('revalidateAfterChange', () => {
 
     await hook(
       changeArgs({
-        doc: { _status: 'draft', id: 7, slug: 'hello' },
-        previousDoc: { _status: 'draft', id: 7, slug: 'hello' },
+        doc: { id: 7, slug: 'hello', _status: 'draft' },
+        previousDoc: { id: 7, slug: 'hello', _status: 'draft' },
       }),
     )
 
@@ -203,8 +203,8 @@ describe('revalidateAfterChange', () => {
 
     await hook(
       changeArgs({
-        doc: { _status: 'draft', id: 7, slug: 'hello' },
-        previousDoc: { _status: 'published', id: 7, slug: 'hello' },
+        doc: { id: 7, slug: 'hello', _status: 'draft' },
+        previousDoc: { id: 7, slug: 'hello', _status: 'published' },
       }),
     )
 
@@ -223,14 +223,14 @@ describe('revalidateAfterChange', () => {
     const hook = revalidateAfterChange(articles)
 
     await hook(
-      changeArgs({ context: { disableRevalidate: true }, doc: { _status: 'published', id: 7 } }),
+      changeArgs({ context: { disableRevalidate: true }, doc: { id: 7, _status: 'published' } }),
     )
 
     expect(revalidateTag).not.toHaveBeenCalled()
   })
 
   test('returns the document untouched', async () => {
-    const doc = { _status: 'published', id: 7 }
+    const doc = { id: 7, _status: 'published' }
 
     expect(await revalidateAfterChange(articles)(changeArgs({ doc }))).toBe(doc)
   })
@@ -240,7 +240,7 @@ describe('revalidateAfterChange', () => {
       throw new Error('no request scope')
     })
 
-    await revalidateAfterChange(articles)(changeArgs({ doc: { _status: 'published', id: 7 } }))
+    await revalidateAfterChange(articles)(changeArgs({ doc: { id: 7, _status: 'published' } }))
 
     expect(debug).toHaveBeenCalledOnce()
   })
@@ -253,7 +253,7 @@ describe('revalidateAfterChange', () => {
     const onError = vi.fn()
 
     await revalidateAfterChange(articles, { onError })(
-      changeArgs({ doc: { _status: 'published', id: 7 } }),
+      changeArgs({ doc: { id: 7, _status: 'published' } }),
     )
 
     expect(onError).toHaveBeenCalledWith(
@@ -268,7 +268,7 @@ describe('revalidateAfterDelete', () => {
   test('invalidates the collection and the deleted document', async () => {
     const hook = revalidateAfterDelete({ collection: 'pages', drafts: true, fields: ['slug'] })
 
-    await hook(deleteArgs({ doc: { _status: 'draft', id: 4, slug: 'about' } }))
+    await hook(deleteArgs({ doc: { id: 4, slug: 'about', _status: 'draft' } }))
 
     expect(invalidated()).toEqual(['pages', 'pages:id:4', 'pages:slug:about'])
   })

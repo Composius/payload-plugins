@@ -5,16 +5,16 @@ import { UMAMI_RANGES } from './types.js'
 const DAY = 24 * 60 * 60 * 1000
 
 const RANGE_MS: Record<UmamiRange, number> = {
-  '24h': DAY,
   '7d': 7 * DAY,
+  '24h': DAY,
   '30d': 30 * DAY,
   '90d': 90 * DAY,
 }
 
 export type UmamiWindow = {
-  startAt: number
   endAt: number
-  unit: 'hour' | 'day'
+  startAt: number
+  unit: 'day' | 'hour'
 }
 
 export const isUmamiRange = (value: unknown): value is UmamiRange =>
@@ -26,8 +26,8 @@ export const isUmamiRange = (value: unknown): value is UmamiRange =>
  * longer ranges by day.
  */
 export const rangeToWindow = (range: UmamiRange, now: number = Date.now()): UmamiWindow => ({
-  startAt: now - RANGE_MS[range],
   endAt: now,
+  startAt: now - RANGE_MS[range],
   unit: range === '24h' ? 'hour' : 'day',
 })
 

@@ -18,17 +18,11 @@ export type ComposiusPayloadPluginUmamiConfig = {
    * now. Default: `read` requires an authenticated user.
    */
   access?: UmamiAccess
-  /** Umami website ID (UUID) to report on. */
-  websiteId: string
   /**
    * Umami Cloud API key (sent as `x-umami-api-key`). Use this OR
    * `username`/`password`. Takes precedence when both are set.
    */
   apiKey?: string
-  /** Self-hosted username (used with `password`). */
-  username?: string
-  /** Self-hosted password (used with `username`). */
-  password?: string
   /**
    * API base URL. Defaults to Umami Cloud (`https://api.umami.is`, data paths
    * under `/v1`). For self-hosted, set your instance URL (data paths under
@@ -37,15 +31,14 @@ export type ComposiusPayloadPluginUmamiConfig = {
    */
   baseUrl?: string
   /**
-   * IANA timezone used to bucket the time-series chart.
-   * @default the server timezone
-   */
-  timezone?: string
-  /**
    * Initial time range shown in the dashboard.
    * @default '7d'
    */
   defaultRange?: UmamiRange
+  /** Leaves the config untouched. */
+  disabled?: boolean
+  /** Self-hosted password (used with `username`). */
+  password?: string
   /**
    * Show the in-panel range selector (24h / 7d / 30d / 90d).
    * @default true
@@ -58,8 +51,15 @@ export type ComposiusPayloadPluginUmamiConfig = {
    * @default ['visitors', 'views', 'visitorsPrev', 'viewsPrev']
    */
   stats?: UmamiStatId[]
-  /** Leaves the config untouched. */
-  disabled?: boolean
+  /**
+   * IANA timezone used to bucket the time-series chart.
+   * @default the server timezone
+   */
+  timezone?: string
+  /** Self-hosted username (used with `password`). */
+  username?: string
+  /** Umami website ID (UUID) to report on. */
+  websiteId: string
 }
 
 const COMPONENT_PATH = '@composius/payload-plugin-umami/rsc'
@@ -112,24 +112,24 @@ export const ComposiusPayloadPluginUmami =
       ),
     ]
 
-    if (!config.admin) config.admin = {}
+    if (!config.admin) {config.admin = {}}
 
     // Registered as a modular-dashboard widget so users can drag, resize,
     // remove and re-add it from the dashboard's edit mode, like the built-in
     // collections widget.
-    if (!config.admin.dashboard) config.admin.dashboard = { widgets: [] }
+    if (!config.admin.dashboard) {config.admin.dashboard = { widgets: [] }}
     config.admin.dashboard.widgets.push({
       slug: WIDGET_SLUG,
       // A server component (UmamiWidget) gates rendering on `access.read`,
       // then hands the serializable props to the client dashboard.
       Component: {
-        path: COMPONENT_PATH,
-        exportName: COMPONENT_EXPORT,
         clientProps: {
           defaultRange,
           showRangeSelector: pluginOptions.showRangeSelector ?? true,
           stats: pluginOptions.stats ?? DEFAULT_STATS,
         },
+        exportName: COMPONENT_EXPORT,
+        path: COMPONENT_PATH,
         // serverProps stay on the server — safe to carry the access function.
         serverProps: {
           access: readAccess,

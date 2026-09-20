@@ -6,17 +6,17 @@ import { multistream } from 'pino'
 
 export type ComposiusPayloadPluginAxiomConfig = {
   /**
+   * Keep logging to stdout alongside Axiom. `true` (the default) writes
+   * newline-delimited JSON to stdout. Pass a stream to customize it (e.g.
+   * `pino-pretty`), or `false` to send logs to Axiom only.
+   * @default true
+   */
+  console?: boolean | DestinationStream
+  /**
    * The Axiom dataset the logs are ingested into.
    */
   dataset: string
-  /**
-   * An Axiom API token with ingest permission for the dataset.
-   */
-  token: string
-  /**
-   * Axiom organization ID. Only required when using a personal token.
-   */
-  orgId?: string
+  disabled?: boolean
   /**
    * The Axiom edge domain logs are ingested through, without scheme
    * (`https://` is added automatically). Use this for regional targeting,
@@ -30,30 +30,30 @@ export type ComposiusPayloadPluginAxiomConfig = {
    */
   edgeUrl?: string
   /**
-   * Base URL of the Axiom API, used for non-ingest operations. Do not use
-   * it for regional targeting — that is what `edge` is for. Defaults to
-   * `https://api.axiom.co`.
-   */
-  url?: string
-  /**
    * Minimum level of the logger (applies to both Axiom and the console).
    * @default 'info'
    */
   level?: LevelWithSilent
-  /**
-   * Keep logging to stdout alongside Axiom. `true` (the default) writes
-   * newline-delimited JSON to stdout. Pass a stream to customize it (e.g.
-   * `pino-pretty`), or `false` to send logs to Axiom only.
-   * @default true
-   */
-  console?: boolean | DestinationStream
   /**
    * Extra pino options merged into the logger (`name`, `redact`,
    * `formatters`, ...). `level` is managed by the plugin and cannot be
    * overridden here.
    */
   loggerOptions?: LoggerOptions
-  disabled?: boolean
+  /**
+   * Axiom organization ID. Only required when using a personal token.
+   */
+  orgId?: string
+  /**
+   * An Axiom API token with ingest permission for the dataset.
+   */
+  token: string
+  /**
+   * Base URL of the Axiom API, used for non-ingest operations. Do not use
+   * it for regional targeting — that is what `edge` is for. Defaults to
+   * `https://api.axiom.co`.
+   */
+  url?: string
 }
 
 /**

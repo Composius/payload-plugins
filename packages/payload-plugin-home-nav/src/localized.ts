@@ -2,7 +2,7 @@
  * A plain string, or a per-language record keyed by admin language code
  * (e.g. `{ en: 'Home', fr: 'Accueil' }`).
  */
-export type LocalizedText = string | Record<string, string>
+export type LocalizedText = Record<string, string> | string
 
 /**
  * Resolves a `LocalizedText` for the current admin language: exact language

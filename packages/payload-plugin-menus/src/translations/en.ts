@@ -1,10 +1,10 @@
 export const en = {
   fields: {
+    name: 'Name',
     anchor: 'Anchor',
     document: 'Document',
     links: 'Links',
     linksCount: 'Links count',
-    name: 'Name',
     newTab: 'Open in a new tab',
     title: 'Title',
     url: 'URL',

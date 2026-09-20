@@ -1,4 +1,5 @@
 import type { Block, TextFieldSingleValidation } from 'payload'
+
 import { label, t } from '../../translations/index.js'
 import { parseVideoEmbedUrl } from './providers.js'
 
@@ -39,31 +40,27 @@ const validateUrl: TextFieldSingleValidation = (value, { req }) => {
  */
 export const videoEmbedBlock = (clientModulePath: string): Block => ({
   slug: VIDEO_EMBED_BLOCK_SLUG,
-  labels: {
-    singular: label((m) => m.videoEmbed.singular),
-    plural: label((m) => m.videoEmbed.plural),
-  },
   fields: [
     {
       name: 'url',
       type: 'text',
-      label: label((m) => m.videoEmbed.fields.url),
-      required: true,
       admin: {
         description: label((m) => m.videoEmbed.fields.urlDescription),
       },
+      label: label((m) => m.videoEmbed.fields.url),
+      required: true,
       validate: validateUrl,
     },
     {
       name: 'title',
       type: 'text',
-      label: label((m) => m.videoEmbed.fields.title),
       admin: {
         components: {
           Field: `${clientModulePath}#VideoEmbedTitleField`,
         },
         readOnly: true,
       },
+      label: label((m) => m.videoEmbed.fields.title),
     },
     {
       name: 'titleUnavailable',
@@ -73,4 +70,8 @@ export const videoEmbedBlock = (clientModulePath: string): Block => ({
       },
     },
   ],
+  labels: {
+    plural: label((m) => m.videoEmbed.plural),
+    singular: label((m) => m.videoEmbed.singular),
+  },
 })

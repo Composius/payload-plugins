@@ -1,7 +1,5 @@
 export const en = {
   articles: {
-    plural: 'Articles',
-    singular: 'Article',
     fields: {
       author: 'Author',
       category: 'Category',
@@ -16,32 +14,34 @@ export const en = {
     messages: {
       noCategories: 'No categories yet. Create one in the Categories collection first.',
     },
+    plural: 'Articles',
+    singular: 'Article',
   },
   authors: {
-    plural: 'Authors',
-    singular: 'Author',
     fields: {
+      name: 'Name',
       avatarPreview: 'Avatar',
       biography: 'Biography',
       contact: 'Contact',
       contactDescription: 'Email, website, or any way to reach the author.',
-      name: 'Name',
       picture: 'Picture',
       pictureDescription: 'Falls back to a generated avatar when left empty.',
     },
+    plural: 'Authors',
+    singular: 'Author',
   },
   categories: {
-    plural: 'Categories',
-    singular: 'Category',
     fields: {
+      name: 'Name',
       articleCount: 'Articles',
       breadcrumbs: 'Breadcrumbs',
       description: 'Description',
       isDefault: 'Default',
       isDefaultDescription:
         'Given to articles saved without a category. Only one category can be the default: checking this box clears it on the previous one.',
-      name: 'Name',
       parent: 'Parent',
     },
+    plural: 'Categories',
+    singular: 'Category',
   },
 }

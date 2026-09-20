@@ -23,7 +23,7 @@ const getHealthEndpoint = (): Endpoint => {
 
 const invokeHealth = async () => {
   const req = { payload } as unknown as PayloadRequest
-  const response = (await getHealthEndpoint().handler(req)) as Response
+  const response = (await getHealthEndpoint().handler(req))
   return { body: await response.json(), response }
 }
 
@@ -37,8 +37,8 @@ describe('Plugin integration tests', () => {
 
     expect(response.status).toBe(200)
     expect(body).toMatchObject({
-      status: 'ok',
       checks: { database: { status: 'ok' } },
+      status: 'ok',
     })
   })
 })

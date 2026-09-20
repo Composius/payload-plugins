@@ -1,6 +1,8 @@
-import type { Access, CollectionConfig } from 'payload'
 import type { RevalidateOptions } from '@composius/payload-plugin-shared-components'
+import type { Access, CollectionConfig } from 'payload'
+
 import { revalidateHooks } from '@composius/payload-plugin-shared-components'
+
 import { label } from '../translations/index.js'
 
 export type AuthorsAccess = {
@@ -18,24 +20,15 @@ export type AuthorsOptions = {
 
 export const Authors = ({ access, revalidate }: AuthorsOptions): CollectionConfig => ({
   slug: 'authors',
-  labels: {
-    singular: label((t) => t.authors.singular),
-    plural: label((t) => t.authors.plural),
+  access: {
+    create: access.create,
+    delete: access.delete,
+    read: access.read,
+    update: access.update,
   },
   admin: {
-    useAsTitle: 'name',
     defaultColumns: ['name', 'contact', 'updatedAt'],
-  },
-  access: {
-    read: access.read,
-    create: access.create,
-    update: access.update,
-    delete: access.delete,
-  },
-  hooks: {
-    // Articles carry their author's name and picture, so a change here changes
-    // every article page and byline that shows them.
-    ...revalidateHooks({ collection: 'authors', related: ['articles'] }, revalidate),
+    useAsTitle: 'name',
   },
   fields: [
     {
@@ -47,31 +40,31 @@ export const Authors = ({ access, revalidate }: AuthorsOptions): CollectionConfi
     {
       name: 'picture',
       type: 'upload',
+      admin: {
+        description: label((t) => t.authors.fields.pictureDescription),
+        position: 'sidebar',
+      },
       label: label((t) => t.authors.fields.picture),
       relationTo: 'media',
-      admin: {
-        position: 'sidebar',
-        description: label((t) => t.authors.fields.pictureDescription),
-      },
     },
     {
       name: 'avatarPreview',
       type: 'ui',
-      label: label((t) => t.authors.fields.avatarPreview),
       admin: {
-        position: 'sidebar',
         components: {
           Field: '@composius/payload-plugin-articles/client#AuthorAvatar',
         },
+        position: 'sidebar',
       },
+      label: label((t) => t.authors.fields.avatarPreview),
     },
     {
       name: 'contact',
       type: 'text',
-      label: label((t) => t.authors.fields.contact),
       admin: {
         description: label((t) => t.authors.fields.contactDescription),
       },
+      label: label((t) => t.authors.fields.contact),
     },
     {
       name: 'biography',
@@ -79,4 +72,13 @@ export const Authors = ({ access, revalidate }: AuthorsOptions): CollectionConfi
       label: label((t) => t.authors.fields.biography),
     },
   ],
+  hooks: {
+    // Articles carry their author's name and picture, so a change here changes
+    // every article page and byline that shows them.
+    ...revalidateHooks({ collection: 'authors', related: ['articles'] }, revalidate),
+  },
+  labels: {
+    plural: label((t) => t.authors.plural),
+    singular: label((t) => t.authors.singular),
+  },
 })

@@ -10,13 +10,13 @@ import { defineConfig } from 'tsup'
  * framework into dist/.
  */
 const common = {
-  format: 'esm' as const,
-  dts: true,
-  sourcemap: true,
-  outDir: 'dist',
-  splitting: false,
   clean: false,
+  dts: true,
   external: [/^next(\/|$)/],
+  format: 'esm' as const,
+  outDir: 'dist',
+  sourcemap: true,
+  splitting: false,
 }
 
 export default defineConfig([

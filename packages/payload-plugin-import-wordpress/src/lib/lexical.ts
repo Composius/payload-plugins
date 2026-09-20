@@ -5,12 +5,12 @@ import { isInternalUrl, permalinkToSlug } from './url.js'
 
 /** Loosely-typed serialized Lexical node (we only touch a few well-known shapes). */
 export type LexNode = {
+  [key: string]: unknown
   children?: LexNode[]
   fields?: Record<string, unknown>
   tag?: string
   text?: string
   type: string
-  [key: string]: unknown
 }
 
 export type LexRoot = { root: LexNode }
@@ -28,7 +28,9 @@ const IMAGE_TOKEN_RE = /^⁣WPIMG:(\d+)⁣$/
 /** Extracts `src` attributes of every `<img>` in an HTML string (order-preserving). */
 export const extractImageSrcs = (html: string): string[] => {
   const srcs: string[] = []
-  const re = /<img\b[^>]*?\bsrc\s*=\s*(["'])(.*?)\1/gi
+  // `+?` rather than `*?`: `<img` ends on a word character and `src` starts on
+  // one, so the `\b` between them can never hold with nothing in between.
+  const re = /<img\b[^>]+?\bsrc\s*=\s*(["'])(.*?)\1/gi
   let match: null | RegExpExecArray
   while ((match = re.exec(html)) !== null) {
     srcs.push(match[2])
@@ -162,9 +164,9 @@ export const removeLeadingUploadNode = (root: LexNode, value: number | string): 
 
 export type LinkRewriteOptions = {
   articleUrl: (slug?: null | string) => string
-  siteHost: string
   /** Resolves a WordPress permalink/slug to an imported article slug, or null. */
   resolveInternal: (url: string, slug: null | string) => null | string
+  siteHost: string
 }
 
 /**

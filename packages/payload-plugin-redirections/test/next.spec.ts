@@ -82,7 +82,7 @@ describe('the rules cache', () => {
 
     await getRedirectionRules({}, 'https://example.com')
 
-    expect(fetchMock.mock.calls[0]![0]).toBe('http://127.0.0.1:4321/api/redirections/rules')
+    expect(fetchMock.mock.calls[0][0]).toBe('http://127.0.0.1:4321/api/redirections/rules')
   })
 
   test('assumes Next’s default port when PORT is unset', async () => {
@@ -90,7 +90,7 @@ describe('the rules cache', () => {
 
     await getRedirectionRules({}, 'https://example.com')
 
-    expect(fetchMock.mock.calls[0]![0]).toBe('http://127.0.0.1:3000/api/redirections/rules')
+    expect(fetchMock.mock.calls[0][0]).toBe('http://127.0.0.1:3000/api/redirections/rules')
   })
 
   test('an env base URL wins over the loopback fallback', async () => {
@@ -99,7 +99,7 @@ describe('the rules cache', () => {
 
     await getRedirectionRules({}, 'https://example.com')
 
-    expect(fetchMock.mock.calls[0]![0]).toBe('https://cms.example.com/api/redirections/rules')
+    expect(fetchMock.mock.calls[0][0]).toBe('https://cms.example.com/api/redirections/rules')
   })
 
   test('payloadURL and endpoint override the URL, trailing slash and all', async () => {
@@ -108,13 +108,13 @@ describe('the rules cache', () => {
       'https://example.com',
     )
 
-    expect(fetchMock.mock.calls[0]![0]).toBe('https://cms.example.com/api/url-rules/all')
+    expect(fetchMock.mock.calls[0][0]).toBe('https://cms.example.com/api/url-rules/all')
   })
 
   test('sends the token header when configured', async () => {
     await getRedirectionRules({ token: 's3cret' }, 'https://example.com')
 
-    expect(fetchMock.mock.calls[0]![1]).toMatchObject({
+    expect(fetchMock.mock.calls[0][1]).toMatchObject({
       headers: { 'x-redirections-token': 's3cret' },
     })
   })
@@ -297,10 +297,10 @@ describe('createRedirectionsProxy', () => {
     // off `this` and throws when called detached.
     const pending: Promise<unknown>[] = []
     const event = {
+      pending,
       waitUntil(this: { pending?: Promise<unknown>[] }, promise: Promise<unknown>) {
         this.pending!.push(promise)
       },
-      pending,
     }
 
     const proxy = createRedirectionsProxy({ ttl: 60 })

@@ -36,8 +36,8 @@ describe('parseVideoEmbedUrl', () => {
       'youtube.com/watch?v=dQw4w9WgXcQ',
     ]) {
       expect(parseVideoEmbedUrl(url)).toEqual({
-        embedUrl,
         id: 'dQw4w9WgXcQ',
+        embedUrl,
         provider: 'youtube',
       })
     }
@@ -51,8 +51,8 @@ describe('parseVideoEmbedUrl', () => {
 
   test('reads Vimeo links, including the ones nested under a channel or a group', () => {
     const expected = {
-      embedUrl: 'https://player.vimeo.com/video/76979871',
       id: '76979871',
+      embedUrl: 'https://player.vimeo.com/video/76979871',
       provider: 'vimeo',
     }
 
@@ -75,8 +75,8 @@ describe('parseVideoEmbedUrl', () => {
   test('reads Gan Jing World links, on either of its domains', () => {
     const id = '1iohfkf8c8f5zzNmutaPaCUsi1rj1c'
     const expected = {
-      embedUrl: `https://www.ganjingworld.com/embed/${id}`,
       id,
+      embedUrl: `https://www.ganjingworld.com/embed/${id}`,
       provider: 'ganjingWorld',
     }
 

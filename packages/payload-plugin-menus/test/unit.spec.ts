@@ -1,11 +1,11 @@
-import type { Access, Block, BlocksField, CollectionConfig, Config } from 'payload'
+import type { Access, BlocksField, CollectionConfig, Config } from 'payload'
 
 import { describe, expect, test } from 'vitest'
 
-import { anyone, authenticated } from '../src/defaults.js'
 import type { ComposiusPayloadPluginMenusConfig } from '../src/index.js'
 
-import { ComposiusPayloadPluginMenus, menuIdTag, menuTag, MENUS_TAG } from '../src/index.js'
+import { anyone, authenticated } from '../src/defaults.js'
+import { ComposiusPayloadPluginMenus, menuIdTag, MENUS_TAG, menuTag } from '../src/index.js'
 
 const accessArgs = (user: unknown) => ({ req: { user } }) as Parameters<Access>[0]
 
@@ -24,7 +24,7 @@ const findLinks = (menus: CollectionConfig): BlocksField => {
 }
 
 const blockSlugs = (links: BlocksField): string[] =>
-  (links.blocks as Block[]).map((block) => block.slug)
+  (links.blocks).map((block) => block.slug)
 
 describe('access defaults', () => {
   test('anyone always allows', () => {
@@ -64,12 +64,12 @@ describe('ComposiusPayloadPluginMenus', () => {
 
     expect(blockSlugs(links)).toEqual(['internal', 'external'])
 
-    const internal = (links.blocks as Block[]).find((block) => block.slug === 'internal')!
+    const internal = (links.blocks).find((block) => block.slug === 'internal')!
     const doc = internal.fields.find((field) => (field as { name?: string }).name === 'doc')
     expect(doc).toMatchObject({
+      type: 'relationship',
       relationTo: ['users', 'media'],
       required: true,
-      type: 'relationship',
     })
   })
 
@@ -77,7 +77,7 @@ describe('ComposiusPayloadPluginMenus', () => {
     const config = ComposiusPayloadPluginMenus({ collections: ['users'] })(baseConfig())
     const links = findLinks(findMenus(config))
 
-    const internal = (links.blocks as Block[]).find((block) => block.slug === 'internal')!
+    const internal = (links.blocks).find((block) => block.slug === 'internal')!
     const anchor = internal.fields.find((field) => (field as { name?: string }).name === 'anchor')
     expect(anchor).toMatchObject({ type: 'text' })
     expect((anchor as { required?: boolean }).required).toBeUndefined()
@@ -87,7 +87,7 @@ describe('ComposiusPayloadPluginMenus', () => {
     const config = ComposiusPayloadPluginMenus({ collections: ['users'] })(baseConfig())
     const links = findLinks(findMenus(config))
 
-    const external = (links.blocks as Block[]).find((block) => block.slug === 'external')!
+    const external = (links.blocks).find((block) => block.slug === 'external')!
     const fieldNames = external.fields.map((field) => (field as { name?: string }).name)
     expect(fieldNames).not.toContain('anchor')
   })

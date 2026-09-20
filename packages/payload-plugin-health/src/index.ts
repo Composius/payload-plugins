@@ -2,38 +2,26 @@ import type { CollectionSlug, Config, PayloadRequest } from 'payload'
 
 /**
  * A named health check. Resolve (return anything) to report `ok`; throw to
- * report `error` and turn the whole response into a 503.
+ * report `error` and turn the whole response into a 503. May be async — the
+ * result is awaited either way, and `unknown` already covers a promise.
  */
-export type HealthCheck = (req: PayloadRequest) => Promise<unknown> | unknown
+export type HealthCheck = (req: PayloadRequest) => unknown
 
 export type HealthCheckResult = {
-  status: 'error' | 'ok'
   /** The thrown error's message, only present when `status` is `'error'`. */
   error?: string
+  status: 'error' | 'ok'
 }
 
 export type HealthResponse = {
+  /** Per-check results, only present when `checks` are configured. */
+  checks?: Record<string, HealthCheckResult>
   status: 'error' | 'ok'
   /** ISO 8601 timestamp of when the checks ran. */
   timestamp: string
-  /** Per-check results, only present when `checks` are configured. */
-  checks?: Record<string, HealthCheckResult>
 }
 
 export type ComposiusPayloadPluginHealthConfig = {
-  /**
-   * Path of the health endpoint, mounted on the Payload API route
-   * (`/api${path}` with the default Payload config).
-   * @default '/health'
-   */
-  path?: string
-  /**
-   * Adds the built-in `database` check, which counts documents in the admin
-   * user collection to probe the database connection. Set to `false` to drop
-   * it; a `database` entry in `checks` takes precedence over it.
-   * @default true
-   */
-  database?: boolean
   /**
    * Named checks run on every request. Each receives the `PayloadRequest`
    * (use `req.payload` to reach the Local API, e.g. a database probe).
@@ -41,7 +29,20 @@ export type ComposiusPayloadPluginHealthConfig = {
    * the thrown message is reported per check.
    */
   checks?: Record<string, HealthCheck>
+  /**
+   * Adds the built-in `database` check, which counts documents in the admin
+   * user collection to probe the database connection. Set to `false` to drop
+   * it; a `database` entry in `checks` takes precedence over it.
+   * @default true
+   */
+  database?: boolean
   disabled?: boolean
+  /**
+   * Path of the health endpoint, mounted on the Payload API route
+   * (`/api${path}` with the default Payload config).
+   * @default '/health'
+   */
+  path?: string
 }
 
 /**
@@ -78,8 +79,6 @@ export const ComposiusPayloadPluginHealth =
     config.endpoints = [
       ...(config.endpoints ?? []),
       {
-        path: pluginOptions.path ?? '/health',
-        method: 'get',
         handler: async (req) => {
           const results: Record<string, HealthCheckResult> = {}
 
@@ -90,8 +89,8 @@ export const ComposiusPayloadPluginHealth =
                 results[name] = { status: 'ok' }
               } catch (error) {
                 results[name] = {
-                  status: 'error',
                   error: error instanceof Error ? error.message : String(error),
+                  status: 'error',
                 }
               }
             }),
@@ -106,10 +105,12 @@ export const ComposiusPayloadPluginHealth =
           }
 
           return Response.json(body, {
-            status: healthy ? 200 : 503,
             headers: { 'Cache-Control': 'no-store' },
+            status: healthy ? 200 : 503,
           })
         },
+        method: 'get',
+        path: pluginOptions.path ?? '/health',
       },
     ]
 

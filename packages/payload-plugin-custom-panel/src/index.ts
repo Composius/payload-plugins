@@ -14,15 +14,15 @@ export type ComposiusPayloadPluginCustomPanelConfig = {
    * Default: `read` requires an authenticated user.
    */
   access?: CustomPanelAccess
-  /** Site title, shown as the panel heading. */
-  title?: LocalizedText
+  /** Leaves the config untouched. */
+  disabled?: boolean
   /**
    * Rows rendered under the title, in order. Each row shows its message next
    * to its link buttons.
    */
   rows?: CustomPanelRow[]
-  /** Leaves the config untouched. */
-  disabled?: boolean
+  /** Site title, shown as the panel heading. */
+  title?: LocalizedText
 }
 
 const COMPONENT_PATH = '@composius/payload-plugin-custom-panel/rsc'
@@ -43,14 +43,14 @@ export const ComposiusPayloadPluginCustomPanel =
 
     const readAccess = pluginOptions.access?.read ?? authenticated
 
-    if (!config.admin) config.admin = {}
-    if (!config.admin.components) config.admin.components = {}
+    if (!config.admin) {config.admin = {}}
+    if (!config.admin.components) {config.admin.components = {}}
 
     config.admin.components.beforeDashboard = [
       ...(config.admin.components.beforeDashboard ?? []),
       {
-        path: COMPONENT_PATH,
         exportName: COMPONENT_EXPORT,
+        path: COMPONENT_PATH,
         // A server component renders the panel — everything (including the
         // access function) stays on the server, nothing is serialized to the
         // client.

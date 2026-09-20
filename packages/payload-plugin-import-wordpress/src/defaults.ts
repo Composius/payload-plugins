@@ -41,10 +41,10 @@ const resolveRedirections = (
   const value = typeof option === 'object' ? option : {}
 
   return {
+    slug: value.slug ?? value.pluginOptions?.slug ?? REDIRECTIONS_SLUG,
     enabled: option !== false,
     manage: value.manage,
     pluginOptions: value.pluginOptions ?? {},
-    slug: value.slug ?? value.pluginOptions?.slug ?? REDIRECTIONS_SLUG,
     status: value.status ?? '301',
     strategy: value.strategy ?? 'prefix',
   }
@@ -62,28 +62,28 @@ export const resolveOptions = (
   },
   articleUrl: pluginOptions.articleUrl ?? defaultArticleUrl,
   authorMapping: {
-    strategy: pluginOptions.authorMapping?.strategy ?? 'users',
     defaultUserId: pluginOptions.authorMapping?.defaultUserId,
+    strategy: pluginOptions.authorMapping?.strategy ?? 'users',
     syntheticEmailDomain: pluginOptions.authorMapping?.syntheticEmailDomain ?? 'imported.invalid',
   },
   collections: {
     articles: pluginOptions.collections?.articles ?? 'articles',
+    authors: pluginOptions.collections?.authors ?? 'authors',
     categories: pluginOptions.collections?.categories ?? 'categories',
     media: pluginOptions.collections?.media ?? 'media',
-    authors: pluginOptions.collections?.authors ?? 'authors',
     users: pluginOptions.collections?.users ?? 'users',
   },
   dryRunPageLimit: pluginOptions.dryRunPageLimit ?? 1,
   excerptToSeoDescription: pluginOptions.excerptToSeoDescription ?? true,
-  firstImageAsCover: pluginOptions.firstImageAsCover ?? true,
   fieldMap: {
-    title: pluginOptions.fieldMap?.title ?? 'title',
     slug: pluginOptions.fieldMap?.slug ?? 'slug',
+    category: pluginOptions.fieldMap?.category ?? 'category',
     content: pluginOptions.fieldMap?.content ?? 'content',
     coverImage: pluginOptions.fieldMap?.coverImage ?? 'coverImage',
-    category: pluginOptions.fieldMap?.category ?? 'category',
     publishedAt: pluginOptions.fieldMap?.publishedAt ?? 'publishedAt',
+    title: pluginOptions.fieldMap?.title ?? 'title',
   },
+  firstImageAsCover: pluginOptions.firstImageAsCover ?? true,
   redirections: resolveRedirections(pluginOptions.redirections),
   request: {
     allowedMimeTypes: pluginOptions.request?.allowedMimeTypes ?? defaultAllowedImageMimeTypes,

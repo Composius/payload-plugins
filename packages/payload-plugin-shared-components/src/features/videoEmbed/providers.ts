@@ -20,7 +20,7 @@ const YOUTUBE_ID = /^[\w-]{11}$/
 /** Paths that carry the id in their second segment, `/watch?v=` carrying it in the query. */
 const YOUTUBE_PATHS = ['embed', 'live', 'shorts', 'v']
 
-const youtube = (url: URL): VideoEmbed | undefined => {
+const youtube = (url: URL): undefined | VideoEmbed => {
   if (!hostIs(url.hostname, 'youtube.com', 'youtube-nocookie.com', 'youtu.be')) {
     return undefined
   }
@@ -39,7 +39,7 @@ const youtube = (url: URL): VideoEmbed | undefined => {
     return undefined
   }
 
-  return { embedUrl: `https://www.youtube.com/embed/${id}`, id, provider: 'youtube' }
+  return { id, embedUrl: `https://www.youtube.com/embed/${id}`, provider: 'youtube' }
 }
 
 /**
@@ -54,7 +54,7 @@ const VIMEO_PATHS = [
   /^\/(\d+)(?:\/([\da-z]+))?/i,
 ]
 
-const vimeo = (url: URL): VideoEmbed | undefined => {
+const vimeo = (url: URL): undefined | VideoEmbed => {
   if (!hostIs(url.hostname, 'vimeo.com')) {
     return undefined
   }
@@ -74,13 +74,13 @@ const vimeo = (url: URL): VideoEmbed | undefined => {
   const hash = url.searchParams.get('h') ?? match[2]
   const embedUrl = `https://player.vimeo.com/video/${id}${hash ? `?h=${hash}` : ''}`
 
-  return { embedUrl, id, provider: 'vimeo' }
+  return { id, embedUrl, provider: 'vimeo' }
 }
 
 /** `/video/<id>` or `/embed/<id>`, optionally behind a locale segment (`/zh-TW/video/<id>`). */
 const GANJING_WORLD_PATH = /^(?:\/[a-z]{2}(?:-[a-zA-Z]{2,4})?)?\/(?:embed|video)\/([\w-]+)/
 
-const ganjingWorld = (url: URL): VideoEmbed | undefined => {
+const ganjingWorld = (url: URL): undefined | VideoEmbed => {
   // ganjing.com redirects to ganjingworld.com, and editors do paste both.
   if (!hostIs(url.hostname, 'ganjingworld.com', 'ganjing.com')) {
     return undefined
@@ -91,7 +91,7 @@ const ganjingWorld = (url: URL): VideoEmbed | undefined => {
     return undefined
   }
 
-  return { embedUrl: `https://www.ganjingworld.com/embed/${id}`, id, provider: 'ganjingWorld' }
+  return { id, embedUrl: `https://www.ganjingworld.com/embed/${id}`, provider: 'ganjingWorld' }
 }
 
 /** Tolerates a link pasted without its scheme, and rejects anything but http(s). */

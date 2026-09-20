@@ -1,8 +1,10 @@
-import type { Access, CollectionAfterChangeHook, CollectionConfig } from 'payload'
-import { slugField } from 'payload'
-import { createBreadcrumbsField, createParentField } from '@payloadcms/plugin-nested-docs'
 import type { RevalidateOptions } from '@composius/payload-plugin-shared-components'
+import type { Access, CollectionAfterChangeHook, CollectionConfig } from 'payload'
+
 import { revalidateHooks, slugify } from '@composius/payload-plugin-shared-components'
+import { createBreadcrumbsField, createParentField } from '@payloadcms/plugin-nested-docs'
+import { slugField } from 'payload'
+
 import { label } from '../translations/index.js'
 
 export type CategoriesAccess = {
@@ -60,23 +62,15 @@ export const Categories = ({ access, revalidate }: CategoriesOptions): Collectio
 
   return {
     slug: 'categories',
-    labels: {
-      singular: label((t) => t.categories.singular),
-      plural: label((t) => t.categories.plural),
+    access: {
+      create: access.create,
+      delete: access.delete,
+      read: access.read,
+      update: access.update,
     },
     admin: {
-      useAsTitle: 'name',
       defaultColumns: ['name', 'breadcrumbs', 'parent', 'isDefault', 'articleCount', 'updatedAt'],
-    },
-    access: {
-      read: access.read,
-      create: access.create,
-      update: access.update,
-      delete: access.delete,
-    },
-    hooks: {
-      ...revalidation,
-      afterChange: [clearOtherDefaults, ...(revalidation.afterChange ?? [])],
+      useAsTitle: 'name',
     },
     fields: [
       {
@@ -97,33 +91,41 @@ export const Categories = ({ access, revalidate }: CategoriesOptions): Collectio
       {
         name: 'isDefault',
         type: 'checkbox',
-        label: label((t) => t.categories.fields.isDefault),
         defaultValue: false,
+        label: label((t) => t.categories.fields.isDefault),
         // Articles look the default up on every save, by this flag alone.
-        index: true,
         admin: {
           description: label((t) => t.categories.fields.isDefaultDescription),
         },
+        index: true,
       },
       {
         name: 'articleCount',
         type: 'ui',
-        label: label((t) => t.categories.fields.articleCount),
         admin: {
           components: {
             Cell: '@composius/payload-plugin-articles/client#CategoryArticleCountCell',
           },
         },
+        label: label((t) => t.categories.fields.articleCount),
       },
       createBreadcrumbsField('categories', {
-        label: label((t) => t.categories.fields.breadcrumbs),
         admin: {
           components: {
             Cell: '@composius/payload-plugin-articles/client#CategoryBreadcrumbsCell',
           },
           readOnly: true,
         },
+        label: label((t) => t.categories.fields.breadcrumbs),
       }),
     ],
+    hooks: {
+      ...revalidation,
+      afterChange: [clearOtherDefaults, ...(revalidation.afterChange ?? [])],
+    },
+    labels: {
+      plural: label((t) => t.categories.plural),
+      singular: label((t) => t.categories.singular),
+    },
   }
 }

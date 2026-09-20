@@ -10,6 +10,7 @@ import type {
 export const emptyProgress = (): ImportProgress => ({
   currentPhase: 'queued',
   cursorPage: 0,
+  failedPosts: 0,
   importedAuthors: 0,
   importedCategories: 0,
   importedMedia: 0,
@@ -19,7 +20,6 @@ export const emptyProgress = (): ImportProgress => ({
   redirectsCreated: 0,
   reusedMedia: 0,
   skippedPosts: 0,
-  failedPosts: 0,
   totalPosts: 0,
 })
 
@@ -33,12 +33,12 @@ export const emptyReport = (dryRun: boolean): ImportReport => ({
 
 /** Shape of the report fields persisted on a `wp-import-jobs` document. */
 export type PersistedJobReports = {
-  authorsReport?: null | { imported?: ImportedItem[] }
-  categoriesReport?: null | { imported?: ImportedItem[] }
-  errorsReport?: null | { errors?: ImportError[] }
-  linksReport?: null | { links?: LinkMapping[] }
-  mediaReport?: null | { imported?: ImportedItem[] }
-  postsReport?: null | { imported?: ImportedItem[] }
+  authorsReport?: { imported?: ImportedItem[] } | null
+  categoriesReport?: { imported?: ImportedItem[] } | null
+  errorsReport?: { errors?: ImportError[] } | null
+  linksReport?: { links?: LinkMapping[] } | null
+  mediaReport?: { imported?: ImportedItem[] } | null
+  postsReport?: { imported?: ImportedItem[] } | null
   runs?: null | RunSummary[]
 }
 

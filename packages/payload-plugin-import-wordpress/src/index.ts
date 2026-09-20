@@ -8,9 +8,9 @@ import { resolveOptions } from './defaults.js'
 import { startEndpoint, statusEndpoint } from './endpoints/index.js'
 import { importWordpressTask } from './jobs/task.js'
 
+export { defaultAllowedImageMimeTypes, defaultMaxImageBytes } from './defaults.js'
 export type { ComposiusPayloadPluginImportWordpressConfig } from './types.js'
 export type { ImportProgress, ImportReport } from './types.js'
-export { defaultAllowedImageMimeTypes, defaultMaxImageBytes } from './defaults.js'
 
 const LOG_PREFIX = '@composius/payload-plugin-import-wordpress'
 
@@ -58,7 +58,7 @@ export const ComposiusPayloadPluginImportWordpress =
       // second one, which would fail with `DuplicateCollection`.
       // `manage: false` covers the case where the app's plugin runs *after*
       // this one.
-      const { manage, slug } = options.redirections
+      const { slug, manage } = options.redirections
       const alreadyRegistered = config.collections.some(
         (collection) => collection.slug === slug,
       )

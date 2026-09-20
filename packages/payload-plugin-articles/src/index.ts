@@ -1,12 +1,3 @@
-import type { CollectionSlug, Config, FieldAccess } from 'payload'
-import type {
-  GenerateDescription,
-  GenerateImage,
-  GenerateTitle,
-  GenerateURL,
-} from '@payloadcms/plugin-seo/types'
-import { seoPlugin } from '@payloadcms/plugin-seo'
-import { nestedDocsPlugin } from '@payloadcms/plugin-nested-docs'
 import type {
   EditorFontSize,
   RevalidateEvent,
@@ -15,15 +6,27 @@ import type {
   VideoEmbed,
   VideoEmbedProvider,
 } from '@composius/payload-plugin-shared-components'
+import type {
+  GenerateDescription,
+  GenerateImage,
+  GenerateTitle,
+  GenerateURL,
+} from '@payloadcms/plugin-seo/types'
+import type { CollectionSlug, Config, FieldAccess } from 'payload'
+
 import {
   parseVideoEmbedUrl,
   VIDEO_EMBED_BLOCK_SLUG,
 } from '@composius/payload-plugin-shared-components'
+import { nestedDocsPlugin } from '@payloadcms/plugin-nested-docs'
+import { seoPlugin } from '@payloadcms/plugin-seo'
+
 import type { ArticlesAccess } from './collections/Articles.js'
-import { Articles } from './collections/Articles.js'
 import type { AuthorsAccess } from './collections/Authors.js'
-import { Authors } from './collections/Authors.js'
 import type { CategoriesAccess } from './collections/Categories.js'
+
+import { Articles } from './collections/Articles.js'
+import { Authors } from './collections/Authors.js'
 import { Categories } from './collections/Categories.js'
 import {
   anyone,
@@ -46,6 +49,11 @@ export type ComposiusPayloadPluginArticlesConfig = {
    */
   access?: ArticlesAccess
   /**
+   * Builds the front-end URL of an article, used for admin preview and live preview.
+   * Defaults to `${NEXT_PUBLIC_SERVER_URL || SERVER_URL || 'http://localhost:3000'}/articles/${slug}`.
+   */
+  articleUrl?: (slug?: null | string) => string
+  /**
    * Adds an `authors` collection and an `author` relationship field on
    * articles, for attributing articles to someone other than their `editor`.
    * Disabled by default; pass `true` to enable it.
@@ -65,11 +73,6 @@ export type ComposiusPayloadPluginArticlesConfig = {
    * authenticated user.
    */
   categoriesAccess?: CategoriesAccess
-  /**
-   * Builds the front-end URL of an article, used for admin preview and live preview.
-   * Defaults to `${NEXT_PUBLIC_SERVER_URL || SERVER_URL || 'http://localhost:3000'}/articles/${slug}`.
-   */
-  articleUrl?: (slug?: string | null) => string
   disabled?: boolean
   /**
    * Adds a font size control to the content editor's toolbar, scaling the text
@@ -120,7 +123,6 @@ export type ComposiusPayloadPluginArticlesConfig = {
    * @default true
    */
   seo?:
-    | boolean
     | {
         generateDescription?: GenerateDescription
         generateImage?: GenerateImage
@@ -135,6 +137,7 @@ export type ComposiusPayloadPluginArticlesConfig = {
          */
         siteName?: string
       }
+    | boolean
   /**
    * Adds a `Default` checkbox to categories — only one category carries it at
    * a time — and gives it to any article saved without a category: the box is
@@ -286,11 +289,11 @@ export type { VideoEmbed, VideoEmbedProvider }
 export { parseVideoEmbedUrl, VIDEO_EMBED_BLOCK_SLUG }
 export {
   articleIdTag,
-  articleTag,
   ARTICLES_TAG,
+  articleTag,
   authorIdTag,
   AUTHORS_TAG,
+  CATEGORIES_TAG,
   categoryIdTag,
   categoryTag,
-  CATEGORIES_TAG,
 } from './tags.js'

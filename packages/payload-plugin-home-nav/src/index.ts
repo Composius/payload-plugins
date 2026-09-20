@@ -6,16 +6,13 @@ export { resolveLocalizedText } from './localized.js'
 export type { LocalizedText } from './localized.js'
 
 export type ComposiusPayloadPluginHomeNavConfig = {
+  /** Leaves the config untouched. */
+  disabled?: boolean
   /**
    * Where "Home" links to.
    * @default the admin dashboard (`routes.admin`)
    */
   href?: string
-  /**
-   * The label, plain or per-language. Default: "Home" / "Accueil" from the
-   * plugin's bundled translations, resolved against the admin language.
-   */
-  label?: LocalizedText
   /**
    * Show the label next to the icon in the app header (the
    * `admin.components.graphics.Icon` slot). A custom icon configured before
@@ -23,6 +20,11 @@ export type ComposiusPayloadPluginHomeNavConfig = {
    * @default true
    */
   iconLabel?: boolean
+  /**
+   * The label, plain or per-language. Default: "Home" / "Accueil" from the
+   * plugin's bundled translations, resolved against the admin language.
+   */
+  label?: LocalizedText
   /**
    * Add a "Home" link at the top of the nav sidebar (prepended to
    * `admin.components.beforeNavLinks`, above the collection links).
@@ -46,8 +48,6 @@ export type ComposiusPayloadPluginHomeNavConfig = {
    * found from the working directory, i.e. the host app's own version.
    */
   versionNumber?: string
-  /** Leaves the config untouched. */
-  disabled?: boolean
 }
 
 const COMPONENT_PATH = '@composius/payload-plugin-home-nav/rsc'
@@ -67,11 +67,11 @@ export const ComposiusPayloadPluginHomeNav =
 
     const { href, label, versionLabel, versionNumber } = pluginOptions
 
-    if (!config.admin) config.admin = {}
-    if (!config.admin.components) config.admin.components = {}
+    if (!config.admin) {config.admin = {}}
+    if (!config.admin.components) {config.admin.components = {}}
 
     if (pluginOptions.iconLabel !== false) {
-      if (!config.admin.components.graphics) config.admin.components.graphics = {}
+      if (!config.admin.components.graphics) {config.admin.components.graphics = {}}
 
       // The slot is taken over, but a custom icon the project configured is
       // handed to the component and rendered next to the label.
@@ -85,12 +85,15 @@ export const ComposiusPayloadPluginHomeNav =
         // `default` when no export name is given.
         const pathAndExport =
           typeof existingIcon === 'string' ? existingIcon : existingIcon.path
-        let [path, exportName] = pathAndExport.includes('#')
+        const [path, parsedExport] = pathAndExport.includes('#')
           ? pathAndExport.split('#', 2)
           : [pathAndExport, 'default']
-        if (typeof existingIcon === 'object' && existingIcon.exportName) {
-          exportName = existingIcon.exportName
-        }
+        // An explicit `exportName` on the object form wins over one parsed
+        // out of the path.
+        const exportName =
+          typeof existingIcon === 'object' && existingIcon.exportName
+            ? existingIcon.exportName
+            : parsedExport
 
         config.admin.dependencies = {
           ...config.admin.dependencies,
@@ -99,8 +102,8 @@ export const ComposiusPayloadPluginHomeNav =
       }
 
       config.admin.components.graphics.Icon = {
-        path: COMPONENT_PATH,
         exportName: 'HomeNavIcon',
+        path: COMPONENT_PATH,
         // Server component — serverProps never reach the client, so they can
         // safely carry the existing icon's component config.
         serverProps: {
@@ -114,8 +117,8 @@ export const ComposiusPayloadPluginHomeNav =
       // Prepended so "Home" stays on top even when other plugins add links.
       config.admin.components.beforeNavLinks = [
         {
-          path: COMPONENT_PATH,
           exportName: 'HomeNavLink',
+          path: COMPONENT_PATH,
           serverProps: {
             href,
             label,
@@ -131,8 +134,8 @@ export const ComposiusPayloadPluginHomeNav =
       config.admin.components.afterNavLinks = [
         ...(config.admin.components.afterNavLinks ?? []),
         {
-          path: COMPONENT_PATH,
           exportName: 'HomeNavVersion',
+          path: COMPONENT_PATH,
           serverProps: {
             versionLabel,
             versionNumber,

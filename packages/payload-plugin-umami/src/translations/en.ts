@@ -1,11 +1,15 @@
 export const en = {
   umami: {
-    title: 'Analytics',
-    timeRange: 'Time range',
     chartMetric: 'Chart stat',
+    messages: {
+      error: 'Could not load analytics. Check the Umami configuration.',
+      loading: 'Loading analytics…',
+      noCountries: 'No countries in this range.',
+      noPages: 'No pages in this range.',
+    },
     ranges: {
-      '24h': 'Last 24 hours',
       '7d': 'Last 7 days',
+      '24h': 'Last 24 hours',
       '30d': 'Last 30 days',
       '90d': 'Last 90 days',
     },
@@ -21,13 +25,9 @@ export const en = {
       visits: 'Visits',
       visitsPrev: 'Visits (last period)',
     },
-    topPages: 'Top pages',
+    timeRange: 'Time range',
+    title: 'Analytics',
     topCountries: 'Top countries',
-    messages: {
-      error: 'Could not load analytics. Check the Umami configuration.',
-      loading: 'Loading analytics…',
-      noCountries: 'No countries in this range.',
-      noPages: 'No pages in this range.',
-    },
+    topPages: 'Top pages',
   },
 }

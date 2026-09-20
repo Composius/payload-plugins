@@ -1,4 +1,5 @@
 import type { RichTextHooks } from 'payload'
+
 import { VIDEO_EMBED_BLOCK_SLUG } from './block.js'
 import { parseVideoEmbedUrl } from './providers.js'
 import { fetchVideoTitle } from './titles.js'

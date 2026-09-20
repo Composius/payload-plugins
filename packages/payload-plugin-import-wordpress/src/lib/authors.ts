@@ -7,10 +7,10 @@ import type { ImageImportResult } from './media.js'
 import type { WPUser } from './wpTypes.js'
 
 import { coerceId } from './id.js'
-import { decodeEntities } from './url.js'
 import { importImage } from './media.js'
 import { createDoc, findDocs } from './payloadOps.js'
 import { findDoneRecord, saveRecord } from './records.js'
+import { decodeEntities } from './url.js'
 
 export type ResolvedAuthor = {
   /** Article relationship field to assign (`editor` for users, `author` for authors). */
@@ -19,10 +19,10 @@ export type ResolvedAuthor = {
 }
 
 export type ResolveAuthorArgs = {
+  allowedMimeTypes: string[]
   authorsSlug: string
   defaultUserId?: number | string
   dryRun: boolean
-  allowedMimeTypes: string[]
   fetchImpl?: typeof fetch
   imageCache: Map<string, ImageImportResult>
   jobId: number | string
@@ -87,7 +87,7 @@ export const resolveAuthor = async (
   })
 
   if (args.strategy === 'users') {
-    const field = 'editor' as const
+    const field = 'editor'
     if (existing) {
       return { author: { field, value: existing } }
     }
@@ -113,9 +113,9 @@ export const resolveAuthor = async (
     // Reuse an existing user with the same email if present.
     const { docs } = await findDocs(payload, {
       collection: args.usersSlug,
-      where: { email: { equals: email } },
-      limit: 1,
       depth: 0,
+      limit: 1,
+      where: { email: { equals: email } },
     })
     let userId = docs[0]?.id as number | string | undefined
 
@@ -123,8 +123,8 @@ export const resolveAuthor = async (
       const created = await createDoc(payload, {
         collection: args.usersSlug,
         data: {
-          email,
           name,
+          email,
           password: crypto.randomBytes(18).toString('hex'),
         },
       })
@@ -146,7 +146,7 @@ export const resolveAuthor = async (
   }
 
   // strategy === 'authors'
-  const field = 'author' as const
+  const field = 'author'
   if (existing) {
     return { author: { field, value: existing } }
   }

@@ -6,7 +6,7 @@ import { ComposiusPayloadPluginUmami } from '../src/index.js'
 
 const baseConfig = (): Config => ({ collections: [] }) as unknown as Config
 
-const cloudCreds = { websiteId: 'site-1', apiKey: 'key-1' }
+const cloudCreds = { apiKey: 'key-1', websiteId: 'site-1' }
 
 const widgets = (config: Config) => config.admin?.dashboard?.widgets ?? []
 const umamiWidget = (config: Config) => widgets(config).find((w) => w.slug === 'umami')
@@ -114,7 +114,7 @@ describe('ComposiusPayloadPluginUmami', () => {
         dashboard: { widgets: [{ slug: 'other', Component: '/existing#Existing' }] },
       },
       collections: [],
-      endpoints: [{ path: '/other', method: 'get', handler: async () => new Response() }],
+      endpoints: [{ handler: async () => new Response(), method: 'get', path: '/other' }],
     } as unknown as Config
 
     const config = ComposiusPayloadPluginUmami(cloudCreds)(existing)
@@ -133,7 +133,7 @@ describe('ComposiusPayloadPluginUmami', () => {
   test('warns and registers nothing when websiteId is missing', () => {
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
 
-    const config = ComposiusPayloadPluginUmami({ websiteId: '', apiKey: 'key-1' })(baseConfig())
+    const config = ComposiusPayloadPluginUmami({ apiKey: 'key-1', websiteId: '' })(baseConfig())
 
     expect(warn).toHaveBeenCalledOnce()
     expect(hasReportEndpoint(config)).toBe(false)
@@ -151,10 +151,10 @@ describe('ComposiusPayloadPluginUmami', () => {
 
   test('accepts self-hosted username/password as credentials', () => {
     const config = ComposiusPayloadPluginUmami({
-      websiteId: 'site-1',
       baseUrl: 'https://umami.example.com',
-      username: 'admin',
       password: 'secret',
+      username: 'admin',
+      websiteId: 'site-1',
     })(baseConfig())
 
     expect(hasReportEndpoint(config)).toBe(true)

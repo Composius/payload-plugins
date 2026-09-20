@@ -2,9 +2,10 @@ import type { CollectionConfig, CollectionSlug, Field, PayloadRequest } from 'pa
 
 import { APIError } from 'payload'
 
+import type { UsersOptions } from '../types.js'
+
 import { hasRoleFieldLevel } from '../access.js'
 import { label, translate } from '../translations/index.js'
-import type { UsersOptions } from '../types.js'
 
 const fieldNames = (fields: Field[]): string[] =>
   fields.map((field) => (field as { name?: string }).name).filter((name): name is string =>
@@ -19,7 +20,7 @@ const fieldNames = (fields: Field[]): string[] =>
  */
 export const withUsersAuth = (
   existing: CollectionConfig | undefined,
-  { access, adminRole, defaultRole, roles, slug }: UsersOptions,
+  { slug, access, adminRole, defaultRole, roles }: UsersOptions,
 ): CollectionConfig => {
   const collection = slug as CollectionSlug
   const adminFieldLevel = hasRoleFieldLevel(adminRole)
@@ -45,16 +46,12 @@ export const withUsersAuth = (
     {
       name: 'role',
       type: 'select',
-      label: label((t) => t.fields.role),
-      options: roles,
-      defaultValue: defaultRole,
-      required: true,
-      saveToJWT: true,
       access: {
         // Users can update their own profile, but only admins can change roles
         create: adminFieldLevel,
         update: adminFieldLevel,
       },
+      defaultValue: defaultRole,
       hooks: {
         // A duplicate copies field values straight off the source document,
         // which would carry an admin's role onto the copy without ever going
@@ -63,40 +60,46 @@ export const withUsersAuth = (
         // here keeps the guarantee from depending on that.
         beforeDuplicate: [() => defaultRole],
       },
+      label: label((t) => t.fields.role),
+      options: roles,
+      required: true,
+      saveToJWT: true,
     },
   ]
 
   return {
     ...existing,
     slug,
-    labels: existing?.labels ?? {
-      singular: label((t) => t.users.singular),
-      plural: label((t) => t.users.plural),
+    access: {
+      create: access.create,
+      delete: access.delete,
+      read: access.read,
+      update: access.update,
+      ...existing?.access,
     },
     admin: {
-      useAsTitle: 'name',
       defaultColumns: ['name', 'email', 'role', 'createdAt'],
       hidden: ({ user }) => (user as { role?: string } | null)?.role !== adminRole,
+      useAsTitle: 'name',
       ...existing?.admin,
     },
     auth: {
       ...existingAuth,
       cookies: {
         // secure: true would break plain-http localhost logins in dev
-        secure: process.env.NODE_ENV === 'production',
         sameSite: 'Lax',
+        secure: process.env.NODE_ENV === 'production',
         ...existingAuth.cookies,
       },
-      maxLoginAttempts: existingAuth.maxLoginAttempts ?? 5,
       lockTime: existingAuth.lockTime ?? 15 * 60 * 1000, // 15 minutes
+      maxLoginAttempts: existingAuth.maxLoginAttempts ?? 5,
     },
-    access: {
-      create: access.create,
-      read: access.read,
-      update: access.update,
-      delete: access.delete,
-      ...existing?.access,
-    },
+    fields: [
+      ...(existing?.fields ?? []),
+      ...addedFields.filter(
+        (field) => !existingFieldNames.includes((field as { name?: string }).name ?? ''),
+      ),
+    ],
     hooks: {
       ...existing?.hooks,
       beforeChange: [
@@ -134,7 +137,7 @@ export const withUsersAuth = (
       beforeDelete: [
         ...(existing?.hooks?.beforeDelete ?? []),
         async ({ id, req }) => {
-          const doc = await req.payload.findByID({ collection, id, depth: 0, req })
+          const doc = await req.payload.findByID({ id, collection, depth: 0, req })
           if ((doc as { role?: string } | null)?.role === adminRole) {
             const { totalDocs } = await countAdmins(req)
             if (totalDocs <= 1) {
@@ -147,11 +150,9 @@ export const withUsersAuth = (
         },
       ],
     },
-    fields: [
-      ...(existing?.fields ?? []),
-      ...addedFields.filter(
-        (field) => !existingFieldNames.includes((field as { name?: string }).name ?? ''),
-      ),
-    ],
+    labels: existing?.labels ?? {
+      plural: label((t) => t.users.plural),
+      singular: label((t) => t.users.singular),
+    },
   }
 }

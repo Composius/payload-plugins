@@ -1,11 +1,11 @@
 import type { Config } from 'payload'
 
-import { mkdtempSync, mkdirSync, rmSync, writeFileSync } from 'node:fs'
+import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import path from 'node:path'
 import { afterEach, describe, expect, test, vi } from 'vitest'
 
-import { resolveLocalizedText, ComposiusPayloadPluginHomeNav } from '../src/index.js'
+import { ComposiusPayloadPluginHomeNav, resolveLocalizedText } from '../src/index.js'
 
 const baseConfig = (): Config => ({ collections: [] }) as unknown as Config
 
@@ -91,7 +91,7 @@ describe('ComposiusPayloadPluginHomeNav', () => {
     const objectForm = ComposiusPayloadPluginHomeNav()({
       admin: {
         components: {
-          graphics: { Icon: { path: '/components/MyIcon', exportName: 'MyIcon' } },
+          graphics: { Icon: { exportName: 'MyIcon', path: '/components/MyIcon' } },
         },
       },
       collections: [],
@@ -208,7 +208,7 @@ describe('resolveAppVersion', () => {
 
   afterEach(() => {
     vi.restoreAllMocks()
-    for (const dir of created.splice(0)) rmSync(dir, { force: true, recursive: true })
+    for (const dir of created.splice(0)) {rmSync(dir, { force: true, recursive: true })}
   })
 
   test('walks up from the working directory to the nearest version', async () => {

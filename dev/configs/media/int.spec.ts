@@ -26,7 +26,7 @@ const createImage = async (
   format: 'avif' | 'png' = 'png',
 ) => {
   const data = await sharp({
-    create: { width, height, channels: 3, background: { b: 40, g: 80, r: 200 } },
+    create: { background: { b: 40, g: 80, r: 200 }, channels: 3, height, width },
   })
     .toFormat(format)
     .toBuffer()
@@ -34,7 +34,7 @@ const createImage = async (
   return payload.create({
     collection: 'media',
     data: { alt: 'Test image' },
-    file: { data, mimetype: `image/${format}`, name, size: data.length },
+    file: { name, data, mimetype: `image/${format}`, size: data.length },
   })
 }
 
@@ -91,7 +91,7 @@ describe('Plugin integration tests', () => {
       payload.create({
         collection: 'media',
         data: { alt: 'Test image' },
-        file: { data, mimetype: 'image/png', name: 'huge.png', size: data.length },
+        file: { name: 'huge.png', data, mimetype: 'image/png', size: data.length },
       }),
     ).rejects.toThrow(/maximum upload size is 1 MB/)
   })

@@ -1,30 +1,30 @@
 import type { Payload } from 'payload'
 
-import type { ImportProgress, ImportReport, ResolvedOptions, RunSummary } from '../types.js'
 import type { ImageImportResult } from '../lib/media.js'
+import type { ImportedPermalink } from '../lib/redirections.js'
 import type { PersistedJobReports } from '../lib/report.js'
 import type { WPPost, WPUser } from '../lib/wpTypes.js'
+import type { ImportProgress, ImportReport, ResolvedOptions, RunSummary } from '../types.js'
 
 import { JOBS_SLUG } from '../defaults.js'
 import { resolveAuthor } from '../lib/authors.js'
 import { importCategories } from '../lib/categories.js'
 import { buildContent } from '../lib/content.js'
-import { coerceId } from '../lib/id.js'
 import { resolveEditorConfig } from '../lib/editorConfig.js'
-import { importImage } from '../lib/media.js'
+import { coerceId } from '../lib/id.js'
 import { removeLeadingUploadNode, takeFirstUploadNode } from '../lib/lexical.js'
+import { importImage } from '../lib/media.js'
 import { createDoc, findDoc, findDocs, updateDoc } from '../lib/payloadOps.js'
 import { publishDate, selectPrimaryCategoryId } from '../lib/post.js'
+import { findDoneRecord, saveRecord } from '../lib/records.js'
 import {
   createRedirectionRules,
   deriveArticleBase,
   planRedirectionRules,
 } from '../lib/redirections.js'
-import type { ImportedPermalink } from '../lib/redirections.js'
 import { emptyProgress, rehydrateReport } from '../lib/report.js'
-import { findDoneRecord, saveRecord } from '../lib/records.js'
-import { createWPClient } from '../lib/wpClient.js'
 import { decodeEntities, hostOf, pathOf, permalinkToSlug, stripHtml } from '../lib/url.js'
+import { createWPClient } from '../lib/wpClient.js'
 
 const PER_PAGE = 100
 // Matches SEO_DESCRIPTION_MAX_LENGTH in the shared-components SEO defaults.
@@ -36,14 +36,14 @@ export type RunImportArgs = {
   options: ResolvedOptions
 }
 
-type JobDoc = PersistedJobReports & {
-  credentials?: null | { applicationPassword?: null | string; username?: null | string }
+type JobDoc = {
+  credentials?: { applicationPassword?: null | string; username?: null | string } | null
   dateFrom?: null | string
   dateTo?: null | string
   dryRun?: boolean | null
   limit?: null | number
   sourceUrl: string
-}
+} & PersistedJobReports
 
 /**
  * Executes one import run for a `wp-import-jobs` document. Idempotent and
@@ -58,8 +58,8 @@ export const runImport = async (payload: Payload, args: RunImportArgs): Promise<
   const progress: ImportProgress = emptyProgress()
 
   const job = (await findDoc(payload, {
-    collection: JOBS_SLUG,
     id: args.jobId,
+    collection: JOBS_SLUG,
     depth: 0,
   })) as unknown as JobDoc
 
@@ -95,10 +95,10 @@ export const runImport = async (payload: Payload, args: RunImportArgs): Promise<
 
   const updateJob = async (data: Record<string, unknown>): Promise<void> => {
     await updateDoc(payload, {
-      collection: JOBS_SLUG,
       id: args.jobId,
-      data,
+      collection: JOBS_SLUG,
       context: { wpImport: true },
+      data,
     })
   }
 
@@ -120,9 +120,9 @@ export const runImport = async (payload: Payload, args: RunImportArgs): Promise<
   try {
     progress.currentPhase = 'running'
     await updateJob({
-      status: 'running',
-      startedAt: new Date().toISOString(),
       progress,
+      startedAt: new Date().toISOString(),
+      status: 'running',
       ...stepReports(),
     })
 
@@ -306,12 +306,12 @@ export const runImport = async (payload: Payload, args: RunImportArgs): Promise<
           imported: importedAuthor,
           skippedNoEmail,
         } = await resolveAuthor(payload, {
+          allowedMimeTypes: options.request.allowedMimeTypes,
           authorsSlug: slugs.authors,
           defaultUserId: options.authorMapping.defaultUserId,
           dryRun,
           fetchImpl: args.fetchImpl,
           imageCache,
-          allowedMimeTypes: options.request.allowedMimeTypes,
           jobId: args.jobId,
           maxBytes: options.request.maxBytes,
           mediaSlug: slugs.media,
@@ -345,9 +345,9 @@ export const runImport = async (payload: Payload, args: RunImportArgs): Promise<
         const primaryCategory = selectPrimaryCategoryId(post)
         const categoryId = primaryCategory != null ? categoryIdMap.get(primaryCategory) : undefined
         const data: Record<string, unknown> = {
-          [options.fieldMap.title]: title,
-          [options.fieldMap.content]: built.content,
           _status: 'published',
+          [options.fieldMap.content]: built.content,
+          [options.fieldMap.title]: title,
         }
         if (post.slug) {
           data[options.fieldMap.slug] = post.slug
@@ -379,14 +379,14 @@ export const runImport = async (payload: Payload, args: RunImportArgs): Promise<
 
         if (dryRun) {
           report.imported.posts.push({
-            run: runNumber,
             slug: post.slug,
+            run: runNumber,
             sourceId: post.id,
             targetId: 'dry-run',
             title,
           })
           progress.importedPosts += 1
-          importedPermalinks.push({ path: permalinkPath, slug: post.slug ?? '' })
+          importedPermalinks.push({ slug: post.slug ?? '', path: permalinkPath })
           continue
         }
 
@@ -405,8 +405,8 @@ export const runImport = async (payload: Payload, args: RunImportArgs): Promise<
           targetId: articleId,
         })
         report.imported.posts.push({
-          run: runNumber,
           slug: post.slug,
+          run: runNumber,
           sourceId: post.id,
           targetId: articleId,
           title,
@@ -414,7 +414,7 @@ export const runImport = async (payload: Payload, args: RunImportArgs): Promise<
         progress.importedPosts += 1
         // Redirection rules are derived from all of this run's permalinks at
         // once, so posts sharing a folder collapse into a single prefix rule.
-        importedPermalinks.push({ path: permalinkPath, slug: post.slug ?? '' })
+        importedPermalinks.push({ slug: post.slug ?? '', path: permalinkPath })
 
         if (progress.importedPosts % 5 === 0) {
           await updateJob({ progress, ...stepReports() })
@@ -450,8 +450,8 @@ export const runImport = async (payload: Payload, args: RunImportArgs): Promise<
       const { created, errors } = dryRun
         ? { created: planned, errors: [] }
         : await createRedirectionRules(payload, {
-            rules: planned,
             slug: options.redirections.slug,
+            rules: planned,
             status: options.redirections.status,
           })
 

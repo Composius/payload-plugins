@@ -63,9 +63,9 @@ export const resolveAppVersion = (logger?: Logger): string | undefined => {
       }
     }
 
-    if (directory === root) break
+    if (directory === root) {break}
     const parent = dirname(directory)
-    if (parent === directory) break
+    if (parent === directory) {break}
     directory = parent
   }
 

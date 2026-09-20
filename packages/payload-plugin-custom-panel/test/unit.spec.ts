@@ -2,7 +2,7 @@ import type { Access, Config } from 'payload'
 
 import { describe, expect, test, vi } from 'vitest'
 
-import { resolveLocalizedText, ComposiusPayloadPluginCustomPanel } from '../src/index.js'
+import { ComposiusPayloadPluginCustomPanel, resolveLocalizedText } from '../src/index.js'
 
 const baseConfig = (): Config => ({ collections: [] }) as unknown as Config
 
@@ -33,14 +33,14 @@ describe('ComposiusPayloadPluginCustomPanel', () => {
   test('passes title and rows as serverProps', () => {
     const rows = [
       {
+        links: [{ icon: '📚', label: 'Docs', newTab: true, url: 'https://example.com' }],
         message: 'Welcome aboard',
-        links: [{ icon: '📚', label: 'Docs', url: 'https://example.com', newTab: true }],
       },
       { message: 'Second row' },
     ]
     const config = ComposiusPayloadPluginCustomPanel({
-      title: 'My Site',
       rows,
+      title: 'My Site',
     })(baseConfig())
 
     const serverProps = panel(config)?.serverProps
@@ -87,7 +87,7 @@ describe('ComposiusPayloadPluginCustomPanel', () => {
   })
 
   test('disabled leaves the config untouched', () => {
-    const config = ComposiusPayloadPluginCustomPanel({ title: 'My Site', disabled: true })(baseConfig())
+    const config = ComposiusPayloadPluginCustomPanel({ disabled: true, title: 'My Site' })(baseConfig())
 
     expect(panel(config)).toBeUndefined()
   })

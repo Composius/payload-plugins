@@ -25,7 +25,7 @@ const rulesEndpoint = (): Endpoint => {
 
 const invokeRules = async (headers: Record<string, string> = {}) => {
   const req = { headers: new Headers(headers), payload } as unknown as PayloadRequest
-  const response = (await rulesEndpoint().handler(req)) as Response
+  const response = (await rulesEndpoint().handler(req))
 
   return { body: response.status === 304 ? null : await response.json(), response }
 }

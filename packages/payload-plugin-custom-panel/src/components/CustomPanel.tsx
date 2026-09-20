@@ -2,8 +2,8 @@ import type { Access, PayloadRequest, ServerProps } from 'payload'
 
 import React from 'react'
 
-import type { CustomPanelRow, LocalizedText } from '../types.js'
 import type { Translation } from '../translations/index.js'
+import type { CustomPanelRow, LocalizedText } from '../types.js'
 
 import { resolveLocalizedText } from '../localized.js'
 import { en } from '../translations/en.js'
@@ -13,14 +13,14 @@ import { panelStyles } from './panelStyles.js'
 const translations: Record<string, Translation> = { en, fr }
 
 /** Icons that look like a URL or path render as `<img>`, anything else as text (emoji). */
-const isImageIcon = (icon: string) => /^(https?:\/\/|\/|\.\/|data:)/.test(icon)
+const isImageIcon = (icon: string) => /^(?:https?:\/\/|\/|\.\/|data:)/.test(icon)
 
-export type CustomPanelProps = ServerProps & {
+export type CustomPanelProps = {
   /** `access.read` resolved by the plugin, evaluated per request. */
   access: Access
   rows: CustomPanelRow[]
   title?: LocalizedText
-}
+} & ServerProps
 
 /**
  * Server component rendered before the dashboard: evaluates the plugin's

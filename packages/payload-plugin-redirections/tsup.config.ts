@@ -7,12 +7,12 @@ import { defineConfig } from 'tsup'
  * the build instead of shipping.
  */
 const common = {
-  format: 'esm' as const,
-  dts: true,
-  sourcemap: true,
-  outDir: 'dist',
-  splitting: false,
   clean: false,
+  dts: true,
+  format: 'esm' as const,
+  outDir: 'dist',
+  sourcemap: true,
+  splitting: false,
 }
 
 export default defineConfig([

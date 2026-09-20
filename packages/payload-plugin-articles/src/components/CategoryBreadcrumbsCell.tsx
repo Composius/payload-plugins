@@ -1,10 +1,11 @@
 'use client'
 
 import type { DefaultCellComponentProps } from 'payload'
+
 import React from 'react'
 
 type Breadcrumb = {
-  label?: string | null
+  label?: null | string
 }
 
 /**

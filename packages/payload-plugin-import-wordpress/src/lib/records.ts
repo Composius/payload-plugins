@@ -12,13 +12,13 @@ export type RecordLookup = {
   sourceType: SourceType
 }
 
-export type SaveRecordArgs = RecordLookup & {
+export type SaveRecordArgs = {
   error?: string
   jobId: number | string
   status?: 'done' | 'failed'
   targetCollection?: string
   targetId?: null | number | string
-}
+} & RecordLookup
 
 /**
  * Finds a completed import record for a source entity. Media are matched by
@@ -54,12 +54,12 @@ export const findDoneRecord = async (
 
   const { docs } = await findDocs(payload, {
     collection: RECORDS_SLUG,
-    where,
-    limit: 1,
     depth: 0,
+    limit: 1,
+    where,
   })
 
-  const doc = docs[0] as undefined | { targetId?: null | string }
+  const doc = docs[0] as { targetId?: null | string } | undefined
   return doc?.targetId != null ? String(doc.targetId) : null
 }
 
@@ -68,15 +68,15 @@ export const saveRecord = async (payload: Payload, args: SaveRecordArgs): Promis
   await createDoc(payload, {
     collection: RECORDS_SLUG,
     data: {
+      error: args.error,
       job: args.jobId,
       site: args.site,
-      sourceType: args.sourceType,
       sourceId: args.sourceId ?? undefined,
       sourceKey: args.sourceKey ?? undefined,
+      sourceType: args.sourceType,
+      status: args.status ?? 'done',
       targetCollection: args.targetCollection,
       targetId: args.targetId != null ? String(args.targetId) : undefined,
-      status: args.status ?? 'done',
-      error: args.error,
     },
   })
 }

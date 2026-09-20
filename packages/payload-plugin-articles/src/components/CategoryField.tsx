@@ -1,8 +1,10 @@
 'use client'
 
 import type { RelationshipFieldClientComponent } from 'payload'
+
 import { CheckboxInput, FieldLabel, useConfig, useField, useTranslation } from '@payloadcms/ui'
 import React, { useEffect, useMemo, useState } from 'react'
+
 import { en } from '../translations/en.js'
 import { fr } from '../translations/fr.js'
 
@@ -11,7 +13,7 @@ type CategoryId = number | string
 type CategoryDoc = {
   id: CategoryId
   name: string
-  parent?: CategoryId | { id: CategoryId } | null
+  parent?: { id: CategoryId } | CategoryId | null
 }
 
 const parentId = (category: CategoryDoc): CategoryId | null => {
@@ -49,7 +51,7 @@ const CategoryBranch = ({
   return (
     <ul style={{ listStyle: 'none', margin: 0, padding: 0 }}>
       {categories.map((category) => (
-        <li key={category.id} style={{ paddingLeft: depth ? 20 : 0, marginTop: 8 }}>
+        <li key={category.id} style={{ marginTop: 8, paddingLeft: depth ? 20 : 0 }}>
           <CheckboxInput
             checked={value === category.id}
             id={`${path}-category-${category.id}`}

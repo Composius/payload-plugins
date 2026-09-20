@@ -11,22 +11,17 @@ export default buildDevConfig({
   dirname,
   plugins: [
     ComposiusPayloadPluginCustomPanel({
-      title: 'Composius',
       rows: [
         {
+          links: [
+            { icon: '🖼️', label: { en: 'Media', fr: 'Médias' }, url: '/admin/collections/media' },
+          ],
           message: {
             en: 'Welcome! Manage media from the sidebar, or use the quick links.',
             fr: 'Bienvenue ! Gérez les médias depuis la barre latérale ou utilisez les liens rapides.',
           },
-          links: [
-            { icon: '🖼️', label: { en: 'Media', fr: 'Médias' }, url: '/admin/collections/media' },
-          ],
         },
         {
-          message: {
-            en: 'Need help? The Payload documentation covers everything.',
-            fr: 'Besoin d’aide ? La documentation Payload couvre tout.',
-          },
           links: [
             {
               icon: '📚',
@@ -35,8 +30,13 @@ export default buildDevConfig({
               url: 'https://payloadcms.com/docs',
             },
           ],
+          message: {
+            en: 'Need help? The Payload documentation covers everything.',
+            fr: 'Besoin d’aide ? La documentation Payload couvre tout.',
+          },
         },
       ],
+      title: 'Composius',
     }),
   ],
   seed,

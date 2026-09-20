@@ -21,7 +21,7 @@ export type RedirectionsProxyEvent = {
   waitUntil?: (promise: Promise<unknown>) => void
 }
 
-export type RedirectionsProxyOptions = RedirectionRulesSource & {
+export type RedirectionsProxyOptions = {
   /**
    * Sends an `x-redirection-source` header naming the rule that matched, which
    * turns "why did this redirect?" into a one-second answer.
@@ -36,7 +36,7 @@ export type RedirectionsProxyOptions = RedirectionRulesSource & {
   maxHops?: number
   /** Skips the lookup for a request — health checks, previews, and the like. */
   skip?: (request: RedirectionsProxyRequest) => boolean
-}
+} & RedirectionRulesSource
 
 /**
  * Builds a Next.js proxy (Next 16's `proxy.ts`, or `middleware.ts` on Next 15)

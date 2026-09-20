@@ -161,7 +161,7 @@ describe('ComposiusPayloadPluginRedirections', () => {
 
   test('preserves collections added by other plugins', () => {
     const config = {
-      collections: [{ fields: [], slug: 'pages' } as CollectionConfig],
+      collections: [{ slug: 'pages', fields: [] } as CollectionConfig],
     } as unknown as Config
 
     expect(

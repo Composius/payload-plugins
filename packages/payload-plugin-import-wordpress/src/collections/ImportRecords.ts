@@ -16,26 +16,18 @@ export type ImportRecordsOptions = {
  */
 export const ImportRecords = ({ access }: ImportRecordsOptions): CollectionConfig => ({
   slug: 'wp-import-records',
-  labels: {
-    singular: label((t) => t.records.singular),
-    plural: label((t) => t.records.plural),
+  access: {
+    create: access.create,
+    delete: access.delete,
+    read: access.read,
+    update: access.update,
   },
   admin: {
-    useAsTitle: 'sourceKey',
     defaultColumns: ['site', 'sourceType', 'sourceId', 'targetCollection', 'targetId', 'status'],
     group: 'WordPress import',
     hidden: true,
+    useAsTitle: 'sourceKey',
   },
-  access: {
-    read: access.read,
-    create: access.create,
-    update: access.update,
-    delete: access.delete,
-  },
-  indexes: [
-    { fields: ['site', 'sourceType', 'sourceId'] },
-    { fields: ['site', 'sourceType', 'sourceKey'] },
-  ],
   fields: [
     {
       name: 'job',
@@ -46,29 +38,29 @@ export const ImportRecords = ({ access }: ImportRecordsOptions): CollectionConfi
     {
       name: 'site',
       type: 'text',
-      label: label((t) => t.records.fields.site),
       index: true,
+      label: label((t) => t.records.fields.site),
       required: true,
     },
     {
       name: 'sourceType',
       type: 'select',
+      index: true,
       label: label((t) => t.records.fields.sourceType),
       options: ['post', 'category', 'author', 'media'],
-      index: true,
       required: true,
     },
     {
       name: 'sourceId',
       type: 'number',
-      label: label((t) => t.records.fields.sourceId),
       index: true,
+      label: label((t) => t.records.fields.sourceId),
     },
     {
       name: 'sourceKey',
       type: 'text',
-      label: label((t) => t.records.fields.sourceKey),
       index: true,
+      label: label((t) => t.records.fields.sourceKey),
     },
     {
       name: 'targetCollection',
@@ -83,8 +75,8 @@ export const ImportRecords = ({ access }: ImportRecordsOptions): CollectionConfi
     {
       name: 'status',
       type: 'select',
-      label: label((t) => t.records.fields.status),
       defaultValue: 'done',
+      label: label((t) => t.records.fields.status),
       options: ['done', 'failed'],
     },
     {
@@ -93,4 +85,12 @@ export const ImportRecords = ({ access }: ImportRecordsOptions): CollectionConfi
       label: label((t) => t.records.fields.error),
     },
   ],
+  indexes: [
+    { fields: ['site', 'sourceType', 'sourceId'] },
+    { fields: ['site', 'sourceType', 'sourceKey'] },
+  ],
+  labels: {
+    plural: label((t) => t.records.plural),
+    singular: label((t) => t.records.singular),
+  },
 })

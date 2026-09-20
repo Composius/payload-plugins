@@ -3,13 +3,13 @@
 import React from 'react'
 
 export type StatCardProps = {
-  label: string
-  value: number
   /** How the value is rendered: a count or a duration in seconds. @default 'number' */
   format?: 'duration' | 'number'
+  label: string
+  value: number
 }
 
-const compact = new Intl.NumberFormat(undefined, { notation: 'compact', maximumFractionDigits: 1 })
+const compact = new Intl.NumberFormat(undefined, { maximumFractionDigits: 1, notation: 'compact' })
 const full = new Intl.NumberFormat()
 
 /** Formats seconds as `3m 24s` (or `1h 02m` past an hour). */

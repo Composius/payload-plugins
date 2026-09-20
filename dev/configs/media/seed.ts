@@ -27,7 +27,7 @@ export const seed = async (payload: Payload) => {
 
   if (!totalMedia) {
     const data = await sharp({
-      create: { width: 1600, height: 900, channels: 3, background: { b: 84, g: 46, r: 30 } },
+      create: { background: { b: 84, g: 46, r: 30 }, channels: 3, height: 900, width: 1600 },
     })
       .png()
       .toBuffer()
@@ -37,7 +37,7 @@ export const seed = async (payload: Payload) => {
     await payload.create({
       collection: 'media',
       data: { alt: 'Sample image' },
-      file: { data, mimetype: 'image/png', name: 'sample.png', size: data.length },
+      file: { name: 'sample.png', data, mimetype: 'image/png', size: data.length },
       overwriteExistingFiles: true,
     })
   }

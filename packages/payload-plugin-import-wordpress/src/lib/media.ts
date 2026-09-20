@@ -1,8 +1,8 @@
 import type { Payload } from 'payload'
 
 import { createDoc } from './payloadOps.js'
-import { deriveOriginalImageUrl, filenameOf } from './url.js'
 import { findDoneRecord, saveRecord } from './records.js'
+import { deriveOriginalImageUrl, filenameOf } from './url.js'
 
 export type ImageImportResult = {
   error?: string
@@ -175,9 +175,9 @@ export const importImage = async (
       collection: args.mediaSlug,
       data: { alt: args.alt || filenameOf(canonical) },
       file: {
+        name: filenameOf(canonical),
         data: downloaded.buffer,
         mimetype: downloaded.mimeType,
-        name: filenameOf(canonical),
         size: downloaded.buffer.length,
       },
     })

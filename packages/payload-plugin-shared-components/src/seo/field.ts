@@ -1,4 +1,5 @@
 import type { Field } from 'payload'
+
 import {
   MetaDescriptionField,
   MetaImageField,
@@ -26,16 +27,15 @@ export type SeoFieldOptions = {
 /** Sidebar `meta` group with the SEO fields from `@payloadcms/plugin-seo`. */
 export const seoField = ({ generators, labels }: SeoFieldOptions): Field => ({
   name: 'meta',
-  label: labels.group,
   type: 'group',
   admin: {
     position: 'sidebar',
   },
   fields: [
     OverviewField({
-      titlePath: 'meta.title',
       descriptionPath: 'meta.description',
       imagePath: 'meta.image',
+      titlePath: 'meta.title',
     }),
     MetaTitleField({
       hasGenerateFn: generators.hasGenerateTitle,
@@ -44,16 +44,17 @@ export const seoField = ({ generators, labels }: SeoFieldOptions): Field => ({
       },
     }),
     MetaImageField({
-      relationTo: 'media',
       hasGenerateFn: generators.hasGenerateImage,
+      relationTo: 'media',
     }),
     MetaDescriptionField({
       hasGenerateFn: generators.hasGenerateDescription,
     }),
     PreviewField({
+      descriptionPath: 'meta.description',
       hasGenerateFn: true,
       titlePath: 'meta.title',
-      descriptionPath: 'meta.description',
     }),
   ],
+  label: labels.group,
 })

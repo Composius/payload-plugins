@@ -1,4 +1,4 @@
-import type { TaskConfig } from 'payload'
+import type { Payload, TaskConfig } from 'payload'
 
 import type { ResolvedOptions } from '../types.js'
 
@@ -13,7 +13,7 @@ import { runImport } from './runImport.js'
 export const importWordpressTask = (options: ResolvedOptions): TaskConfig<'inline'> =>
   ({
     slug: TASK_SLUG,
-    handler: async ({ input, req }: { input: { jobId: number | string }; req: { payload: import('payload').Payload } }) => {
+    handler: async ({ input, req }: { input: { jobId: number | string }; req: { payload: Payload } }) => {
       await runImport(req.payload, { jobId: input.jobId, options })
       return { output: {} }
     },
