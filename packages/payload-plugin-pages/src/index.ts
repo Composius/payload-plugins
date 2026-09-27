@@ -16,9 +16,9 @@ import type { Block, Config } from 'payload'
 
 import {
   parseVideoEmbedUrl,
+  registerSeoCollection,
   VIDEO_EMBED_BLOCK_SLUG,
 } from '@composius/payload-plugin-shared-components'
-import { seoPlugin } from '@payloadcms/plugin-seo'
 
 import type { BlockReference, PagesAccess } from './collections/Pages.js'
 
@@ -263,28 +263,15 @@ export const ComposiusPayloadPluginPages =
     }
 
     if (seoEnabled) {
-      // `seoPlugin` does two things at once: it registers the
-      // /plugin-seo/generate-* endpoints the field buttons call, and it appends
-      // its own `meta` group to every collection it is listed for. Pages builds
-      // that group itself, so only the endpoints are wanted — but since
-      // @payloadcms/plugin-seo 3.90.0 those endpoints authorize the request
-      // against this very list and reject any slug missing from it, so the
-      // collection has to be listed. It is, and the group it appends is then
-      // dropped again by restoring the field list.
-      const fieldsBefore = config.collections.find(({ slug }) => slug === 'pages')?.fields
-
-      config = seoPlugin({
-        collections: ['pages'],
+      // Shares the /plugin-seo/generate-* endpoints with any other plugin that
+      // registers a collection (articles), rather than calling seoPlugin
+      // directly — see registerSeoCollection for why that breaks.
+      config = registerSeoCollection(config, 'pages', {
         generateDescription,
         generateImage,
         generateTitle,
         generateURL,
-      })(config)
-
-      const pages = config.collections?.find(({ slug }) => slug === 'pages')
-      if (pages && fieldsBefore) {
-        pages.fields = fieldsBefore
-      }
+      })
     }
 
     return config

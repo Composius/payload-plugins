@@ -1,5 +1,13 @@
 {
   "permissions": {
-    "allow": ["Edit(**/*.spec.ts)", "Bash(pnpm vitest *)", "Bash(pnpm test*)", "Bash(pnpm lint *)"]
+    "allow": [
+      "Edit(**/*.spec.ts)",
+      "Bash(pnpm vitest *)",
+      "Bash(pnpm test*)",
+      "Bash(pnpm lint *)",
+      "Bash(pnpm eslint *)",
+      "Bash(npx tsc *)",
+      "Bash(npx vitest *)"
+    ]
   }
 }

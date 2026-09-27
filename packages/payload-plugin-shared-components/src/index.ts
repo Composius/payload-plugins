@@ -44,4 +44,6 @@ export {
 } from './seo/defaults.js'
 export type { SeoFieldOptions, SeoGenerators } from './seo/field.js'
 export { seoField } from './seo/field.js'
+export type { SeoGenerateFunctions } from './seo/register.js'
+export { registerSeoCollection, SEO_REGISTRY_KEY } from './seo/register.js'
 export { slugify, slugifyValue } from './slug/slugify.js'
