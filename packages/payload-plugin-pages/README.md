@@ -224,6 +224,31 @@ a layout one: it lives inside the prose, not in the `layout` field.
 > the title field component into the admin panel: run
 > `payload generate:importmap` after upgrading.
 
+## SEO
+
+The generate buttons in the `meta` group fill the fields from the page: the
+title from `title`, the description from the start of `content` (or of the
+first content block of the layout), the image from `coverImage`. Replace any of
+them through the `seo` option.
+
+`siteName` only ever goes after the title. A custom `generateTitle` that puts
+it first instead, and uses it alone on the home page:
+
+```ts
+import type { GenerateTitle } from '@payloadcms/plugin-seo/types'
+
+const generateTitle: GenerateTitle = ({ doc }) =>
+  doc?.slug === 'home' || !doc?.title ? 'Acme' : `Acme | ${doc.title}`
+
+ComposiusPayloadPluginPages({
+  seo: { generateTitle },
+})
+```
+
+`siteName` is left out here because the function adds the site name itself. If
+you set it as well, it is added to a custom `generateTitle` too, so the name
+would appear twice.
+
 ## Cache revalidation
 
 Publishing, unpublishing or deleting a page invalidates the collection's Next.js
@@ -347,8 +372,16 @@ ComposiusPayloadPluginPages({
 
   // SEO meta group + generate endpoints. `true` (default) uses built-in
   // generate functions; pass an object to override any of them; `false` disables.
-  // `siteName` ends every generated title with it, as `Title | Site name`.
-  seo: { generateTitle, generateDescription, generateImage, generateURL, siteName: 'Acme' },
+  // `siteName` ends every generated title with it, as `Title | Site name`;
+  // `siteNameSeparator` replaces the `|` (default: '|').
+  seo: {
+    generateTitle,
+    generateDescription,
+    generateImage,
+    generateURL,
+    siteName: 'Acme',
+    siteNameSeparator: '—',
+  },
 
   // Next.js cache invalidation on save and delete (default: enabled).
   // Pass false to drop the hooks entirely.

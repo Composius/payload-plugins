@@ -124,6 +124,14 @@ describe('ComposiusPayloadPluginPages', () => {
     expect(await generateTitle(config, { title: 'Ignored' })).toBe('Theirs | Acme')
   })
 
+  test('siteNameSeparator replaces the pipe', async () => {
+    const config = ComposiusPayloadPluginPages({
+      seo: { siteName: 'Acme', siteNameSeparator: '—' },
+    })(baseConfig())
+
+    expect(await generateTitle(config, { title: 'Hello' })).toBe('Hello — Acme')
+  })
+
   test('seo: false removes the meta group and skips the SEO plugin', () => {
     const config = ComposiusPayloadPluginPages({ seo: false })(baseConfig())
     const pages = findPages(config)

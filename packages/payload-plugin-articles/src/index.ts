@@ -136,6 +136,12 @@ export type ComposiusPayloadPluginArticlesConfig = {
          * one still gets the site name appended.
          */
         siteName?: string
+        /**
+         * Goes between the title and `siteName`, with a space either side.
+         * Has no effect without `siteName`.
+         * @default '|'
+         */
+        siteNameSeparator?: string
       }
     | boolean
   /**
@@ -181,6 +187,7 @@ export const ComposiusPayloadPluginArticles =
     const generateTitle: GenerateTitle = withSiteName(
       seoOverrides.generateTitle ?? defaultGenerateTitle,
       seoOverrides.siteName,
+      seoOverrides.siteNameSeparator,
     )
     const generateURL: GenerateURL = seoOverrides.generateURL ?? defaultGenerateURL(articleUrl)
 

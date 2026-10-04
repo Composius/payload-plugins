@@ -212,6 +212,40 @@ match against `blockType` while walking the rich text. Its fields are `url`,
 > the title field component into the admin panel: run
 > `payload generate:importmap` after upgrading.
 
+## SEO
+
+The generate buttons in the `meta` group fill the fields from the article: the
+title from `title`, the description from the start of `content`, the image from
+`coverImage`. Replace any of them through the `seo` option. A custom
+`generateTitle` that puts the category name after the article title:
+
+```ts
+import type { GenerateTitle } from '@payloadcms/plugin-seo/types'
+
+// `doc` is the article as it stands in the form, so `category` is an id.
+const generateTitle: GenerateTitle = async ({ doc, req }) => {
+  if (!doc?.category) {
+    return doc?.title ?? ''
+  }
+
+  const category = await req.payload.findByID({
+    collection: 'categories',
+    depth: 0,
+    id: doc.category,
+  })
+
+  return `${doc.title} - ${category.name}`
+}
+
+ComposiusPayloadPluginArticles({
+  seo: { generateTitle, siteName: 'Acme', siteNameSeparator: '·' },
+})
+```
+
+`siteName` still applies to a custom `generateTitle`: the title above comes out
+as `My article - News · Acme`. Leave `siteName` out when your function adds the
+site name itself.
+
 ## Cache revalidation
 
 Publishing, unpublishing or deleting a document invalidates the Next.js cache
@@ -369,8 +403,16 @@ ComposiusPayloadPluginArticles({
 
   // SEO meta group + generate endpoints. `true` (default) uses built-in
   // generate functions; pass an object to override any of them; `false` disables.
-  // `siteName` ends every generated title with it, as `Title | Site name`.
-  seo: { generateTitle, generateDescription, generateImage, generateURL, siteName: 'Acme' },
+  // `siteName` ends every generated title with it, as `Title | Site name`;
+  // `siteNameSeparator` replaces the `|` (default: '|').
+  seo: {
+    generateTitle,
+    generateDescription,
+    generateImage,
+    generateURL,
+    siteName: 'Acme',
+    siteNameSeparator: '—',
+  },
 
   // Next.js cache invalidation on save and delete, for all three collections
   // (default: enabled). Pass false to drop the hooks entirely.

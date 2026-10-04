@@ -372,6 +372,14 @@ describe('ComposiusPayloadPluginArticles', () => {
     expect(await generateTitle(config, { title: 'Ignored' })).toBe('Theirs | Acme')
   })
 
+  test('siteNameSeparator replaces the pipe', async () => {
+    const config = ComposiusPayloadPluginArticles({
+      seo: { siteName: 'Acme', siteNameSeparator: '—' },
+    })(baseConfig())
+
+    expect(await generateTitle(config, { title: 'Hello' })).toBe('Hello — Acme')
+  })
+
   test('seo: false removes the meta group and skips the SEO plugin', () => {
     const config = ComposiusPayloadPluginArticles({ seo: false })(baseConfig())
     const articles = findArticles(config)
